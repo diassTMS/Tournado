@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+{% block container %}       
+    {% if title == "Enter League" or title == "Update League Entry" %}       
+        <div class="container" id="leagueBox">
+    {% else %}
+        <div class="container" id="box">
+    {% endif %}
+        <h2>
+            {% if return == 'account' %}
+                <i onClick="location.href='{% url 'account' %}';" class="fa-solid fa-circle-arrow-left" id="icon"></i> 
+            {% else %}
+                <i onClick="javascript:history.go(-1);" class="fa-solid fa-circle-arrow-left" id="icon"></i>      
+            {% endif %}      
+            {{ title }}
+        </h2>
+        <hr>
+        <form method="POST" enctype="multipart/form-data">      
+            {% csrf_token %}    
+            <fieldset>
+                <h4>Entry Details</h4>
+                <div>
+                    {{ form }}
+                </div>
+            </fieldset>
+            <div>
+                {% if title == "Enter League" or title == "Update League Entry" %}       
+                    <button type="submit">Save</button>
+                {% else %}
+                    <button type="submit">Save</button>
+                {% endif %}
+                <hr>
+                <small>By submitting this form, you are giving permission for photos to be taken of your team.</small>
+                <small>If you have any concerns, please email the tournament manager at {{ email }}.</small>
+            </div>  
+        </form>
+    </div>
+{% endblock %}
+

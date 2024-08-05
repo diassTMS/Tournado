@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+{% load static %}
+{% block container %}  
+    <style>
+        #card {
+            border-style: none solid none solid; 
+            border-width: 8px; 
+            border-color: light-dark(#033452, #9BCCFD);  
+            border-radius: 20px;          
+            padding: 40px;
+            background-color: light-dark(#9BCCFD, #033452);
+        }
+
+        #time {
+            width: auto;
+        }
+
+        #title {
+            grid-template-columns: 1fr 20fr;
+        }
+
+        #img {
+            margin-top: 15px;
+        }
+        
+        @media (width < 50em) {
+            #card {
+                border-style: none solid none solid; 
+                border-width: 8px; 
+                border-color: light-dark(#033452, #9BCCFD);  
+                border-radius: 20px;       
+                padding-left: 10px;
+                padding-right: 10px;
+                padding-top: 40px;
+                padding-bottom: 40px;
+                background-color: light-dark(#9BCCFD, #033452);
+            }
+
+            #time {
+                width: 60px;
+            }
+
+            #title {
+                grid-template-columns: 1fr 20fr;
+                margin-right: 40px;
+                margin-left: 40px;
+            }
+
+            #img {
+                margin-top: 20px;
+            }
+        }
+    </style>
+    <div class="container" id="card">
+        <hgroup>
+            <h2>
+                <i onClick="location.href='{% url 'user-tourn-customise' return %}';" class="fa-solid fa-circle-arrow-left" id="icon"></i>
+                Match Schedule
+            </h2>
+            <p>        
+                &emsp;&emsp;<i class="fa-solid fa-circle-info"></i>
+                <span>
+                    <b>Drag and drop matches to rearrange the schedule.</b>
+                </span>
+            </p> 
+        </hgroup>
+        <hr>
+        <div class="overflow-auto;">
+            <table style="border: 1px solid;">
+                <thead>
+                    <tr>
+                        <th scope="col" id="time" style="text-align:center; border: 1px solid;">Time</th>
+                        {% for i in range %}
+                            <th class="column" style="text-align:center; border: 1px solid;">Pitch {{forloop.counter}}</th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in schedule  %}
+                        <tr class="float-container">
+                            {% for match in row %}
+                                {% if forloop.counter0 == 0 %}
+                                    <td scope="row" style="text-align:center; border: 1px solid;">{{ match.start|time:"H:i" }} - {{ match.end|time:"H:i"}}</th>
+                                {% else %}
+                                    {% if match.entryOne == match.entryTwo %}
+                                        <td class="float-child" id="{{ match.id }}" style="text-align:center; border: 1px solid;">Free</td>
+                                    {% elif match.division == 1 %}
+                                        <td class="float-child" id="{{ match.id }}" style="text-align:center; border: 1px solid; background-color: light-dark(#D3BFE8, #5B2D9C); cursor: pointer;">{{ match }}</td>
+                                    {% elif match.division == 2 %}
+                                        <td class="float-child" id="{{ match.id }}" style="text-align:center; border: 1px solid; background-color: light-dark(#ADD8E6, #014C75); cursor: pointer;">{{ match }}</td>
+                                    {% elif match.division == 3 %}
+                                        <td class="float-child" id="{{ match.id }}" style="text-align:center; border: 1px solid; background-color: light-dark(#C1E1C1, #015234); cursor: pointer;">{{ match }}</td>
+                                    {% elif match.division == 4 %}
+                                        <td class="float-child" id="{{ match.id }}" style="text-align:center; border: 1px solid; background-color: light-dark(#FDF1B4, #997300); cursor: pointer;">{{ match }}</td>
+                                    {% else %}
+                                        <td class="float-child" id="{{ match.id }}" style="text-align:center; border: 1px solid; background-color: light-dark(#C1E1C1, #015234); cursor: pointer;">{{ match }}</td>
+                                    {% endif %}
+                                {% endif %}
+                            {% endfor %}
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+    <script src="{% static "js/drag-drop.js" %}"></script>
+{% endblock %}

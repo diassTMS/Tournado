@@ -1,0 +1,67 @@
+{% extends "base.html" %} 
+{% load django_tables2 %}
+{% block container %} 
+    <style>
+        #title {
+            grid-template-columns: 1fr 11fr;
+        }
+
+        #img {
+            border-radius: 100%;
+            width: 75px; 
+            height: 75px;
+        }
+
+        @media (width < 50em) {
+            #title {
+                grid-template-columns: 1fr 4fr;
+            }
+
+            #img {
+                border-radius: 100%;
+                width: 75px; 
+                height: 75px;
+                margin-top: 20px;
+            }
+        }
+    </style>
+    <div id="leagueBox"> 
+        <div class="grid" id="title">
+            <img id="img" src="{{ league.user.profile.image.url }}">
+            <hgroup>
+                <h2>{{ title }} Results - {{ league.name }}</h2>
+                <p>        
+                    <i class="fa-solid fa-circle-info"></i>
+                    <span>
+                        <b>Click on a team to see its individual statistics</b>
+                    </span>
+                </p> 
+            </hgroup>
+        </div>
+        {% if league.finished == True %}
+            <hr>
+            <article>
+                <h2 style="text-align: center; margin-top: 10px; color: #DAA520;"><i class="fa-solid fa-trophy"></i> {{ winner.teamName }} <i class="fa-solid fa-trophy"></i></h2>
+                <hr>
+                <h4 style="text-align: center; margin-top: 10px;"><i class="fa-solid fa-medal"></i> {{ runnerUp.teamName }} <i class="fa-solid fa-medal"></i></h4>
+            </article>
+        {% endif %}
+    </div>
+    <br>
+    <div class="container" id="leagueBox">
+        <h4>League Table</h4>
+        <div class="overflow-auto">
+            {% if table.data|length == 0 %}
+                <tr>
+                    <td colspan="2">
+                        <small class="text-muted">
+                            No entries
+                        </small>
+                    </td>
+                </tr>
+            {% else %}
+                {% render_table table %}
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}

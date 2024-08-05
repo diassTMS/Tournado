@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block container %}
+  <article class="grid" style="border-radius:20px;">
+    <div>
+      <h3>Log In</h3>
+      {% if form.errors %}
+        <div>
+          {% for k, error in form.errors.items %}
+            {{ error }}
+          {% endfor %}
+        </div>
+      {% endif %}
+      {% if next %}
+        <form action="/login/?next={{next}}" method="POST" >
+      {%else%}
+        <form action="." method="POST" >
+      {% endif %}
+        {% csrf_token %}
+        {% for field in form %}
+          <label for="{{ field.auto_id }}">
+            {{ field.label }}
+            {{ field }}
+            {% if field.errors %}
+              <div>{{ field.errors }}</div>
+            {% endif %}
+          </label>
+        {% endfor %}
+        <button type="submit">Login</button>
+      </form>
+      <small class="text-muted ml-2 ">
+        <a class="ml-2" href="{% url 'password_reset' %}">Forgot Password?</a>   <!--Link to sign in option-->
+      </small>
+    </div>
+</article>
+{% endblock %}

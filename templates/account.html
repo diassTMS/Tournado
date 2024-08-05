@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+{% load static %}
+{% block container %}
+    <style>
+        #four {
+            grid-template-columns: 1fr 1fr 1fr;
+        }
+    </style>
+    <div class='container' id='box'>
+        <div class="header">
+            <img src="{{ user.profile.image.url }}">
+            <h2>Your Account<span style="float:right; margin-right:20px; cursor:pointer;"><i onclick="location.href = '{% url 'logout' %}';" class="fa-solid fa-arrow-right-from-bracket" id="icon"></i></span></h2>
+        </div>
+        <br>
+        <div class="grid" id="four">
+            <article id="card">
+                <h4>Profile</h4>
+                <hr>
+                <div class="media-body">
+                    <p>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-user-circle" width="28" height="28" viewBox="0 0 24 24" stroke-width="1" stroke="#01aaff" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                            <path d="M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0" />
+                            <path d="M12 10m-3 0a3 3 0 1 0 6 0a3 3 0 1 0 -6 0" />
+                            <path d="M6.168 18.849a4 4 0 0 1 3.832 -2.849h4a4 4 0 0 1 3.834 2.855" />
+                        </svg>
+                        <span>{{ user.username }}</span>
+                    </p>
+                    <button class="outline" onclick="location.href = '{% url 'profile' user.id %}';">View &#11166;</button>
+                </div>
+            </article>
+            {% if user.groups.all.0.name == 'Admin' %}
+                <article id="card">
+                    <h4>Tournaments</h4>
+                    <hr>
+                    <div class="media-body">
+                        {% if numTourns > 1 %}
+                            <p>You have {{ numTourns }} tournaments</p>
+                        {% elif numTourns < 1 %}
+                            <p>You have no tournaments</p>
+                        {% else %}
+                            <p>You have 1 tournament</p>
+                        {% endif %}
+                        <button class="outline" onclick="location.href = '{% url 'user-tourn-list' %}';">View &#11166;</button>
+                        <button class="outline" onclick="location.href = '{% url 'tourn-create' %}';">New &#128934;</button>
+                    </div>
+                </article>
+                <article id="card">
+                    <h4>Leagues</h4>
+                    <hr>
+                    <div class="media-body">
+                        {% if numLeagues > 1 %}
+                            <p>You have {{ numLeagues }} leagues</p>
+                        {% elif numLeagues < 1 %}
+                            <p>You have no leagues</p>
+                        {% else %}
+                            <p>You have 1 league</p>
+                        {% endif %}
+                        <button class="outline" onclick="location.href = '{% url 'user-league-list' %}';">View &#11166;</button>
+                        <button class="outline" onclick="location.href = '{% url 'league-create' %}';">New &#128934;</button>
+                    </div>
+                </article>
+                <article id="card">
+                    <h4>User Management</h4>
+                    <hr>
+                    <div class="media-body">
+                        <p>View all users, their profiles and orders. Whilst keeping track of finances.</p>
+                        <button class="outline" onclick="location.href = '{% url 'user-list' %}';">View &#11166;</button>
+                    </div>
+                </article>         
+            {% else %}
+                <article id="card">
+                    <h4>Entries</h4>
+                    <hr>
+                    <div>
+                        {% if numEntries > 1 %}
+                            <p>You have {{ numEntries }} entries</p>
+                        {% elif numEntries < 1 %}
+                            <p>You have no entries</p>
+                        {% else %}
+                            <p>You have 1 entry</p>
+                        {% endif %}
+                        <button class="outline" onclick="location.href = '{% url 'user-entry-list' %}';">View &#11166;</button>
+                    </div>
+                </article>
+                <article id="card">
+                    <h4>Season Signup Form</h4>
+                    <hr>
+                    <div class="media-body">
+                        <p>Create and view season sign up order forms. Invoices will be emailed to you.</p>
+                        <button class="outline" onclick="location.href = '{% url 'order-create' user.id %}';">New &#128934;</button>
+                        <button class="outline" onclick="location.href = '{% url 'order-list' user.id %}';">Your Orders &#11166;</button>
+                    </div>
+                </article>
+            {% endif %}
+            
+            {% if user.is_superuser %}
+                <article id="card">
+                    <h4>Season Signup Form</h4>
+                    <hr>
+                    <div class="media-body">
+                        <p>Create and view season sign up order forms. Invoices will be emailed to you.</p>
+                        <button class="outline" onclick="location.href = '{% url 'order-create' user.id %}';">New &#128934;</button>
+                        <button class="outline" onclick="location.href = '{% url 'order-list' user.id %}';">Your Orders &#11166;</button>
+                    </div>
+                </article>              
+                <article id="card">
+                    <h4>Admin</h4>
+                    <hr>
+                    <div class="media-body">
+                        <p>View admin page</p>
+                        <button class="outline" onclick="location.href = '{% url 'admin:index' %}';">View &#11166;</button>
+                    </div>
+                </article>
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}

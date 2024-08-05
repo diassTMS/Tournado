@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% block container %}
+    <section class="grid" id="tournPage">
+        <div class='container' id='leagueFirstChild'>
+            <h2>
+                <i onClick="javascript:history.go(-1);" class="fa-solid fa-circle-arrow-left" id="icon"></i> 
+                League Details
+            </h2>
+            <hr>
+            <article style="padding: 5px;">
+                <h4 align="center" style="margin-top:20px;">{{ object.name }}</h4>
+            </article>
+            <hr>
+            <p>
+                <i class="fa-solid fa-calendar-days"></i>
+                <span>
+                    <b>Dates:</b>
+                        <ul>
+                            <li style="list-style-type: circle;">Start = {{ object.startDate|date:"l, F dS Y" }}</li>
+                            <li style="list-style-type: circle;">End = {{ object.endDate|date:"l, F dS Y" }}</li>
+                        </ul> 
+                </span>
+            </p>
+            <p>
+                <i class="fa-solid fa-clock"></i>
+                <span>
+                    <b>Timings:</b>
+                        <ul>
+                            <li style="list-style-type: circle;">Match Type = {{ object.matchType }}</li>
+                        </ul> 
+                </span>
+            </p>
+            <p>
+                <i class="fa-solid fa-tags"></i>
+                <span>
+                    <b>Tags:</b>
+                        <ul>
+                            <li style="list-style-type: circle;">Category = <small id="{{ object.group }}">{{ object.group }}</small></li>
+                            <li style="list-style-type: circle; margin-top:20px;">Level = <small id="{{ object.group }}">{{ object.level }}</small></li>
+                        </ul> 
+                </span>
+            </p>
+        </div>
+        <div class='container' id='leagueBox'>
+            <h2>League Manager</h2>
+            <hr>
+            <div class="grid" style="grid-template-columns: 1fr 4fr;">
+                <img id="img" src="{{ object.user.profile.image.url }}">
+                <hgroup style="margin-top:10px;">
+                    <h4>{{ object.user.first_name }} {{ object.user.last_name }}</h4>
+                    <p>        
+                        <i class="fa-solid fa-envelope"></i>
+                        <span>
+                            <b>{{ object.user.email }}</b>
+                        </span>
+                    </p> 
+                </hgroup>
+            </div>
+        </div>
+        <div class='container' id='leagueBox'>
+            <div class="grid" id="tournOptions">
+                {% if user == object.user %}
+                    <button style="height:60px;" onclick="location.href='{% url 'user-league-detail' object.id %}';">Manage League</button>
+                {% endif %}
+                {% if object.publish == True %}
+                    <a role="button" href="{% url 'league-match-list-normal' object.id %}" class="secondary">League Matches</a>
+                {% else %}
+                    <button disabled class="secondary" style="height:60px;">League Matches</button>
+                {% endif %}
+                {% if live == True %}
+                    <button style="height:60px;" onclick="location.href='{% url 'league-live-score' object.id %}';">Live Score Table</button>
+                {% else %}
+                    <button disabled class="secondary" style="height:60px;">Live Score Table</button>
+                {% endif %}
+                <button id="btn" style="height:60px;">xxx</button>
+            </div>
+        </div>
+    </section>
+{% endblock%}

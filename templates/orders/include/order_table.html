@@ -1,0 +1,46 @@
+{% load render_table from django_tables2 %}
+<div class="overflow-auto" id="order_container">
+    {% if orders.data|length == 0 %}
+        {% render_table orders %}
+        <small class="text-muted" style="float:center;">
+            <i>No orders</i>  
+        </small>
+    {% else %}
+        {% render_table orders %}
+    {% endif %}
+    <hr>
+</div>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+<script>
+    $('.delete_button').click(function (evt) {
+        evt.preventDefault();
+        const btn = $(this);
+        const url = btn.attr('data-href');
+        $.ajax({
+            method: 'GET',
+            url: url,
+            dataType: 'json',
+
+            success: function (data) {
+                $('#order_container').html(data.result)
+            }
+        })
+    });
+
+    $('.paid_button').click(function (evt) {
+        evt.preventDefault();
+        const btn = $(this);
+        const pk = btn.attr('pk')
+        console.log('pk')
+        $.ajax({
+            method: 'GET',
+            dataType: 'json',
+            url: `/paid/${pk}/`,
+            success : function (data) {
+                console.log('paid');
+                console.log(data);
+                $('#order_container').html(data.result);
+            }
+        })
+    });
+</script>

@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% block container %}
+    <div class="container" id="box">
+        <h2>
+            <i onClick="javascript:history.go(-1);" class="fa-solid fa-circle-arrow-left" id="icon"></i> 
+            {{ user.username }}'s Profile
+            <span style="float:right; margin-right:20px;">
+                <img id="img" src="{{ user.profile.image.url }}">
+            </span>
+        </h2>
+        <br><hr>
+        <div class="grid">
+            <article>
+                <h4>Coach/Manager Details</h4>
+                <hr>
+                <form method="POST">
+                    {% csrf_token %} 
+                    <fieldset>
+                    <div class="grid">
+                        <label>
+                            First Name
+                            {{ form.first_name }} 
+                        </label>
+                        <label>
+                            Surname
+                            {{ form.last_name }} 
+                        </label>
+                    </div>
+                    <label>
+                        Email
+                        {{ form.email }}
+                    </label>
+                    <label>
+                        Phone Number
+                        {{ form2.phone_number }}
+                    </label>
+                    <hr>
+                    <label>
+                        Invoice Email
+                        {{ form2.invoice_email }}
+                    </label>
+                    </fieldset>
+            
+                    <input
+                    type="submit"
+                    value="Update"
+                    />
+                </form>
+            </article>
+            <article>
+                <h4>Account Details - Read Only</h4>
+                <hr>
+                <form method="POST">
+                    {% csrf_token %} 
+                    <fieldset>
+                        <label>
+                            Username
+                            <input
+                            type="text"
+                            name="text"
+                            value="{{ user.username }} "
+                            aria-label="Read-only input"
+                            readonly
+                            />
+                        </label>
+                        <label>
+                            Group
+                            <input
+                            type="text"
+                            name="text"
+                            value="{{ user.groups.all.0.name }} "
+                            aria-label="Read-only input"
+                            readonly
+                            />
+                        </label>
+                    </fieldset>
+                </form>
+                <small>If you wish to change any of these details, you can request the change from an admin by clicking <u>here</u>.</small>
+            </article>
+        </div>
+    </div>
+{% endblock %}

@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+{% block container %}
+    <style>
+        input[type=number] {
+            height: 150px;
+            font-size: 50pt;
+            text-align: center;
+        }
+    </style>
+    <div id="box">
+        <div class="header">
+            <h2>
+                <i onClick="location.href='{% url 'match-table' match.tournament.id %}';" class="fa-solid fa-circle-arrow-left" id="icon"></i> 
+                Match Score
+            </h2>
+        </div>    
+        <hr>
+        <div class="content-section">
+            <form method="POST">
+                {% csrf_token %}
+                <fieldset class="form-group">
+                        {% if match.division == 0 %}
+                            <h4>Goals Scored</h4>
+                            <hr>
+                        {% endif %}
+                        <div class="grid" style="grid-template-columns: 1fr 1fr;grid-template-columns: 1fr 1fr;">
+                            <div class="grid" style="grid-template-columns: 1fr 1fr;grid-template-columns: 1fr;">
+                                <article style="text-align: center;"><h4 style="margin-bottom: 0px;">{{ match.entryOne }}</h4></article>
+                                {{ form.goalsOne }}
+                                <a onclick="incOne()" class="secondary" role="button" style="background-color: #005F3D;"><i class="fa-solid fa-plus"></i></a>
+                                <a onclick="decOne()" class="secondary" role="button"><i class="fa-solid fa-minus"></i></a>
+                            </div>
+                            <div class="grid" style="grid-template-columns: 1fr 1fr;grid-template-columns: 1fr;">
+                                <article style="text-align: center;"><h4 style="margin-bottom: 0px;">{{ match.entryTwo }}</h4></article>
+                                {{ form.goalsTwo }}
+                                <a onclick="incTwo()" class="secondary" role="button" style="background-color: #005F3D;"><i class="fa-solid fa-plus"></i></a>
+                                <a onclick="decTwo()" class="secondary" role="button"><i class="fa-solid fa-minus"></i></a>
+                            </div>
+                        </div>
+                        {% if match.division == 0 %}
+                            <hr>
+                            <h4>Penalty Flicks</h4>
+                            <hr>
+                            <div class="grid" style="grid-template-columns: 1fr 1fr;grid-template-columns: 1fr 1fr;">
+                        {% endif %}
+                            <div class="grid" style="grid-template-columns: 1fr 1fr;grid-template-columns: 1fr;">
+                                {% if match.division == 0 %}
+                                    <article style="text-align: center;"><h4 style="margin-bottom: 0px;">{{ match.entryOne }}</h4></article>
+                                {% endif %}
+                                {{ form.pfOne }}
+                                {% if match.division == 0 %}
+                                    <a onclick="incThree()" class="secondary" role="button" style="background-color: #005F3D;"><i class="fa-solid fa-plus"></i></a>
+                                    <a onclick="decThree()" class="secondary" role="button"><i class="fa-solid fa-minus"></i></a>
+                                {% endif %}
+                            </div>
+                            <div class="grid" style="grid-template-columns: 1fr 1fr;grid-template-columns: 1fr;">
+                                {% if match.division == 0 %}
+                                    <article style="text-align: center;"><h4 style="margin-bottom: 0px;">{{ match.entryTwo }}</h4></article>
+                                {% endif %}
+                                {{ form.pfTwo }}
+                                {% if match.division == 0 %}
+                                    <a onclick="incFour()" class="secondary" role="button" style="background-color: #005F3D;"><i class="fa-solid fa-plus"></i></a>
+                                    <a onclick="decFour()" class="secondary" role="button"><i class="fa-solid fa-minus"></i></a>
+                                {% endif %}
+                            </div>
+                        {% if match.division == 0 %}
+                            </div>
+                        {% endif %}
+                        <hr>
+                        <div class="grid">
+                            {{ form.played|as_crispy_field }}
+                        </div>
+                </fieldset>
+                <div class="form-group">
+                    <button class="btn btn-info mb-4" type="submit">Submit</button>  <!--Enter button-->
+                </div>
+            </form>
+        </div>
+    </div>
+    <script>
+        function incOne() {
+            let number = document.querySelector('[name="goalsOne"]');
+            number.value = parseInt(number.value) + 1;
+        }
+        
+        function decOne() {
+            let number = document.querySelector('[name="goalsOne"]');
+            number.value = parseInt(number.value) - 1;
+        }
+
+        function incTwo() {
+            let number = document.querySelector('[name="goalsTwo"]');
+            number.value = parseInt(number.value) + 1;
+        }
+        
+        function decTwo() {
+            let number = document.querySelector('[name="goalsTwo"]');
+            number.value = parseInt(number.value) - 1;
+        }
+
+        function incThree() {
+            let number = document.querySelector('[name="pfOne"]');
+            number.value = parseInt(number.value) + 1;
+        }
+        
+        function decThree() {
+            let number = document.querySelector('[name="pfOne"]');
+            number.value = parseInt(number.value) - 1;
+        }
+
+        function incFour() {
+            let number = document.querySelector('[name="pfTwo"]');
+            number.value = parseInt(number.value) + 1;
+        }
+        
+        function decFour() {
+            let number = document.querySelector('[name="pfTwo"]');
+            number.value = parseInt(number.value) - 1;
+        }
+    </script>
+{% endblock %}
+

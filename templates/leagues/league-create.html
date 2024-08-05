@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+{% block container %}              
+    <div class="container" id="leagueBox">
+        <h2>
+            {% if return == 'account' %}
+                <i onClick="location.href='{% url 'account' %}';" class="fa-solid fa-circle-arrow-left" id="icon"></i> 
+            {% else %}
+                <i onClick="location.href='{% url 'user-league-detail' return %}';" class="fa-solid fa-circle-arrow-left" id="icon"></i> 
+            {% endif %}
+            
+            {{ title }}
+        </h2>
+        <hr>
+        <form method="POST">      
+            {% csrf_token %}    
+            <fieldset>
+                <h4>Info</h4>
+                <div>
+                    {{ form.name|as_crispy_field }}
+                </div>
+                <div class="grid">
+                    {{ form.age|as_crispy_field }}
+                    {{ form.gender|as_crispy_field }}
+                    {{ form.level|as_crispy_field }}
+                    {{ form.group|as_crispy_field }}
+                </div>
+                <hr>
+                <h4>Timings</h4>
+                <div class="grid">
+                    {{ form.startDate|as_crispy_field }}
+                    {{ form.endDate|as_crispy_field }}
+                    {{ form.matchType|as_crispy_field }}
+                </div>
+                <hr>
+            </fieldset>
+            <div class="form-group">
+                <button type="submit">Save</button>  <!--Enter button-->
+            </div>  
+        </form>
+    </div>
+{% endblock %}
+

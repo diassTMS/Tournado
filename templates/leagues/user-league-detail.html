@@ -1,0 +1,153 @@
+{% extends "base.html" %}
+{% load static %}
+{% block container %}
+    <section class="grid" id="tournPage">
+        {% if object.generatedSchedule == True %}
+            <div class='container' id="leagueBox">
+        {% else %}
+            <div class='container' id='leagueFirstChild'>
+        {% endif %}
+            <h2>
+                <i onClick="location.href='{% url 'user-league-list' %}';" class="fa-solid fa-circle-arrow-left" id="icon"></i> 
+                Manage League
+            </h2>
+            <hr>
+            <article style="padding: 5px;">
+                <h4 align="center" style="margin-top:20px;">{{ object.name }}</h4>
+            </article>
+            <hr>
+            <p>
+                <i class="fa-solid fa-calendar-days"></i>
+                <span>
+                    <b>Dates:</b>
+                        <ul>
+                            <li style="list-style-type: circle;">Start = {{ object.startDate|date:"l, F dS Y" }}</li>
+                            <li style="list-style-type: circle;">End = {{ object.endDate|date:"l, F dS Y" }}</li>
+                        </ul> 
+                </span>
+            </p>
+            <p>
+                <i class="fa-solid fa-clock"></i>
+                <span>
+                    <b>Timings:</b>
+                        <ul>
+                            <li style="list-style-type: circle;">Match Type = {{ object.matchType }}</li>
+                        </ul> 
+                </span>
+            </p>
+            <p>
+                <i class="fa-solid fa-tags"></i>
+                <span>
+                    <b>Tags:</b>
+                        <ul>
+                            <li style="list-style-type: circle;">Category = <small id="{{ object.group }}">{{ object.group }}</small></li>
+                            <li style="list-style-type: circle; margin-top:20px;">Level = <small id="{{ object.group }}">{{ object.level }}</small></li>
+                        </ul> 
+                </span>
+            </p>
+        </div>
+        <div class='container' id='leagueBox'>
+            <table style="border-radius:20px;">
+                <thead>
+                    <tr>
+                        <th scope="col"><strong>League Entries</strong></th>
+                        <th scope="col" style="text-align:center; width:30px;"></th>
+                        <th scope="col" style="text-align:center; width:30px;"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for entry in entries %}
+                        <tr>
+                            <th scope="row">{{ entry.teamName }}</th>
+                            <td style="text-align:center; cursor:pointer;"><i onclick="location.href='{% url 'league-entry-update' entry.id %}';" class="fa-solid fa-pen-to-square" id="icon"></i></td>
+                            <td style="text-align:center; cursor:pointer;"><i onclick="location.href='{% url 'league-entry-delete' entry.id %}';" class="fa-solid fa-trash-can" id="icon" style="color: #AF291D;"></i></td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <th scope="row">Total: {{ num }} </th>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                  </tfoot>
+            </table>
+        </div>
+        {% if object.generatedSchedule == True %}
+            <div class='container' id="leagueBox">
+                <h4>League Scoring</h4>
+                <hr>
+                <div class="grid" id="tournOptions">
+                    <button onclick="location.href='{% url 'league-match-list' object.id %}';">League Matches</button>
+                    {% if live %}
+                        <button class="secondary" onclick="location.href='{% url 'league-live-score' object.id %}';">View Live Score Table</button>   
+                    {% else %} 
+                        <button disabled class="secondary" onclick="location.href='{% url 'league-live-score' object.id %}';">View Live Score Table</button>   
+                    {% endif %}
+                </div>
+            </div>
+        {% endif %}
+        <div class='container' id='leagueBox'>
+            <h4>Options</h4>
+            <hr>
+            <div class="grid" id="tournPage">
+                {% if object.generatedSchedule == False %}
+                    <button onclick="location.href='{% url 'league-schedule-create' object.id %}';">Generate Matches</button>
+                    <button onclick="location.href='{% url 'league-entry-create' object.id %}';">Add Entry <i class="fa-solid fa-square-plus"></i></button>
+                    <button class="secondary" onclick="location.href='{% url 'league-update' object.id %}';">Update Info</button>
+                    <button style="background-color: #AF291D; color: white;" data-target="modal-delete" onclick="toggleModal(event)">Delete League <i class="fa-solid fa-trash-can" id="icon"></i></button>
+                {% else %}
+                    <button onclick="location.href='{% url 'league-schedule-create' object.id %}';" class="secondary">Regenerate Matches</button>
+                    <button onclick="location.href='{% url 'league-entry-create' object.id %}';">Add Entry <i class="fa-solid fa-square-plus"></i></button>
+                    <button class="secondary" onclick="location.href='{% url 'league-update' object.id %}';">Update Info</button>
+                    <button style="background-color: #AF291D; color: white;" data-target="modal-delete" onclick="toggleModal(event)">Delete League <i class="fa-solid fa-trash-can" id="icon"></i></button>
+                {% endif %}
+            </div>
+        </div>
+    </section>
+    
+    <!-- Tourn Delete Modal -->
+    <dialog id="modal-delete">
+        <article>
+            <header>
+            <button
+                aria-label="Close"
+                rel="prev"
+                data-target="modal-delete"
+                onclick="toggleModal(event)"
+            ></button>
+            <h3>Confirm Delete!</h3>
+            </header>
+            <p>
+            Are you sure you want to delete this league? This action cannot be reversed!
+            </p>
+            <footer>
+                <button
+                    role="button"
+                    class="secondary"
+                    data-target="modal-delete"
+                    onclick="toggleModal(event)"
+                >
+                Cancel</button>
+                <button style="background-color: #AF291D; color: white;" onclick="delete_item({{ object.pk }});">Delete</button>
+            </footer>
+        </article>
+        </dialog>  
+        
+        <!-- Delete Form & Script 4 Tourn -->
+        <form method="post" action="{% url 'league-delete' object.id %}" id="delete_form">
+            {% csrf_token %}
+            <input type="hidden" name="pk" id="delete_pk">
+        </form>
+
+        <script>
+            function delete_item(pk) {
+                var hidden_item = document.getElementById("delete_pk");
+                hidden_item.value = pk;
+                var form = document.getElementById("delete_form");
+                form.submit();
+            } 
+        </script>
+        <script src="{% static "js/modal.js" %}"></script>
+
+{% endblock%}

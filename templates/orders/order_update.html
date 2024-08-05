@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% load static %}
+{% load django_tables2 %}
+{% block container %}
+    <div id="box">
+        <hgroup>
+            <h2>
+                <i onClick="location.href='{% url 'submit-order' instance.id %}';" class="fa-solid fa-circle-arrow-left" id="icon"></i>
+                Season Signup Order Form
+                <span style="float: right;">
+                    <img id="img" src="{% static 'images/gha_logo.jpg' %}">
+                    <img id="img" src="{% static 'images/hockey_fever-logo.png' %}">
+                </span>
+            </h2>
+            <p>        
+                &emsp;&emsp;<i class="fa-solid fa-circle-info"></i>
+                <span>
+                    <b>Select which tournaments you want to enter and an invoice will be emailed to you.</b>
+                </span>
+            </p> 
+        </hgroup>
+        <hr>
+        <div class="grid">
+            <article>
+                <h4>Available Events</h4>
+                <hr>
+                <div class="overflow-auto">
+                    {% render_table products %}
+                </div>
+            </article>
+            <article>
+                <h4>Your order</h4>
+                <hr>
+                {% include 'orders/include/order_container.html' %}
+            </article>
+        </div>
+    </div>
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+    <script type="text/javascript">
+        $('.add_button').click(function (evt) {
+            evt.preventDefault();
+            const btn = $(this);
+            const url = btn.attr('data-href');
+            console.log(url);
+            $.ajax({
+                method: 'GET',
+                dataType: 'json',
+                url: url,
+                success : function (data) {
+                    $('#order_item_container').html(data.result)
+                }
+            })
+        });
+    </script>
+{% endblock %}

@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+{% block container %}
+    <div class="container" id="box">
+        <h2>
+            <i onClick="location.href='{% url 'user-tourn-customise' tourn.id %}';" class="fa-solid fa-circle-arrow-left" id="icon"></i>      
+            Customise Schedule PDF
+        </h2>
+        <hr>
+        <form method="POST" id="form">      
+            {% csrf_token %}    
+            <fieldset>
+                <h4>Schedule Info</h4>
+                <div class="grid">
+                    {{ form.tournament|as_crispy_field }}
+                    {{ form.timed|as_crispy_field }}
+                </div>
+                <hr>
+                <h4>Customisation</h4>
+                <div class="grid">
+                    <div>
+                        <p>Extra Timings</p>
+                        {% for field in form.get_timing_fields %}
+                            {{ field }}
+                        {% endfor %}
+                        <button type="submit" class="secondary">Update</button>
+                    </div>
+                    <div>
+                        <p>Rules</p>
+                        {% for field in form.get_rule_fields %}
+                            {{ field }}
+                        {% endfor %}
+                        <button type="submit" class="secondary">Update</button>
+                    </div>
+                </div>
+            </fieldset>
+            <hr>
+            <div class="grid">
+                <a href="{% url 'pdf' tourn.id %}" target="_blank" role="button" style="width: 100%;">View PDF</a>
+            </div>  
+        </form>
+    </div>
+{% endblock %}
+
+

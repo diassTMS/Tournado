@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% load static %}
+{% load crispy_forms_tags %}
+{% block container %}
+    <section>
+        <div class='container' id='leagueBox'>
+            <h2>
+                <i onClick="location.href='{% url 'account' %}';" class="fa-solid fa-circle-arrow-left" id="icon"></i> 
+                Your Leagues
+                <span style="float:right; margin-right:20px; cursor:pointer;">
+                <i onclick="filterView()" class="fa-solid fa-sliders" id="icon"></i>
+                </span>
+            </h2>
+            <form method="get" id="filter" style="display: none;">
+                <fieldset class="grid" id="filterGrid">
+                    <label>Age {{ filter.form.age }}</label>
+                    <label>Gender {{ filter.form.gender }}</label>
+                    <label>Group {{ filter.form.group }}</label>
+                    <label>Date {{ filter.form.startDate }}</label>
+                    <button class="primaryLeague" style="height: calc(1rem* var(--pico-line-height) + var(--pico-form-element-spacing-vertical)* 2 + var(--pico-border-width)* 2); margin-top: 35px;" onclick="submit"><i class="fa-solid fa-filter"></i></button>
+                    <input style="margin-top: 35px;" class="secondary" type="button" onclick="location.href='{% url 'user-league-list' %}';" value="&#128942;" />
+                </fieldset>
+            </form>
+            <hr>
+            <div class="grid" id="tournPage">
+                {% for league in filter.qs  %}
+                    <article>
+                        <hgroup>
+                            <h4><a href="{% url 'user-league-detail' league.id %}">{{ league.name }}</a></h4>
+                            <p>{{ league.startDate|date:"M dS Y" }} - {{ league.endDate|date:"M dS Y" }}</p>
+                        </hgroup>
+                        <hr>
+                        <small id="{{ league.group }}">{{ league.group }}</small>
+                    </article>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+    <script>
+        function filterView() {
+            var x = document.getElementById("filter");
+            if (x.style.display === "none") {
+              x.style.display = "block";
+            } else {
+              x.style.display = "none";
+            }
+          }
+    </script>
+{% endblock %}

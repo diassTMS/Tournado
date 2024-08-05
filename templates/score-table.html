@@ -1,0 +1,130 @@
+{% extends "base.html" %} 
+{% load django_tables2 %}
+{% load static %}
+{% block container %} 
+    <style>
+        #title {
+            grid-template-columns: 1fr 11fr 1fr;
+        }
+
+        #img {
+            border-radius: 100%;
+            width: 75px; 
+            height: 75px;
+        }
+
+        #smallTable {
+            display: none;
+        }
+
+        @media (width < 50em) {
+            #title {
+                grid-template-columns: 1fr 4fr;
+            }
+
+            #img {
+                border-radius: 100%;
+                width: 75px; 
+                height: 75px;
+                margin-top: 20px;
+            }
+
+            #largeTable {
+                display: none;
+            }
+
+            #smallTable {
+                display: block;
+            }
+        }
+    </style>
+    <div id="box"> 
+        <div class="grid" id="title">
+            <img id="img" src="{{ tournament.user.profile.image.url }}">
+            <hgroup>
+                <h2>{{ title }} Results - {{ tournament.name }}</h2>
+                <p>        
+                    <i class="fa-solid fa-circle-info"></i>
+                    <span>
+                        <b>Click on a team to see its individual statistics</b>
+                    </span>
+                </p> 
+            </hgroup>
+            {% if tournament.user.username == "Hockey_Fever" %}
+                <img id="img" src="{% static 'images/gha_logo.jpg' %}">
+            {% endif %}
+        </div>
+        {% if tournament.finished == True and winner != None %}
+            <hr>
+            <article>
+                <h2 style="text-align: center; margin-top: 10px; color: #DAA520;"><i class="fa-solid fa-trophy"></i> {{ winner.teamName }} <i class="fa-solid fa-trophy"></i></h2>
+                <hr>
+                <h4 style="text-align: center; margin-top: 10px;"><i class="fa-solid fa-medal"></i> {{ runnerUp.teamName }} <i class="fa-solid fa-medal"></i></h4>
+            </article>
+        {% endif %}
+    </div>
+    <br>
+    {% if tournament.liveScores == True and current.data|length != 0%}
+        <div class="container" id="box">
+            <h4>Live Matches</h4>
+            <div class="grid" id="tournPage">
+                {% for match in current %}
+                    {% if match.played == True %}
+                        <article class="grid" style="grid-template-columns: 45fr 2fr 1fr 2fr 45fr; border: 4px solid; border-color: gold;">
+                    {% else %}
+                        <article class="grid" style="grid-template-columns: 45fr 2fr 1fr 2fr 45fr; border: 4px solid; border-color: #0172AD;">
+                   {% endif %}
+                        {% if match.entryOne.teamName == object.teamName %}
+                            <p style="text-align: center; margin-top: 15px;">{{ match.entryOne }}</p>
+                            <p style="text-align: center; margin-top: 15px;"><b>{{ match.goalsOne }}</b></p>
+                            <p style="text-align: center; margin-top: 15px; color: #428BCA;"><b>|</b></p>
+                            <p style="text-align: center; margin-top: 15px;"><b>{{ match.goalsTwo }}</b></p>
+                            <p style="text-align: center; margin-top: 15px;">{{ match.entryTwo }}</p>
+                        {% else %}
+                            <p style="text-align: center; margin-top: 15px;">{{ match.entryTwo }}</p>
+                            <p style="text-align: center; margin-top: 15px;"><b>{{ match.goalsTwo }}</b></p>
+                            <p style="text-align: center; margin-top: 15px; color: #428BCA;"><b>|</b></p>
+                            <p style="text-align: center; margin-top: 15px;"><b>{{ match.goalsOne }}</b></p>
+                            <p style="text-align: center; margin-top: 15px;">{{ match.entryOne }}</p>
+                        {% endif %}
+                    </article>
+                {% endfor %}
+            </div>
+        </div>
+        <br>
+    {% endif %}
+    {% if LKnockoutTable.data|length != 0%}
+        <div class="container" id="box">
+            <h4>Knockout Matches</h4>
+            <div class="overflow-auto" id="largeTable">
+                {% render_table LKnockoutTable %}
+            </div>
+            <div class="overflow-auto" id="smallTable">
+                {% render_table SKnockoutTable %}
+            </div>
+        </div>
+        <br>
+    {% endif %}
+    {% if tournament.noDivisions > 1 %}
+        <div class="grid" id="tournPage">
+    {% else %}
+        <div class="grid" style="grid-template-columns: 1fr;">
+    {% endif %}
+        {% for table in tables %}
+            <div class="container" id="box">
+                <h4>Division {{ forloop.counter }}</h4>
+                {% if table.data|length == 0 %}
+                    <tr>
+                        <td colspan="2">
+                            <small class="text-muted">
+                                No matches   <!--Link to sign in option-->
+                            </small>
+                        </td>
+                    </tr>
+                {% else %}
+                    {% render_table table %}
+                {% endif %}
+            </div>
+        {% endfor %}
+    </div>
+{% endblock %}

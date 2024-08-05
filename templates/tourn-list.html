@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% load static %}
+{% load crispy_forms_tags %}
+{% block container %}
+    <section>
+        <div class='container' id='box'>
+            <h2>
+                <i onClick="javascript:history.go(-1);" class="fa-solid fa-circle-arrow-left" id="icon"></i> 
+                All Events
+                <span style="float:right; margin-right:20px; cursor:pointer;">
+                <i onclick="filterView()" class="fa-solid fa-sliders" id="icon"></i>
+                </span>
+            </h2>
+            <form method="get" id="filter" style="display: none;">
+                <fieldset class="grid" id="filterGrid">
+                    <label>Age {{ filter.form.age }}</label>
+                    <label>Gender {{ filter.form.gender }}</label>
+                    <label>Group {{ filter.form.group }}</label>
+                    <label>Date {{ filter.form.date }}</label>
+                    <button style="height: calc(1rem* var(--pico-line-height) + var(--pico-form-element-spacing-vertical)* 2 + var(--pico-border-width)* 2); margin-top: 35px;" onclick="submit"><i class="fa-solid fa-filter"></i></button>
+                    <input style="margin-top: 35px;" class="secondary" type="button" onclick="location.href='{% url 'tourn-list' %}';" value="&#128942;" />
+                </fieldset>
+            </form>
+            <hr>
+            <div class="grid" id="tournGrid">
+                {% for tourn in filter.qs  %}
+                    <article>
+                        <hgroup>
+                            <h4><a href="{% url 'tourn-detail' tourn.id %}">{{ tourn.name }}</a></h4>
+                            <p>{{ tourn.date|date:"D, M dS Y" }} - {{ tourn.meetTime|date:"H:i" }}</p>
+                        </hgroup>
+                        <hr>
+                        <p>
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-map-pin-filled" width="28" height="28" viewBox="0 0 24 24" stroke-width="1.5" stroke="#01aaff" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                            <path d="M18.364 4.636a9 9 0 0 1 .203 12.519l-.203 .21l-4.243 4.242a3 3 0 0 1 -4.097 .135l-.144 -.135l-4.244 -4.243a9 9 0 0 1 12.728 -12.728zm-6.364 3.364a3 3 0 1 0 0 6a3 3 0 0 0 0 -6z" stroke-width="0" fill="currentColor" />
+                            </svg>
+                            <span>
+                                {{ tourn.venue }}
+                            </span>
+                        </p>
+                        <p>
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-clock-filled" width="28" height="28" viewBox="0 0 24 24" stroke-width="1.5" stroke="#01aaff" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                            <path d="M17 3.34a10 10 0 1 1 -14.995 8.984l-.005 -.324l.005 -.324a10 10 0 0 1 14.995 -8.336zm-5 2.66a1 1 0 0 0 -.993 .883l-.007 .117v5l.009 .131a1 1 0 0 0 .197 .477l.087 .1l3 3l.094 .082a1 1 0 0 0 1.226 0l.094 -.083l.083 -.094a1 1 0 0 0 0 -1.226l-.083 -.094l-2.707 -2.708v-4.585l-.007 -.117a1 1 0 0 0 -.993 -.883z" stroke-width="0" fill="currentColor" />
+                            </svg>
+                            <span>
+                                {{ tourn.startTime|date:"H:i" }}
+                            </span>
+                        </p>
+                        <hr>
+                        <small id="{{ tourn.group }}">{{ tourn.group }}</small>
+                        <span style="float:right; margin-right:20px;">
+                            {% if tourn.user.username == "Hockey_Fever" %}
+                                <img style="width: 50px; height: 50px; border-radius: 100%; margin-right: 10px;" src="{% static 'images/gha_logo.jpg' %}">
+                            {% endif %}
+                            <img style="width: 50px; height: 50px; border-radius: 100%;" src="{{ tourn.user.profile.image.url }}">
+                        </span>
+                    </article>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+    <script>
+        function filterView() {
+            var x = document.getElementById("filter");
+            if (x.style.display === "none") {
+              x.style.display = "block";
+            } else {
+              x.style.display = "none";
+            }
+          }
+    </script>
+{% endblock %}

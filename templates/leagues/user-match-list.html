@@ -1,0 +1,162 @@
+{% extends "base.html" %}
+{% load static %}
+{% load crispy_forms_tags %}
+{% block container %}       
+    <style>
+        #smallTable {
+            display: none;
+        }
+
+        @media (width < 50em) {
+            #largeTable {
+                display: none;
+            }
+
+            #smallTable {
+                display: block;
+            }
+        }
+    </style>       
+    <div class="container" id="leagueBox">
+        <h2>
+            <i onClick="location.href='{% url 'user-league-detail' return %}';" class="fa-solid fa-circle-arrow-left" id="icon"></i>    
+            League Match List
+            <span style="float:right; margin-right:20px; cursor:pointer;">
+                <i onclick="filterView()" class="fa-solid fa-sliders" id="icon"></i>
+            </span>
+        </h2>
+        <form method="get" id="filter" style="display: none;">
+            <fieldset class="grid" style="grid-template-columns: repeat(5, 2fr) repeat(2, 1fr);">
+                <label>Team {{ filter.form.entry }}</label>
+                <label>Played {{ filter.form.played }}</label>
+                <label>Venue {{ filter.form.venue }}</label>
+                <label>Date {{ filter.form.date }}</label>
+                <label>Data? {{ filter.form.data }}</label>
+                <button class="primaryLeague" style="height: calc(1rem* var(--pico-line-height) + var(--pico-form-element-spacing-vertical)* 2 + var(--pico-border-width)* 2); margin-top: 35px;" onclick="submit"><i class="fa-solid fa-filter"></i></button>
+                <input style="margin-top: 35px;" class="secondary" type="button" onclick="location.href='{% url 'league-match-list' return %}';" value="&#128942;" />
+            </fieldset>
+        </form>
+        <hr>
+        <div class="overflow-auto">
+            <table style="border-radius:20px;" id="smallTable">
+                <thead>
+                    <tr>
+                        <th scope="col">Match</th>
+                        <th style="text-align: center;">Score</th>
+                        <th style="text-align: center;">Info</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for match in filter.qs %}
+                        <tr>
+                            <td scope="row">{{ match }}</td>
+                            {% if match.played == True %}
+                                <td style="text-align: center; color: green;"><i class="fa-solid fa-check"></i>&emsp;<a style="color: #705bd7" href="#">{{ match.goalsOne }} - {{ match.goalsTwo }}</a></td>
+                            {% else %}
+                                <td style="text-align: center; color: red;"><i class="fa-solid fa-xmark"></i>&emsp;<a style="color: #705bd7" href="#"><b><u>Add</u></b></a></td>
+                            {% endif %}
+                            {% if match.data == True %}
+                                <td style="text-align: center; color: green;"><i class="fa-solid fa-check"></i>&emsp;<a style="color: #705bd7" href="{% url 'league-match-update' match.id %}">Update</a></td>
+                            {% else %}
+                                <td style="text-align: center; color: red;"><i class="fa-solid fa-xmark"></i>&emsp;<a style="color: #705bd7" href="{% url 'league-match-update' match.id %}"><b>Update</b></a></td>
+                            {% endif %}
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="overflow-auto">
+            <table style="border-radius:20px;" id="largeTable">
+                <thead>
+                    <tr>
+                        <th scope="col">Match</th>
+                        <th style="text-align: center;">Score</th>
+                        <th style="text-align: center;">Venue</th>
+                        <th style="text-align: center;">Date</th>
+                        <th style="text-align: center;">Info</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for match in filter.qs %}
+                        <tr>
+                            <td scope="row">{{ match }}</td>
+                            {% if match.played == True %}
+                                <td style="text-align: center; color: green;"><i class="fa-solid fa-check"></i>&emsp;<a style="color: #705bd7" href="{% url 'league-match-result' match.id %}">{{ match.goalsOne }} - {{ match.goalsTwo }}</a></td>
+                            {% else %}
+                                <td style="text-align: center; color: red;"><i class="fa-solid fa-xmark"></i>&emsp;<a style="color: #705bd7" href="{% url 'league-match-result' match.id %}"><b><u>Add Score</u></b></a></td>
+                            {% endif %}
+                                <td style="text-align: center;">{{ match.venue }}</td>
+                                <td style="text-align: center;">{{ match.date }}</td>
+                            {% if match.data == True %}
+                                <td style="text-align: center; color: green;"><i class="fa-solid fa-check"></i>&emsp;<a style="color: #705bd7" href="{% url 'league-match-update' match.id %}">Update</a></td>
+                            {% else %}
+                                <td style="text-align: center; color: red;"><i class="fa-solid fa-xmark"></i>&emsp;<a style="color: #705bd7" href="{% url 'league-match-update' match.id %}"><b>Update</b></a></td>
+                            {% endif %}
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <hr>
+        <div class="grid">
+            {% if allData %}
+                <button data-target="modal-publish" onclick="toggleModal(event)">Publish League Matches</button>   
+            {% endif %}
+            <button class="secondary" onclick="location.href='{% url 'league-live-score' return %}';">View Live Score Table</button>   
+        </div>
+    </div>
+    <!-- Tourn Delete Modal -->
+    <dialog id="modal-publish">
+        <article>
+            <header>
+            <button
+                aria-label="Close"
+                rel="prev"
+                data-target="modal-delete"
+                onclick="toggleModal(event)"
+            ></button>
+            <h3>Confirm Publish!</h3>
+            </header>
+            <p>
+            Are you sure you want to publish these league matches?
+            </p>
+            <footer>
+                <button
+                    role="button"
+                    class="secondary"
+                    data-target="modal-delete"
+                    onclick="toggleModal(event)"
+                >
+                Cancel</button>
+                <button onclick="publish_item({{ return }});">Publish</button>
+            </footer>
+        </article>
+    </dialog>  
+    
+    <!-- Delete Form & Script 4 Tourn -->
+    <form method="post" action="{% url 'league-publish' return %}" id="publish_form">
+        {% csrf_token %}
+        <input type="hidden" name="pk" id="publish_pk">
+    </form>
+
+    <script>
+        function filterView() {
+            var x = document.getElementById("filter");
+            if (x.style.display === "none") {
+              x.style.display = "block";
+            } else {
+              x.style.display = "none";
+            }
+          }
+
+        function publish_item(pk) {
+            var hidden_item = document.getElementById("publish_pk");
+            hidden_item.value = pk;
+            var form = document.getElementById("publish_form");
+            form.submit();
+        } 
+    </script>
+
+    <script src="{% static "js/modal.js" %}"></script>
+
+{% endblock %}

@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+{% load static %}
+{% block container %}
+    <div class="container" id="leagueBox">
+        <h2>
+            <i onClick="javascript:history.go(-1);" class="fa-solid fa-circle-arrow-left" id="icon"></i>      
+            Generate Matches for {{ league.name }}
+        </h2>
+        <hr>
+        <form method="POST">      
+            {% csrf_token %}    
+            <fieldset>
+                <h4>League Info</h4>
+                <div class="grid">
+                    {{ form.noTeams|as_crispy_field }}
+                    <a href="{% url 'league-update' league.id %}" style="text-decoration: none;" data-tooltip="Change value in 'Update Info'">
+                        {{ form.matchType|as_crispy_field }}
+                    </a>
+                </div>
+                <h4>Timings</h4>
+                {% if league.matchType == "One Way" %}
+                    <div class="grid">
+                        {{ form.matchDuration|as_crispy_field }}
+                    </div>
+                {% else %}
+                    <div class="grid">
+                        {{ form.matchDuration|as_crispy_field }}
+                        {{ form.halftimeDuration|as_crispy_field }}
+                    </div>
+                {% endif %}
+                <hr>
+            </fieldset>
+            <div class="form-group">
+                <input type="button" value="Generate" data-target="modal-wait" onclick="submit(); toggleModal(event);"/>
+            </div>  
+        </form>
+    </div>
+
+    <!--Loading Dialog-->
+    <dialog id="modal-wait">
+        <article>
+            <header>
+            <h3>Your matches are being generated</h3>
+            </header>
+            <progress />
+        </article>
+    </dialog>  
+    
+    <script src="{% static "js/modal.js" %}"></script>
+
+{% endblock %}
+
+

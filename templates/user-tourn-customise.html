@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% load static %}
+{% block container %}
+    <style>
+        .flex-container{
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start !important;
+            position: relative;
+          }
+          
+          .button-container{
+            display: flex;
+            position: absolute;
+            left: 0px;
+            top: 100px;
+          }
+    </style>
+    <div class='container' id='box'>
+        <h2>
+            <i onClick="location.href='{% url 'user-tourn-detail' object.id %}';" class="fa-solid fa-circle-arrow-left" id="icon"></i> 
+            Customise your schedules
+        </h2>
+        <br>
+        <div class="grid">
+            <article id="card">
+                <h4>Match Schedule</h4>
+                <hr>
+                <div class="flex-container">
+                    <p>Drag & drop to switch matches around.</p>
+                    <div class="button-container">
+                        <button class="outline" onclick="location.href = '{% url 'drag-drop' object.id %}';">View &#11166;</button>
+                    </div>
+                </div>
+            </article>
+            <article id="card">
+                <h4>PDF</h4>
+                <hr>
+                <div>
+                    <p>Add timings and rules to the pdf schedules.</p>
+                    <p>Select how the timings of the event will be managed.</p>
+                    <button class="outline" onclick="location.href = '{% url 'schedule-pdf' sched.id %}';">View &#11166;</button>
+                </div>
+            </article>            
+        </div>
+    </div>
+{% endblock %}

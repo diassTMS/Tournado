@@ -1,0 +1,182 @@
+{% extends "base.html" %}
+{% load static %}
+{% block container %}
+    <section class="grid" id="tournPage">
+        {% if object.generatedSchedule == True %}
+            <div class='container' id="box">
+        {% else %}
+            <div class='container' id='first-child'>
+        {% endif %}
+            <h2>
+                <i onClick="location.href='{% url 'user-tourn-list' %}';" class="fa-solid fa-circle-arrow-left" id="icon"></i> 
+                Manage Event
+            </h2>
+            <hr>
+            <article style="padding: 5px;">
+                <h4 align="center" style="margin-top:20px;">{{ object.name }}</h4>
+            </article>
+            <hr>
+            <p>
+                <i class="fa-solid fa-calendar-days"></i>
+                <span>
+                    <b>{{ object.date|date:"l, F dS Y" }}</b>
+                </span>
+            </p>
+            <p>
+                <i class="fa-solid fa-clock"></i>
+                <span>
+                    <b>Timings:</b>
+                        <ul>
+                            <li style="list-style-type: circle;">Meet Time = {{ object.meetTime|date:"H:i" }}</li>
+                            <li style="list-style-type: circle;">Pushback Time = {{ object.startTime|date:"H:i" }}</li>
+                        </ul> 
+                </span>
+            </p> 
+            <p>
+                <i class="fa-solid fa-location-dot"></i>
+                <span>
+                    <b>{{ object.venue }}</b>
+                </span>
+            </p> 
+            <p>
+                <i class="fa-solid fa-tags"></i>
+                <span>
+                    <b>Tags:</b>
+                        <ul>
+                            <li style="list-style-type: circle;">Category = <small id="{{ object.group }}">{{ object.group }}</small></li>
+                            <li style="list-style-type: circle; margin-top:20px;">Level = <small id="{{ object.group }}">{{ object.level }}</small></li>
+                        </ul> 
+                </span>
+            </p>
+        </div>
+        <div class='container' id="box" style="padding-bottom: 20px; padding-left:0px; padding-right:0px; padding-top:0px;">
+            <article style="border-radius: 13px;">
+                <table style="margin-top: 5px;">
+                    <thead>
+                        <tr>
+                            <th scope="col"><strong>Event Entries</strong></th>
+                            <th style="text-align: center; cursor: pointer;" data-tooltip="Manual Seeding">Rank</th>
+                            {% if object.teamsheets %}
+                                <th style="text-align: center; cursor: pointer;" data-tooltip="Team Sheet Uploaded">TS</th>
+                            {% endif %}
+                            <th scope="col" style="text-align:center; width:30px;"></th>
+                            <th scope="col" style="text-align:center; width:30px;"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for entry in entries %}
+                            <tr>
+                                <th scope="row">{{ entry.teamName }}</th>
+                                <th style="text-align:center;">{{ entry.rank }}</th>
+                                {% if object.teamsheets %}
+                                    {% if entry.teamsheet == "" %}
+                                        <td style="text-align:center; color: #AF291D;"><i class="fa-solid fa-x"></i></td>
+                                    {% elif entry.teamsheet == None %}
+                                        <td style="text-align:center; color: #AF291D;"><i class="fa-solid fa-x"></i></td>
+                                    {% else %}
+                                        <td style="text-align:center; color: green;"><i class="fa-solid fa-check"></i></td>
+                                    {% endif %} 
+                                {% endif %}                           
+                                <td style="text-align:center; cursor:pointer;"><i onclick="location.href='{% url 'entry-update' entry.id %}';" class="fa-solid fa-pen-to-square" id="icon"></i></td>
+                                <td style="text-align:center; cursor:pointer;"><i onclick="location.href='{% url 'entry-delete' entry.id %}'" class="fa-solid fa-trash-can" id="icon" style="color: #AF291D;"></i></td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <th scope="row">Total: {{ num }} </th>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            {% if object.teamsheets %}
+                                <td></td>
+                            {% endif %}
+                        </tr>
+                    </tfoot>
+                </table>
+            </article>
+            <button style="width:93%; margin-left: 20px;" onclick="location.href='{% url 'entry-create' object.id %}';">Add Entry <i class="fa-solid fa-square-plus"></i></button>
+        </div>
+        {% if object.generatedSchedule == True %}
+            <div class='container' id="box">
+                <h4>Event Scoring</h4>
+                <hr>
+                <div class="grid" id="tournOptions">
+                    <button onclick="location.href='{% url 'match-table' object.id %}';">Match Scoring</button>
+                    {% if live %}
+                        <button class="secondary" onclick="location.href='{% url 'live-score' object.id %}';">View Live Score Table</button>   
+                    {% else %} 
+                        <button disabled class="secondary" onclick="location.href='{% url 'live-score' object.id %}';">View Live Score Table</button>   
+                    {% endif %}
+                </div>
+            </div>
+        {% endif %}
+        <div class='container' id='box'>
+            <div class="grid" id="tournPage">
+                {% if object.generatedSchedule == False %}
+                    <button onclick="location.href='{% url 'schedule-create' object.id %}';">Generate Schedule</button>
+                    <button class="secondary" onclick="location.href='{% url 'tourn-update' object.id %}';">Update Info</button>
+                    <button style="background-color: #AF291D; color: white;" data-target="modal-delete" onclick="toggleModal(event)">Delete Event <i class="fa-solid fa-trash-can" id="icon"></i></button>
+                {% else %}
+                    <a role="button" href="{% url 'pdf' object.id %}" target="_blank">Match Schedule <i class="fa-solid fa-file-pdf"></i></a>
+                    {% if object.umpires %}
+                        <a role="button" href="{% url 'umpire-pdf' object.id %}" target="_blank">Umpire Schedule <i class="fa-solid fa-file-pdf"></i></a>
+                    {% endif %}
+                    <button onclick="location.href='{% url 'user-tourn-customise' object.id %}';">Customisation</button>
+                    <button onclick="location.href='{% url 'schedule-create' object.id %}';">Regenerate Schedule</button>
+                    <button class="secondary" onclick="location.href='{% url 'tourn-update' object.id %}';">Update Info</button>
+                    {% if object.umpires %}
+                        <button style="background-color: #AF291D; color: white;" data-target="modal-delete" onclick="toggleModal(event)">Delete Event <i class="fa-solid fa-trash-can" id="icon"></i></button>
+                    {% else %}
+                        <button style="background-color: #AF291D; color: white; grid-column: span 2;" data-target="modal-delete" onclick="toggleModal(event)">Delete Event <i class="fa-solid fa-trash-can" id="icon"></i></button>
+                    {% endif %}
+                {% endif %}
+            </div>
+        </div>
+    </section>
+    
+    <!-- Tourn Delete Modal -->
+    <dialog id="modal-delete">
+        <article>
+            <header>
+            <button
+                aria-label="Close"
+                rel="prev"
+                data-target="modal-delete"
+                onclick="toggleModal(event)"
+            ></button>
+            <h3>Confirm Delete!</h3>
+            </header>
+            <p>
+            Are you sure you want to delete this event? This action cannot be reversed!
+            </p>
+            <footer>
+                <button
+                    role="button"
+                    class="secondary"
+                    data-target="modal-delete"
+                    onclick="toggleModal(event)"
+                >
+                Cancel</button>
+                <button style="background-color: #AF291D; color: white;" onclick="delete_item({{ object.pk }});">Delete</button>
+            </footer>
+        </article>
+        </dialog>  
+        
+        <!-- Delete Form & Script 4 Tourn -->
+        <form method="post" action="{% url 'tourn-delete' object.id %}" id="delete_form">
+            {% csrf_token %}
+            <input type="hidden" name="pk" id="delete_pk">
+        </form>
+
+        <script>
+            function delete_item(pk) {
+                var hidden_item = document.getElementById("delete_pk");
+                hidden_item.value = pk;
+                var form = document.getElementById("delete_form");
+                form.submit();
+            } 
+        </script>
+        <script src="{% static "js/modal.js" %}"></script>
+
+{% endblock%}

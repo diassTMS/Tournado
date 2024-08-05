@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+{% block container %}              
+    <div class="container" id="box">
+        <h2>
+            <i onClick="location.href='{% url 'match-table' return %}';" class="fa-solid fa-circle-arrow-left" id="icon"></i>    
+            Knockout Match List
+        </h2>
+        <hr>
+        <div class="grid" id="tournPage">
+            {% for match in matches %}
+                <article onclick="location.href='{% url 'match-update' match.id %}';">
+                    <h4 style="color: #0172AD; cursor: pointer;"><u>{{ match }}</u></h4>
+                    <hr>
+                    <p>Type = {{ match.type }}</p>
+                    <p>Pitch = {{ match.pitch }}</p>
+                    <p>Timing = {{ match.start|time:"H:i" }} - {{ match.end|time:"H:i" }}</p>
+                </article>
+            {% endfor %}
+        </div>
+    </div>
+{% endblock %}

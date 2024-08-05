@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+{% load static %}
+{% block container %}
+    <section class="grid" id="tournPage">
+        <div class='container' id='first-child'>
+            <h2>
+                <i onClick="javascript:history.go(-1);" class="fa-solid fa-circle-arrow-left" id="icon"></i> 
+                Event Details
+            </h2>
+            <hr>
+            <article style="padding: 5px;">
+                <h4 align="center" style="margin-top:20px;">{{ object.name }}</h4>
+            </article>
+            <hr>
+            <p>
+                <i class="fa-solid fa-calendar-days"></i>
+                <span>
+                    <b>{{ object.date|date:"l, F dS Y" }}</b>
+                </span>
+            </p>
+            <p>
+                <i class="fa-solid fa-clock"></i>
+                <span>
+                    <b>Timings:</b>
+                        <ul>
+                            <li style="list-style-type: circle;">Meet Time = {{ object.meetTime|date:"H:i" }}</li>
+                            <li style="list-style-type: circle;">Pushback Time = {{ object.startTime|date:"H:i" }}</li>
+                        </ul> 
+                </span>
+            </p> 
+            <p>
+                <i class="fa-solid fa-location-dot"></i>
+                <span>
+                    <b>{{ object.venue }}</b>
+                </span>
+            </p> 
+            <p>
+                <i class="fa-solid fa-tags"></i>
+                <span>
+                    <b>Tags:</b>
+                        <ul>
+                            <li style="list-style-type: circle;">Category = <small id="{{ object.group }}">{{ object.group }}</small></li>
+                            <li style="list-style-type: circle; margin-top:20px;">Level = <small id="{{ object.group }}">{{ object.level }}</small></li>
+                        </ul> 
+                </span>
+            </p>
+        </div>
+        <div class='container' id='box'>
+            <h2>Tournament Manager</h2>
+            <hr>
+            <div class="grid" style="grid-template-columns: 1fr 4fr 1fr;">
+                <img id="img" src="{{ object.user.profile.image.url }}">
+                <hgroup style="margin-top:10px; text-align: center;">
+                    <h4>{{ object.user.first_name }} {{ object.user.last_name }}</h4>
+                    <p>        
+                        <i class="fa-solid fa-envelope"></i>
+                        <span>
+                            <b>{{ object.user.email }}</b>
+                        </span><br>
+                        <i class="fa-solid fa-phone"></i>
+                        <span>
+                            <b>{{ object.user.profile.phone_number }}</b>
+                        </span>
+                    </p> 
+                </hgroup>
+                {% if object.user.username == "Hockey_Fever" %}
+                    <img id="img" src="{% static 'images/gha_logo.jpg' %}">
+                {% endif %}
+            </div>
+        </div>
+        <div class='container' id='box'>
+            <div class="grid" id="tournOptions">
+                {% if user == object.user %}
+                    <button style="height:60px;" onclick="location.href='{% url 'user-tourn-detail' object.id %}';">Manage Event</button>
+                {% elif entered %}
+                    <button class="secondary" style="height:60px;" onclick="location.href='{% url 'entry-create' object.id %}';">Enter Event Again</button>
+                {% elif request.user.is_authenticated %}
+                    <button style="height:60px;" onclick="location.href='{% url 'entry-create' object.id %}';">Enter Event</button>
+                {% endif %}
+                {% if object.generatedSchedule == True %}
+                    <a role="button" href="{% url 'pdf' object.id %}" target="_blank" >Match Schedule <i class="fa-solid fa-file-pdf"></i></a>
+                    {% if object.umpires %}
+                        <a role="button" href="{% url 'umpire-pdf' object.id %}" target="_blank" >Umpire Schedule <i class="fa-solid fa-file-pdf"></i></a>
+                    {% endif %}
+                {% else %}
+                    <button disabled style="height:60px;">Match Schedule</button>
+                {% endif %}
+                {% if live == True %}
+                    <button style="height:60px;" onclick="location.href='{% url 'live-score' object.id %}';">Live Score Table</button>
+                {% else %}
+                    <button disabled style="height:60px;">Live Score Table</button>
+                {% endif %}
+            </div>
+        </div>
+    </section>
+{% endblock%}

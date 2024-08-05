@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% load static %}
+{% load crispy_forms_tags %}
+{% block container %} 
+    <div class="container" id="leagueBox">
+        <h2>
+            <i onClick="location.href='{% url 'league-detail' return %}';" class="fa-solid fa-circle-arrow-left" id="icon"></i>    
+            League Match List
+            <span style="float:right; margin-right:20px; cursor:pointer;">
+                <i onclick="filterView()" class="fa-solid fa-sliders" id="icon"></i>
+            </span>
+        </h2>
+        <form method="get" id="filter" style="display: none;">
+            <fieldset class="grid" style="grid-template-columns: repeat(5, 2fr) repeat(2, 1fr);">
+                <label>Team {{ filter.form.entry }}</label>
+                <label>Venue {{ filter.form.venue }}</label>
+                <label>Date {{ filter.form.date }}</label>
+                <button class="primaryLeague" style="height: calc(1rem* var(--pico-line-height) + var(--pico-form-element-spacing-vertical)* 2 + var(--pico-border-width)* 2); margin-top: 35px;" onclick="submit"><i class="fa-solid fa-filter"></i></button>
+                <input style="margin-top: 35px;" class="secondary" type="button" onclick="location.href='{% url 'league-match-list' return %}';" value="&#128942;" />
+            </fieldset>
+        </form>
+        <hr>
+        <div class="overflow-auto">
+            <table style="border-radius:20px;">
+                <thead>
+                    <tr>
+                        <th style="min-width: 150px;" scope="col">Match</th>
+                        <th style="min-width: 150px; text-align: center;">Venue</th>
+                        <th style="min-width: 120px; text-align: center;">Date</th>
+                        <th style="text-align: center;">Start</th>
+                        <th style="text-align: center;">Pitch</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for match in filter.qs %}
+                        <tr>
+                            <td scope="row">{{ match }}</td>
+                            <td style="text-align: center;">{{ match.venue }}</td>
+                            <td style="text-align: center;">{{ match.date }}</td>
+                            <td style="text-align: center;">{{ match.start|date:"H:i" }}</td>
+                            <td style="text-align: center;">{{ match.pitch }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <script>
+        function filterView() {
+            var x = document.getElementById("filter");
+            if (x.style.display === "none") {
+              x.style.display = "block";
+            } else {
+              x.style.display = "none";
+            }
+        }
+    </script>
+{% endblock %}

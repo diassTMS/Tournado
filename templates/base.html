@@ -1,0 +1,123 @@
+{% load i18n %}
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="{% static "css/pico/pico.min.css" %}">
+        <link rel="stylesheet" href="{% static "css/tournado.css" %}">
+        <script src="https://kit.fontawesome.com/9ce675bef3.js" crossorigin="anonymous"></script>
+
+        <title>Tournado</title>
+    </head>
+  <body>
+    <header>
+      <nav class="container">
+        <img src="{% static "images/tournadoLogo.png" %}" style="border-radius:100%;width:75px;height:75px;margin-left:10px;">
+        <hgroup style="margin-right: 200px;">
+            <h1>Tournado</h1>
+            <p>A tournament management system.</p>
+        </hgroup>
+        <input class="menu-btn" type="checkbox" id="menu-btn" />
+		<label class="menu-icon" for="menu-btn">
+			<span role="button" class="outline secondary" style="font-size: 1.8em; color: light-dark(#2D3138, #F0F1F3); border: none;"><i class="fa-solid fa-bars"></i></span>
+		</label>
+        <ul class="menu">
+            <li class="item"><button class="outline secondary" onclick="location.href = '{% url 'home' %}';">Home</button></li>
+            <li class="item">
+                <details class="dropdown">
+                  <summary role="button" class="outline secondary">Results</summary>
+                  <ul dir="rtl" class="menu">
+                    <li class="item"><a href="{% url 'past-events' %}">Past</a></li>
+                    <li class="item"><a href="{% url 'live-events' %}">Live</a></li>
+                  </ul>
+                </details>
+              </li>
+            {% if user.is_authenticated %}
+                <li class="item"><button class="outline secondary" onclick="location.href = '{% url 'account' %}';">Account</button></li>
+                <img style="width: 45px; height:45px; margin-right: 10px; margin-left: 10px; border-radius: 100%;" src="{{ user.profile.image.url }}">
+            {% else %}
+                <li class="item"><button onclick="location.href = '{% url 'login' %}';">Log In</button></li>
+            {% endif %}
+            <li class="item">
+                <div class="container">
+                    <a href="#" id="light" onclick="themeSwitch()" data-theme-switcher="light" data-tooltip="Lumos!" data-placement="bottom">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-moon-stars" width="44" height="44" viewBox="0 0 24 24" stroke-width="1.5" stroke="#D1E5FB" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                            <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
+                            <path d="M17 4a2 2 0 0 0 2 2a2 2 0 0 0 -2 2a2 2 0 0 0 -2 -2a2 2 0 0 0 2 -2" />
+                            <path d="M19 11h2m-1 -1v2" />
+                        </svg>
+                    </a>
+                    <a href="#" id="dark" onclick="themeSwitch()" data-theme-switcher="dark" data-tooltip="Nox!" data-placement="bottom">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-sun" width="44" height="44" viewBox="0 0 24 24" stroke-width="1.5" stroke="#061E2F" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                            <path d="M12 12m-4 0a4 4 0 1 0 8 0a4 4 0 1 0 -8 0" />
+                            <path d="M3 12h1m8 -9v1m8 8h1m-9 8v1m-6.4 -15.4l.7 .7m12.1 -.7l-.7 .7m0 11.4l.7 .7m-12.1 -.7l-.7 .7" />
+                        </svg>
+                    </a>
+                </div>
+            </li>
+        </ul>
+    </nav>
+    </header>
+    <main role="main" class="container">
+        <div class="row">
+            <div class="col-md-8">
+                {% if messages %}                                                                                                                                                             
+                    <article id="msg" class="messages">
+                        {% for message in messages %}
+                            <li{% if message.tags %} class="{{ message.tags }}"{% endif %}><b>{{ message }}</b><span onclick="window.location.reload();" style="float:right; cursor:pointer;">&#128942;</span></li>
+                        {% endfor %}
+                    </article>
+                {% endif %}
+                
+            </div>
+        </div>
+        {% block container %}{% endblock %}
+    </main>
+    <br>
+    <br>
+    <footer style="padding: 40px; background-color:  #1c212c;">
+        <div class='container'>
+            <hr style="border-color: #B3B9C5;">
+            <div class="grid" >
+                <div>
+                    <p style="color: #B3B9C5;"><b>&#169; Copyright Tournado</b></p>
+                    <p style="color: #B3B9C5;">Contact us at admin@tournado.co.uk</p>
+                    <p style="color: #B3B9C5;"><a href="{% static 'docs/Tournado Privacy Policy.pdf' %}" target="_blank" style="text-decoration: none;">Privacy Policy</a></p>
+                </div>
+                <div>
+                    <p style="color: #B3B9C5;"><b>Partnered with:</b></p>
+                    <ul>
+                        <li style="color: #B3B9C5; list-style-type: circle">Hockey Fever</li>
+                        <li style="color: #B3B9C5; list-style-type: circle">GHA</li>
+                    </ul>
+                </div>
+                <div>
+                    <p style="color: #B3B9C5;"><b>England Hockey:</b></p>
+                    <ul>
+                        <li style="color: #B3B9C5; list-style-type: circle"><a style="text-decoration: none;" href="https://www.englandhockey.co.uk/governance" target="_blank">Governance</a></li>
+                        <li style="color: #B3B9C5; list-style-type: circle"><a style="text-decoration: none;" href="https://www.englandhockey.co.uk/governance/safeguarding" target="_blank">Safeguarding</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <p style="color: #B3B9C5;"><b>Rules:</b></p>
+                    <ul>
+                        <li style="color: #B3B9C5; list-style-type: circle"><a style="text-decoration: none;" href="{% static 'docs/In2Hockey Team Sheet.pdf' %}" target="_blank">Team Sheet Template</a></li>
+                        <li style="color: #B3B9C5; list-style-type: circle"><a style="text-decoration: none;" href="{% static 'docs/In2Hockey-7-s-side-Rules.pdf' %}" target="_blank">In2Hockey Rules of Play</a></li>
+                        <li style="color: #B3B9C5; list-style-type: circle"><a style="text-decoration: none;" href="{% static 'docs/Pitchside_Code_of_Conduct.pdf' %}" target="_blank">In2Hockey Code of Conduct</a></li>
+                    </ul>
+                </div>  
+            </div>       
+            <hr style="border-color: #B3B9C5;">     
+        </div>    
+    </footer>
+      
+    <!-- Minimal theme switcher -->
+    <script src="{% static "js/minimal-theme-switcher.js" %}"></script>
+    <script src="{% static "js/modal.js" %}"></script>
+  </body>
+</html>

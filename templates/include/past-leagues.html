@@ -1,0 +1,21 @@
+{% if leagues|length == 0 %}
+    <div class="content-section">
+        <h3>None</h3>
+    </div>
+{% endif %}
+{% if leagues|length > 1 %}
+    <div class="grid" id="tournPage">
+{% else %}
+    <div class="grid" style="grid-template-columns: 1fr;">
+{% endif %}
+    {% for league in leagues %}
+        <article>
+            <hgroup>
+                <h4><a href="{% url 'league-detail' league.id %}">{{ league.name }}</a></h4>
+                <p>{{ league.startDate|date:"M dS Y" }} - {{ league.endDate|date:"M dS Y" }}</p>
+            </hgroup>
+            <hr>
+            <button style="width: 100%;" onclick="location.href='{% url 'league-live-score' league.id %}';">View Past Results</button>   
+        </article>
+    {% endfor %}
+</div>

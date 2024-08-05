@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block container %}
+    <div class="container" id="box">
+        <h2>Live Events</h2>
+        <hr>
+        {% if tournaments|length == 0 %}
+            <div class="content-section">
+                <h3>No events are currently live</h3>
+            </div>
+        {% endif %}
+        {% if tournaments|length > 1 %}
+            <div class="grid" id="tournPage">
+        {% else %}
+            <div class="grid" style="grid-template-columns: 1fr 1fr;">
+        {% endif %}
+            {% for tourn in tournaments %}
+                <article>
+                    <hgroup>
+                        <h4><a href="{% url 'tourn-detail' tourn.id %}">{{ tourn.name }}</a></h4>
+                        <p>{{ tourn.date|date:"D, M dS Y" }} - {{ tourn.meetTime|date:"H:i" }}</p>
+                    </hgroup>
+                    <hr>
+                    <button style="width: 100%;" onclick="location.href='{% url 'live-score' tourn.id %}';">View Score Table</button>   
+                </article>
+            {% endfor %}
+        </div>
+    </div>
+    <br>
+    <div class="container" id="leagueBox">
+        <h2>Current Leagues</h2>
+        <hr>
+        {% if leagues|length == 0 %}
+            <div class="content-section">
+                <h3>No leagues are currently ongoing</h3>
+            </div>
+        {% endif %}
+        {% if leagues|length > 1 %}
+            <div class="grid" id="tournPage">
+        {% else %}
+            <div class="grid" style="grid-template-columns: 1fr 1fr;">
+        {% endif %}
+            {% for league in leagues %}
+                <article>
+                    <hgroup>
+                        <h4><a href="{% url 'league-detail' league.id %}">{{ league.name }}</a></h4>
+                        <p>{{ league.startDate|date:"M dS Y" }} - {{ league.endDate|date:"M dS Y" }}</p>
+                    </hgroup>
+                    <hr>
+                    <button style="width: 100%;" onclick="location.href='{% url 'league-live-score' league.id %}';">View Score Table</button>   
+                </article>
+            {% endfor %}
+        </div>
+    </div>
+{% endblock %}

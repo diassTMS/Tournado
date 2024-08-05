@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+{% load static %}
+{% block container %}
+    <div class="container" id="box">
+        <h2>
+            <i onClick="javascript:history.go(-1);" class="fa-solid fa-circle-arrow-left" id="icon"></i>      
+            Generate Schedule for {{ tournament }}
+        </h2>
+        <hr>
+        <form method="POST">      
+            {% csrf_token %}    
+            <fieldset>
+                <h4>Schedule Info</h4>
+                <div class="grid">
+                    {{ form.noTeams|as_crispy_field }}
+                    {{ form.noDivisions|as_crispy_field }}
+                    {{ form.noPitches|as_crispy_field }}
+                </div>
+                <hr>
+                <h4>Timings</h4>
+                <div class="grid">
+                    {{ form.startTime|as_crispy_field }}
+                    <a href="{% url 'tourn-update' tournament.id %}" style="text-decoration: none;" data-tooltip="Change value in 'Update Info'">
+                        {{ form.matchType|as_crispy_field }}
+                    </a>
+                </div>
+                {% if tournament.matchType == "One Way" %}
+                    <div class="grid">
+                        {{ form.matchDuration|as_crispy_field }}
+                        {{ form.breakDuration|as_crispy_field }}
+                    </div>
+                {% else %}
+                    <div class="grid">
+                        {{ form.matchDuration|as_crispy_field }}
+                        {{ form.halftimeDuration|as_crispy_field }}
+                        {{ form.breakDuration|as_crispy_field }}
+                    </div>
+                {% endif %}
+                <hr>
+                <h4>Customisation</h4>
+                <div class="grid">
+                    <div>
+                        {{ form.knockoutRounds|as_crispy_field }}
+                        <br>
+                        {{ form.liveScores|as_crispy_field }}
+                        {{ form.umpires|as_crispy_field }}
+                    </div>
+                    <div>
+                        <article>
+                            <p>Both 'Final' and 'Playoffs, Semis & Final' options can only be selected if there are two divisions.</p>
+                            <p>'Semis' option can be selected if there are two, three or four divisions.</p>
+                        </article>
+                    </div>
+                </div>
+                <hr>
+            </fieldset>
+            <div class="form-group">
+                <input type="button" value="Generate" data-target="modal-wait" onclick="submit(); toggleModal(event);"/>
+            </div>  
+        </form>
+    </div>
+
+    <!--Loading Dialog-->
+    <dialog id="modal-wait">
+        <article>
+            <header>
+            <h3>Your schedule is being generated</h3>
+            <hr>
+            <p>Max Wait Time: 15 Seconds</p>
+            </header>
+            <progress />
+        </article>
+    </dialog>  
+    
+    <script src="{% static "js/modal.js" %}"></script>
+
+{% endblock %}
+
+

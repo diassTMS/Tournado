@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% load static %}
+{% block container %}
+    <section>
+        <div class='container' id='box'>
+            <h2>Upcoming Events<span style="float:right; margin-right:20px; cursor:pointer;"><i onclick="location.href='{% url 'tourn-list' %}';" class="fa-solid fa-circle-arrow-right" id="icon"></i></span></h2>
+            <hr>
+            <div class="grid" id="tournGrid">
+                {% for tourn in tournaments  %}
+                    <article>
+                        <hgroup>
+                            <h4><a href="{% url 'tourn-detail' tourn.id %}">{{ tourn.name }}</a></h4>
+                            <p>{{ tourn.date|date:"D, M dS Y" }} - {{ tourn.meetTime|date:"H:i" }}</p>
+                        </hgroup>
+                        <hr>
+                        <p>
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-map-pin-filled" width="28" height="28" viewBox="0 0 24 24" stroke-width="1.5" stroke="#01aaff" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                            <path d="M18.364 4.636a9 9 0 0 1 .203 12.519l-.203 .21l-4.243 4.242a3 3 0 0 1 -4.097 .135l-.144 -.135l-4.244 -4.243a9 9 0 0 1 12.728 -12.728zm-6.364 3.364a3 3 0 1 0 0 6a3 3 0 0 0 0 -6z" stroke-width="0" fill="currentColor" />
+                            </svg>
+                            <span>
+                                {{ tourn.venue }}
+                            </span>
+                        </p>
+                        <p>
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-clock-filled" width="28" height="28" viewBox="0 0 24 24" stroke-width="1.5" stroke="#01aaff" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                            <path d="M17 3.34a10 10 0 1 1 -14.995 8.984l-.005 -.324l.005 -.324a10 10 0 0 1 14.995 -8.336zm-5 2.66a1 1 0 0 0 -.993 .883l-.007 .117v5l.009 .131a1 1 0 0 0 .197 .477l.087 .1l3 3l.094 .082a1 1 0 0 0 1.226 0l.094 -.083l.083 -.094a1 1 0 0 0 0 -1.226l-.083 -.094l-2.707 -2.708v-4.585l-.007 -.117a1 1 0 0 0 -.993 -.883z" stroke-width="0" fill="currentColor" />
+                            </svg>
+                            <span>
+                                {{ tourn.startTime|date:"H:i" }}
+                            </span>
+                        </p>
+                        <hr>
+                        <small id="{{ tourn.group }}">{{ tourn.group }}</small>
+                        <span style="float:right; margin-right:20px;">
+                            {% if tourn.user.username == "Hockey_Fever" %}
+                                <img style="width: 50px; height: 50px; border-radius: 100%; margin-right: 10px;" src="{% static 'images/gha_logo.jpg' %}">
+                            {% endif %}
+                            <img style="width: 50px; height: 50px; border-radius: 100%;" src="{{ tourn.user.profile.image.url }}">
+                        </span>
+                    </article>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+    <section>
+        <div class='container' id='leagueBox'>
+            <h2>Ongoing Leagues<span style="float:right; margin-right:20px; cursor:pointer;"><i onclick="location.href='{% url 'league-list' %}';" class="fa-solid fa-circle-arrow-right" id="icon"></i></span></h2>
+            <hr>
+            <div class="grid" id="tournPage">
+                {% for league in leagues  %}
+                    <article>
+                        <hgroup>
+                            <h4><a href="{% url 'league-detail' league.id %}">{{ league.name }}</a></h4>
+                            <p>{{ league.startDate|date:"M dS Y" }} - {{ league.endDate|date:"M dS Y" }}</p>
+                        </hgroup>
+                        <hr>
+                        <small id="{{ league.group }}">{{ league.group }}</small>
+                    </article>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+{% endblock %}

@@ -1,0 +1,39 @@
+{% extends "base.html" %}    <!--Creating form html template for user registration-->
+{% load crispy_forms_tags %}
+{% block container %}               <!--Using bootstrap from main base template-->
+    {% if league %}
+        <div class="container" id="leagueBox">
+    {% else %}
+        <div class="container" id="box">
+    {% endif %}
+        <h2>
+            {% if return == 'account' %}
+                <i onClick="location.href='{% url 'account' %}';" class="fa-solid fa-circle-arrow-left" id="icon"></i> 
+            {% elif league %}
+                <i onClick="location.href='{% url 'user-league-detail' return %}';" class="fa-solid fa-circle-arrow-left" id="icon"></i> 
+            {% else %}
+                <i onClick="location.href='{% url 'user-tourn-detail' return %}';" class="fa-solid fa-circle-arrow-left" id="icon"></i> 
+            {% endif %}
+            
+            Delete Entry
+        </h2>
+        <hr>
+        <form method="POST">     
+            {% csrf_token %}      
+            <fieldset class="form-group">
+                <h3>Are you sure you want to delete this entry?</h3>
+                <h4>{{ entry }}</h4>
+            </fieldset>
+            <div class="grid">
+                <button style="background-color: #AF291D; color: white;" onclick="delete_item({{ object.pk }});">Yes, Delete <i class="fa-solid fa-trash-can" id="icon"></i></button>
+                {% if return == 'account' %}
+                    <a role="button" class="secondary" onClick="location.href='{% url 'account' %}';">Cancel</a>
+                {% elif league %}
+                    <a role="button" class="secondary" onClick="location.href='{% url 'user-league-detail' return %}';">Cancel</a>
+                {% else %}
+                    <a role="button" class="secondary" onClick="location.href='{% url 'user-tourn-detail' return %}';">Cancel</a>
+                {% endif %}
+            </div>
+        </form>
+    </div>
+{% endblock %}

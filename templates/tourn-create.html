@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+{% block container %}  
+    <style>
+        #fourdouble {
+            grid-template-columns: 1fr 1fr 1fr 1fr;
+        }
+        #double {
+            grid-template-columns: 1fr 1fr;
+        }
+        @media (width < 50em) {
+            #fourdouble {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+    </style>            
+    <div class="container" id="box">
+        <h2>
+            {% if return == 'account' %}
+                <i onClick="location.href='{% url 'account' %}';" class="fa-solid fa-circle-arrow-left" id="icon"></i> 
+            {% else %}
+                <i onClick="location.href='{% url 'user-tourn-detail' return %}';" class="fa-solid fa-circle-arrow-left" id="icon"></i> 
+            {% endif %}
+            
+            {{ title }}
+        </h2>
+        <hr>
+        <form method="POST">      
+            {% csrf_token %}    
+            <fieldset>
+                <h4>Info</h4>
+                <div>
+                    {{ form.name|as_crispy_field }}
+                </div>
+                <div class="grid" id="fourdouble">
+                    {{ form.age|as_crispy_field }}
+                    {{ form.gender|as_crispy_field }}
+                    {{ form.level|as_crispy_field }}
+                    {{ form.group|as_crispy_field }}
+                </div>
+                <hr>
+                <h4>Timings</h4>
+                <div class="grid" id="fourdouble">
+                    {{ form.date|as_crispy_field }}
+                    {{ form.meetTime|as_crispy_field }}
+                    {{ form.startTime|as_crispy_field }}
+                    {{ form.matchType|as_crispy_field }}
+                </div>
+                <hr>
+                <h4>Logistics</h4>
+                <div>
+                    {{ form.venue|as_crispy_field }}
+                </div>
+                <div class="grid" id="double">
+                    {{ form.noPitches|as_crispy_field }}
+                    {{ form.noDivisions|as_crispy_field }}
+                </div>
+                <hr>
+                <h4>Entry Fee</h4>
+                <div role="group">
+                    <input disabled style="width: 52px; color: black;" value="£"/>
+                    {{ form.entryPrice }}
+                </div>
+                {{ form.vat|as_crispy_field }}
+                <hr>
+                <div class="grid">
+                    <div>
+                        <h4>Customisation</h4>
+                        {{ form.knockoutRounds|as_crispy_field }}                       
+                    </div>
+                    <div>
+                        <article style="margin-top: 10px;">
+                            <p>No knockout options are available for three divisions.</p>
+                            <p>Just 'Final' option cannot be selected for four divisions.</p>
+                        </article>
+                    </div>
+                </div>
+                <hr>
+                <div class="grid" style="margin-top: 10px;">
+                    <div>
+                        <article>
+                            <p><b>Prices:</b></p>
+                            <ul>
+                                <li>Basic Event = £40</li>
+                                <li>Per Add-on = +£5</li>
+                            </ul>
+                        </article>
+                    </div>
+                    <div>
+                        <h4>Event Add-ons</h4>
+                        {{ form.liveScores|as_crispy_field }}
+                        {{ form.umpires|as_crispy_field }} 
+                        {{ form.teamsheets|as_crispy_field }}                       
+                    </div>
+                </div>
+                <hr>
+            </fieldset>
+            <div class="form-group">
+                <button type="submit">Save</button>  <!--Enter button-->
+            </div>  
+        </form>
+    </div>
+{% endblock %}
+

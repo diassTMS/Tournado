@@ -1,0 +1,88 @@
+<html>
+    <head>
+        <title>PDF</title>
+    </head>
+    <style>
+        body {
+            font-weight: 200;
+            font-size: 14px;
+        }
+        .header {
+            font-size: 20px;
+            font-weight: 100;
+            text-align: center;
+            padding-top: 20px;
+            color: #2F2F92;
+            font-size: 16px;
+        }
+        table {
+            table-layout: auto;
+        }
+        th {
+            text-align: center;
+            width: auto !important;
+        }
+        td {
+            text-align:center; 
+            width: auto !important;
+        }
+    </style>
+    <body>
+        <div class='wrapper'>
+            <div class="grid">
+                <div class='header'>
+                    <h1 style="font-size: 26px;">INVOICE</h1>
+                    <p>Hockey Fever</p>
+                </div>
+                <div class="container">
+                    <div>
+                        <p><b>Invoice Date</b></p>
+                        <p>{{ date }}</p>
+                    </div>
+                    <div>
+                        <p><b>Invoice Number</b></p>
+                        <p>INV-xxxxx</p>
+                    </div>
+                    <div>
+                        <p><b>Reference</b></p>
+                        <p>tbd</p>
+                    </div>
+                </div>
+                <div>
+                    <p>Flare Sports Ltd</p>
+                    <p>Attention: Lucie Archer/Richie Owen</p>
+                    <p>7 Ridge Grove</p>
+                    <p>Brockworth</p>
+                    <p>Gloucestershire</p>
+                    <p>GL3 5AG</p>
+                </div>
+            </div>
+            <hr>
+            <br>
+            <div class="overflow-auto">
+                <table style="border: 1px solid;">
+                    <thead>
+                        <tr>
+                            <th scope="col" style="text-align:center; border: 1px solid;">Description</th>
+                            <th scope="col" style="text-align:center; border: 1px solid;">Quantity</th>
+                            <th scope="col" style="text-align:center; border: 1px solid;">Unit Price</th>
+                            <th scope="col" style="text-align:center; border: 1px solid;">VAT</th>
+                            <th scope="col" style="text-align:center; border: 1px solid;">Amount GBP</th>
+                        </tr>
+                    </thead>
+                    <b><hr></b>
+                    <tbody>
+                        {% for row in invoice %}
+                            <tr>
+                                {% for item in row %}
+                                    <td style="text-align:center; border: 1px solid;">{{ item }}</td>
+                                {% endfor %}
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <br>
+        </div>
+    </body>
+</html>

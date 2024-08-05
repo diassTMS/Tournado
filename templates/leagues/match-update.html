@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+{% block container %}              
+    <div class="container" id="leagueBox">
+        <h2>
+            <i onClick="location.href='{% url 'league-match-list' league.id %}';" class="fa-solid fa-circle-arrow-left" id="icon"></i>    
+            Match Update
+        </h2>
+        <hr>
+        <form method="POST">      
+            {% csrf_token %}    
+            <fieldset>
+                <div class="grid">
+                    {{ form.league|as_crispy_field }}
+                </div>
+                <div class="grid" style="grid-template-columns: 1fr 1fr;">
+                    {{ form.entryOne|as_crispy_field }}
+                    {{ form.entryTwo|as_crispy_field }}
+                </div>
+                <hr>
+                <div class="grid" style="grid-template-columns: 1fr 1fr;">
+                    {{ form.venue|as_crispy_field }}
+                    {{ form.pitch|as_crispy_field }}
+                    {{ form.date|as_crispy_field }}
+                    {{ form.start|as_crispy_field }}
+                </div>
+            </fieldset>
+            <div>
+                <button type="submit">Save</button>  <!--Enter button-->
+            </div>  
+        </form>
+    </div>
+{% endblock %}
+

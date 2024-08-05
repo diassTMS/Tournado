@@ -1,0 +1,21 @@
+{% if tournaments|length == 0 %}
+    <div class="content-section">
+        <h3>None</h3>
+    </div>
+{% endif %}
+{% if tournaments|length > 1 %}
+    <div class="grid" id="tournPage">
+{% else %}
+    <div class="grid" style="grid-template-columns: 1fr;">
+{% endif %}
+{% for tourn in tournaments %}
+    <article>
+        <hgroup>
+            <h4><a href="{% url 'tourn-detail' tourn.id %}">{{ tourn.name }}</a></h4>
+            <p>{{ tourn.date|date:"D, M dS Y" }} - {{ tourn.meetTime|date:"H:i" }}</p>
+        </hgroup>
+        <hr>
+        <button style="width: 100%;" onclick="location.href='{% url 'past-score' tourn.id %}';">View Past Results</button>   
+    </article>
+{% endfor %}
+</div>
