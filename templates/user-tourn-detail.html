@@ -93,7 +93,8 @@
                     </tr>
                 </tfoot>
             </table>
-            <button style="width:93%; margin-left: 20px;" onclick="location.href='{% url 'entry-create' object.id %}';">Add Entry <i class="fa-solid fa-square-plus"></i></button>
+            <br>
+            <button onclick="location.href='{% url 'entry-create' object.id %}';">Add Entry <i class="fa-solid fa-square-plus"></i></button>
         </div>
         {% if object.generatedSchedule == True %}
             <div class='container' id="box">
