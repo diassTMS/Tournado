@@ -49,51 +49,53 @@
                 </span>
             </p>
         </div>
-        <table class="overflow-auto" style="border-style: none solid none solid; border-width: 8px; border-color: light-dark(#033452, #017FC0); border-radius: 20px; margin-top: 5px;">
-            <thead>
-                <tr>
-                    <th scope="col"><strong>Event Entries</strong></th>
-                    <th style="text-align: center; cursor: pointer;" data-tooltip="Manual Seeding">Rank</th>
-                    {% if object.teamsheets %}
-                        <th style="text-align: center; cursor: pointer;" data-tooltip="Team Sheet Uploaded">TS</th>
-                    {% endif %}
-                    <th scope="col" style="text-align:center; width:30px;"></th>
-                    <th scope="col" style="text-align:center; width:30px;"></th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for entry in entries %}
+        <div class="overflow-auto" style="border-style: none solid none solid; border-width: 8px; border-color: light-dark(#033452, #017FC0); border-radius: 20px; margin-top: 5px;     background-color: light-dark(#9BCCFD, #1c212c);">
+            <table class="overflow-auto">
+                <thead>
                     <tr>
-                        <th scope="row">{{ entry.teamName }}</th>
-                        <th style="text-align:center;">{{ entry.rank }}</th>
+                        <th scope="col"><strong>Event Entries</strong></th>
+                        <th style="text-align: center; cursor: pointer;" data-tooltip="Manual Seeding">Rank</th>
                         {% if object.teamsheets %}
-                            {% if entry.teamsheet == "" %}
-                                <td style="text-align:center; color: #AF291D;"><i class="fa-solid fa-x"></i></td>
-                            {% elif entry.teamsheet == None %}
-                                <td style="text-align:center; color: #AF291D;"><i class="fa-solid fa-x"></i></td>
-                            {% else %}
-                                <td style="text-align:center; color: green;"><i class="fa-solid fa-check"></i></td>
-                            {% endif %} 
-                        {% endif %}                           
-                        <td style="text-align:center; cursor:pointer;"><i onclick="location.href='{% url 'entry-update' entry.id %}';" class="fa-solid fa-pen-to-square" id="icon"></i></td>
-                        <td style="text-align:center; cursor:pointer;"><i onclick="location.href='{% url 'entry-delete' entry.id %}'" class="fa-solid fa-trash-can" id="icon" style="color: #AF291D;"></i></td>
+                            <th style="text-align: center; cursor: pointer;" data-tooltip="Team Sheet Uploaded">TS</th>
+                        {% endif %}
+                        <th scope="col" style="text-align:center; width:30px;"></th>
+                        <th scope="col" style="text-align:center; width:30px;"></th>
                     </tr>
-                {% endfor %}
-            </tbody>
-            <tfoot>
-                <tr>
-                    <th scope="row">Total: {{ num }} </th>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    {% if object.teamsheets %}
+                </thead>
+                <tbody>
+                    {% for entry in entries %}
+                        <tr>
+                            <th scope="row">{{ entry.teamName }}</th>
+                            <th style="text-align:center;">{{ entry.rank }}</th>
+                            {% if object.teamsheets %}
+                                {% if entry.teamsheet == "" %}
+                                    <td style="text-align:center; color: #AF291D;"><i class="fa-solid fa-x"></i></td>
+                                {% elif entry.teamsheet == None %}
+                                    <td style="text-align:center; color: #AF291D;"><i class="fa-solid fa-x"></i></td>
+                                {% else %}
+                                    <td style="text-align:center; color: green;"><i class="fa-solid fa-check"></i></td>
+                                {% endif %} 
+                            {% endif %}                           
+                            <td style="text-align:center; cursor:pointer;"><i onclick="location.href='{% url 'entry-update' entry.id %}';" class="fa-solid fa-pen-to-square" id="icon"></i></td>
+                            <td style="text-align:center; cursor:pointer;"><i onclick="location.href='{% url 'entry-delete' entry.id %}'" class="fa-solid fa-trash-can" id="icon" style="color: #AF291D;"></i></td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <th scope="row">Total: {{ num }} </th>
                         <td></td>
-                    {% endif %}
-                </tr>
-            </tfoot>
+                        <td></td>
+                        <td></td>
+                        {% if object.teamsheets %}
+                            <td></td>
+                        {% endif %}
+                    </tr>
+                </tfoot>
+            </table>
             <hr>
             <button style="width:93%; margin-left: 20px;" onclick="location.href='{% url 'entry-create' object.id %}';">Add Entry <i class="fa-solid fa-square-plus"></i></button>
-        </table>
+        </div>
         {% if object.generatedSchedule == True %}
             <div class='container' id="box">
                 <h4>Event Scoring</h4>
