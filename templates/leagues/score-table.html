@@ -6,28 +6,20 @@
             grid-template-columns: 1fr 11fr;
         }
 
-        #img {
-            border-radius: 100%;
-            width: 75px; 
-            height: 75px;
-        }
-
         @media (width < 50em) {
             #title {
                 grid-template-columns: 1fr 4fr;
-            }
-
-            #img {
-                border-radius: 100%;
-                width: 75px; 
-                height: 75px;
-                margin-top: 20px;
             }
         }
     </style>
     <div id="leagueBox"> 
         <div class="grid" id="title">
-            <img id="img" src="{{ league.user.profile.image.url }}">
+            <div class ="grid" style="grid-template-columns: 1fr;">
+                <img id="img" src="{{ league.user.profile.image.url }}">
+                {% if league.user.username == "Hockey_Fever" %}
+                    <img id="img" src="{% static 'images/gha_logo.jpg' %}">
+                {% endif %}
+            </div>
             <hgroup>
                 <h2>{{ title }} Results - {{ league.name }}</h2>
                 <p>        
