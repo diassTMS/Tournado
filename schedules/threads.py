@@ -116,6 +116,7 @@ class GenerateScheduleThread(threading.Thread):
                 while index < pNoPools:
                     div = []
                     entries = list(range(1, pNoEntries+1))
+                    print('entries', entries)
                     teams = entries[(index)::(pNoPools)]
                     div.append(index+1)
                     div.append(teams)
@@ -316,7 +317,7 @@ class GenerateScheduleThread(threading.Thread):
 
             #Splitting entries into different divisions
             divisions = divisionCalc(noDivs, noEntries)
-            print('1.5')
+            print(divisions)
             #Updating entry divisions
             for i in range(len(divisions)):
                 for j in range(len(divisions[i][1])):
