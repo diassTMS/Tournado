@@ -242,7 +242,7 @@ nav :is(.menu-btn, .menu-icon) {
     }
 
     #subtitle {
-        display: block;
+        display: none;
     }
 
     #box{
