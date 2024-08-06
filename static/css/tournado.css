@@ -72,6 +72,14 @@ div.row{
     grid-template-columns: 6fr 1fr;
 }
 
+#headFull {
+    display: block;
+}
+
+#headSmall {
+    display: none;
+}
+
 #subheading {
     display: block;
 }
@@ -239,6 +247,14 @@ nav :is(.menu-btn, .menu-icon) {
     
     #title {
         grid-template-columns: 2fr 1fr 2fr;
+    }
+
+    #headFull {
+        display: none;
+    }
+    
+    #headSmall {
+        display: block;
     }
 
     #subheading {
