@@ -46,30 +46,26 @@
             </p>
         </div>
         <div class='container' id='box'>
-            <h2>
-                Event Manager
-                <span style="float: right;">
-                    <img id="img" src="{{ object.user.profile.image.url }}">
-                    {% if object.user.username == "Hockey_Fever" %}
-                        <img id="img" src="{% static 'images/gha_logo.jpg' %}">
-                    {% endif %}
-                </span>
-            </h2>
+            <h2>Tournament Manager</h2>
             <hr>
             <div class="grid" style="grid-template-columns: 1fr 4fr 1fr;">
+                <img id="img" src="{{ object.user.profile.image.url }}">
                 <hgroup style="margin-top:10px; text-align: center;">
                     <h4>{{ object.user.first_name }} {{ object.user.last_name }}</h4>
                     <p>        
                         <i class="fa-solid fa-envelope"></i>
                         <span>
                             <b>{{ object.user.email }}</b>
-                        </span><br>
-                        <i class="fa-solid fa-phone"></i>
+                        </span>
+                        <i class="fa-solid fa-envelope"></i>
                         <span>
                             <b>{{ object.user.profile.phone_number }}</b>
                         </span>
                     </p> 
                 </hgroup>
+                {% if object.user.username == "Hockey_Fever" %}
+                    <img id="img" src="{% static 'images/gha_logo.jpg' %}">
+                {% endif %}
             </div>
         </div>
         <div class='container' id='box'>
