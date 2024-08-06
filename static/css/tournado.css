@@ -245,24 +245,6 @@ nav :is(.menu-btn, .menu-icon) {
         display: none;
     }
 
-    #box{
-        border-style: none solid none solid; 
-        border-width: 8px; 
-        border-color: light-dark(#033452, #017FC0);  
-        border-radius: 20px;          
-        padding: 10px;
-        background-color: light-dark(#9BCCFD, #1c212c);
-    }
-    
-    #leagueBox{
-        border-style: none solid none solid; 
-        border-width: 8px; 
-        border-color: light-dark( #321856, #7540BF);  
-        border-radius: 20px;          
-        padding: 10px;
-        background-color: light-dark(#cac2f0,  #1c212c);
-    }
-
     #tournGrid {
         display: grid;
         grid-template-columns: 1fr;
