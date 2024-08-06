@@ -86,10 +86,7 @@ div.row{
     border-width: 8px; 
     border-color: light-dark(#033452, #017FC0);  
     border-radius: 20px;          
-    padding-left: 20px;
-    padding-right: 20px;
-    padding-top: 30px;
-    padding-bottom: 30px;
+    padding: 40px;
     background-color: light-dark(#9BCCFD, #1c212c);
 }
 
@@ -98,10 +95,7 @@ div.row{
     border-width: 8px; 
     border-color: light-dark( #321856, #7540BF);  
     border-radius: 20px;          
-    padding-left: 20px;
-    padding-right: 20px;
-    padding-top: 30px;
-    padding-bottom: 30px;
+    padding: 40px;
     background-color: light-dark(#cac2f0,  #1c212c);
 }
 
@@ -139,10 +133,7 @@ div.row{
     border-width: 8px; 
     border-color: light-dark(#033452, #017FC0);  
     border-radius: 20px;          
-    padding-left: 20px;
-    padding-right: 20px;
-    padding-top: 30px;
-    padding-bottom: 30px;
+    padding: 40px;
     background-color: light-dark(#9BCCFD, #1c212c);
 }
 
@@ -278,6 +269,30 @@ nav :is(.menu-btn, .menu-icon) {
         grid-auto-flow: row;
         grid-template-rows: auto;
     }
+
+    #box{
+        border-style: none solid none solid; 
+        border-width: 8px; 
+        border-color: light-dark(#033452, #017FC0);  
+        border-radius: 20px;          
+        padding-left: 20px;
+        padding-right: 20px;
+        padding-top: 30px;
+        padding-bottom: 30px;
+        background-color: light-dark(#9BCCFD, #1c212c);
+    }
+    
+    #leagueBox{
+        border-style: none solid none solid; 
+        border-width: 8px; 
+        border-color: light-dark( #321856, #7540BF);  
+        border-radius: 20px;          
+        padding-left: 20px;
+        padding-right: 20px;
+        padding-top: 30px;
+        padding-bottom: 30px;
+        background-color: light-dark(#cac2f0,  #1c212c);
+    }
     
     #first-child {
         grid-column: span 1;
@@ -291,6 +306,20 @@ nav :is(.menu-btn, .menu-icon) {
         padding-top: 30px;
         padding-bottom: 30px;
         background-color: light-dark(#9BCCFD, #033452);
+    }
+
+    #leagueFirstChild {
+        grid-column: span 1;
+        grid-row: span 1;
+        border-style: none solid none solid; 
+        border-width: 8px; 
+        border-color: light-dark(#321856, #7540BF);  
+        border-radius: 20px;          
+        padding-left: 20px;
+        padding-right: 20px;
+        padding-top: 30px;
+        padding-bottom: 30px;
+        background-color: light-dark(#cac2f0, #1c212c);
     }
 }
 
