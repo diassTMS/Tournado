@@ -112,6 +112,7 @@ class GenerateScheduleThread(threading.Thread):
             def divisionCalc(pNoPools, pNoEntries):
                 index = 0
                 divisions = []
+                print('div calc')
                 while index < pNoPools:
                     div = []
                     entries = list(range(1, pNoEntries+1))
@@ -121,7 +122,7 @@ class GenerateScheduleThread(threading.Thread):
                     
                     divisions.append(div)
                     index += 1
-                    
+                print('end')
                 return divisions
 
             def divMatchesCalc(pDivisions):
@@ -315,12 +316,11 @@ class GenerateScheduleThread(threading.Thread):
 
             #Splitting entries into different divisions
             divisions = divisionCalc(noDivs, noEntries)
-
+            print('1.5')
             #Updating entry divisions
             for i in range(len(divisions)):
                 for j in range(len(divisions[i][1])):
                     #Don't question line 264-265. They work!
-                    print(divisions[i][1][j])
                     entriesData[(divisions[i][1][j])-1].append(divisions[i][0])
                     entry = Entry.objects.get(Q(tournament=self.instance) & Q(pk=entriesData[(divisions[i][1][j])-1][0].id))
                     entry.division = divisions[i][0]
