@@ -278,10 +278,9 @@ def EntryRequestDelete(request, pk):
     entry = Entry.objects.get(id=pk) 
     tournId = entry.tournament.id
     email = entry.tournament.user.email
-    print(email)
     subject = 'Entry Request Delete'
     email_from = settings.EMAIL_HOST_USER
-    recipient_list = [settings.EMAIL_HOST_USER,]
+    recipient_list = [email,]
     text_content = 'Text'
     html_content = render_to_string(
         'email.html',
