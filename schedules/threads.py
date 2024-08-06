@@ -272,23 +272,26 @@ class GenerateScheduleThread(threading.Thread):
             print('Execution started')
             if self.instance.generatedSchedule == True:
                 print('deleting prev matches')
-                matches = Match.objects.filter(tournament=self.instance).delete()
-                entriesPrev = Entry.objects.filter(tournament=self.instance)
-                tourn = Tournament.objects.get(pk=self.instance.id)
-                if tourn.finished == True:
-                    tourn.finished = False
-                    tourn.save()
-                
-                for entryPrev in entriesPrev:
-                    entryPrev.points = 0
-                    entryPrev.won = 0
-                    entryPrev.drawn = 0
-                    entryPrev.lost = 0
-                    entryPrev.forGoals = 0
-                    entryPrev.againstGoals = 0
-                    entryPrev.goalDiff = 0
-                    entryPrev.played = 0
-                    entryPrev.save()
+                try:
+                    matches = Match.objects.filter(tournament=self.instance).delete()
+                    entriesPrev = Entry.objects.filter(tournament=self.instance)
+                    tourn = Tournament.objects.get(pk=self.instance.id)
+                    if tourn.finished == True:
+                        tourn.finished = False
+                        tourn.save()
+                    
+                    for entryPrev in entriesPrev:
+                        entryPrev.points = 0
+                        entryPrev.won = 0
+                        entryPrev.drawn = 0
+                        entryPrev.lost = 0
+                        entryPrev.forGoals = 0
+                        entryPrev.againstGoals = 0
+                        entryPrev.goalDiff = 0
+                        entryPrev.played = 0
+                        entryPrev.save()
+                except:
+                    print('already generated but no data')
 
             print('updating')
 
