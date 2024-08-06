@@ -112,18 +112,16 @@ class GenerateScheduleThread(threading.Thread):
             def divisionCalc(pNoPools, pNoEntries):
                 index = 0
                 divisions = []
-                print('div calc')
                 while index < pNoPools:
                     div = []
                     entries = list(range(1, pNoEntries+1))
-                    print('entries', entries)
                     teams = entries[(index)::(pNoPools)]
                     div.append(index+1)
                     div.append(teams)
                     
                     divisions.append(div)
                     index += 1
-                print('end')
+
                 return divisions
 
             def divMatchesCalc(pDivisions):
@@ -313,8 +311,6 @@ class GenerateScheduleThread(threading.Thread):
                 row.append(entry)
                 entriesData.append(row)
 
-            print('1')
-
             #Splitting entries into different divisions
             divisions = divisionCalc(noDivs, noEntries)
             #Updating entry divisions
@@ -325,7 +321,6 @@ class GenerateScheduleThread(threading.Thread):
                     entry = Entry.objects.get(Q(tournament=self.instance) & Q(pk=entriesData[(divisions[i][1][j])-1][0].id))
                     entry.division = divisions[i][0]
                     entry.save()
-            print('2')
             #Creating a list of all division matches that need to be played
             matches = matchesCalc(divisions)
 
@@ -367,7 +362,7 @@ class GenerateScheduleThread(threading.Thread):
                                 efficiency = newEfficiency
                 
                 x += 1
-            print('3')
+
             if self.instance.umpires == True:
                 #Generating Umpire Schedule
                 while y < 20:
@@ -532,10 +527,8 @@ class GenerateLeagueScheduleThread(threading.Thread):
                 aTemps.append(divisions[0])
                 del divisions[0]
 
-            print(matches)
 
             for match in matches:
-                print(match)
                 match = LeagueMatch(league = self.instance,
                               entryOne = LeagueEntry.objects.get(Q(league=self.instance) & Q(pk=entries[(match[0]-1)].id)),
                               entryTwo = LeagueEntry.objects.get(Q(league=self.instance) & Q(pk=entries[(match[1]-1)].id)),
