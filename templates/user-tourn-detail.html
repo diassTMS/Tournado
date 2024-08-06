@@ -114,19 +114,19 @@
         <div class='container' id='box'>
             <div class="grid" id="tournPage">
                 {% if object.generatedSchedule == False %}
-                    <button style="width: 50%;" onclick="location.href='{% url 'schedule-create' object.id %}';">Generate Schedule</button>
-                    <button style="width: 50%;" class="secondary" onclick="location.href='{% url 'tourn-update' object.id %}';">Update Info</button>
-                    <button style="width: 50%; background-color: #AF291D; color: white;" data-target="modal-delete" onclick="toggleModal(event)">Delete Event <i class="fa-solid fa-trash-can" id="icon"></i></button>
+                    <button onclick="location.href='{% url 'schedule-create' object.id %}';">Generate Schedule</button>
+                    <button class="secondary" onclick="location.href='{% url 'tourn-update' object.id %}';">Update Info</button>
+                    <button style="background-color: #AF291D; color: white;" data-target="modal-delete" onclick="toggleModal(event)">Delete Event <i class="fa-solid fa-trash-can" id="icon"></i></button>
                 {% else %}
-                    <a style="width: 50%;" role="button" href="{% url 'pdf' object.id %}" target="_blank">Match Schedule <i class="fa-solid fa-file-pdf"></i></a>
+                    <a role="button" href="{% url 'pdf' object.id %}" target="_blank">Match Schedule <i class="fa-solid fa-file-pdf"></i></a>
                     {% if object.umpires %}
-                        <a style="width: 50%;" role="button" href="{% url 'umpire-pdf' object.id %}" target="_blank">Umpire Schedule <i class="fa-solid fa-file-pdf"></i></a>
+                        <a role="button" href="{% url 'umpire-pdf' object.id %}" target="_blank">Umpire Schedule <i class="fa-solid fa-file-pdf"></i></a>
                     {% endif %}
-                    <button style="width: 50%;" onclick="location.href='{% url 'user-tourn-customise' object.id %}';">Customisation</button>
-                    <button style="width: 50%;" onclick="location.href='{% url 'schedule-create' object.id %}';">Regenerate Schedule</button>
-                    <button style="width: 50%;" class="secondary" onclick="location.href='{% url 'tourn-update' object.id %}';">Update Info</button>
+                    <button onclick="location.href='{% url 'user-tourn-customise' object.id %}';">Customisation</button>
+                    <button onclick="location.href='{% url 'schedule-create' object.id %}';">Regenerate Schedule</button>
+                    <button class="secondary" onclick="location.href='{% url 'tourn-update' object.id %}';">Update Info</button>
                     {% if object.umpires %}
-                        <button style="width: 50%; background-color: #AF291D; color: white;" data-target="modal-delete" onclick="toggleModal(event)">Delete Event <i class="fa-solid fa-trash-can" id="icon"></i></button>
+                        <button style="background-color: #AF291D; color: white;" data-target="modal-delete" onclick="toggleModal(event)">Delete Event <i class="fa-solid fa-trash-can" id="icon"></i></button>
                     {% else %}
                         <button style="background-color: #AF291D; color: white; grid-column: span 2;" data-target="modal-delete" onclick="toggleModal(event)">Delete Event <i class="fa-solid fa-trash-can" id="icon"></i></button>
                     {% endif %}

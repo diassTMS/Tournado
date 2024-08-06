@@ -3,10 +3,7 @@
     <div class="container" id="box">
         <div class="grid">
             <h2 style="margin-top: 10px;">Past Events</h2>
-            <form role="search">
-                <input type="search" id="searchTourn" name="search" placeholder="Search" />
-                <input type="submit" id="searchTournSubmit" value="Search" />
-            </form>
+            <input type="search" id="searchTourn" name="search" placeholder="Search" />
         </div>
         <hr>
         <div id="past-tourns">
@@ -27,19 +24,6 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
     <script type="text/javascript">
         document.getElementById("searchTourn").onsearch = function (evt) {
-            evt.preventDefault();
-            const data = $(this).val();
-            $.ajax({
-                method: 'GET',
-                dataType: 'json',
-                url: 'search/',
-                data: {'data': data},
-                success : function (data) {
-                    $('#past-tourns').html(data.result)
-                }
-            })
-        };
-        document.getElementById("searchTournSubmit").onsubmit = function (evt) {
             evt.preventDefault();
             const data = $(this).val();
             $.ajax({
