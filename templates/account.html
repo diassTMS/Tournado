@@ -1,18 +1,13 @@
 {% extends "base.html" %}
 {% load static %}
 {% block container %}
-    <style>
-        #four {
-            grid-template-columns: 1fr 1fr 1fr;
-        }
-    </style>
     <div class='container' id='box'>
         <div class="header">
             <img src="{{ user.profile.image.url }}">
             <h2>Your Account<span style="float:right; margin-right:20px; cursor:pointer;"><i onclick="location.href = '{% url 'logout' %}';" class="fa-solid fa-arrow-right-from-bracket" id="icon"></i></span></h2>
         </div>
         <br>
-        <div class="grid" id="four">
+        <div class="grid" id="tournGrid">
             <article id="card">
                 <h4>Profile</h4>
                 <hr>
