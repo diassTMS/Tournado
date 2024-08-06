@@ -25,7 +25,7 @@
                         <h4>
                             {{ entry.teamName }} {{ entry.tournament.age }} {{ entry.tournament.gender }}
                             <span style="float: right;">
-                                <a style="color: #AF291D;" href="{% url 'entry-request-delete' entry.id %}" onclick="return confirm('Are you sure?')"><i class="fa-solid fa-trash-can" id="icon"></i></a>
+                                <a style="color: #AF291D;" href="{% url 'entry-request-delete' entry.id %}" onclick="return confirm('Request for delete will be emailed to tournament manager.')"><i class="fa-solid fa-trash-can" id="icon"></i></a>
                             </span>
                         </h4>
                         <hr>
