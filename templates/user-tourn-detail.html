@@ -1,6 +1,18 @@
 {% extends "base.html" %}
 {% load static %}
 {% block container %}
+    <style>
+        #entryButton {
+            width: 92%; 
+            margin-left: 20px; 
+        }
+        @media (width < 50em) {
+            #entryButton {
+                width: 88%; 
+                margin-left: 20px; 
+            }
+        }
+    </style>
     <section class="grid" id="tournPage">
         {% if object.generatedSchedule == True %}
             <div class='container' id="box">
@@ -94,7 +106,7 @@
                 </tfoot>
             </table>
             <br>
-            <button align="center" style="width: 88%; margin-left: 20px; margin-right: 20px;" onclick="location.href='{% url 'entry-create' object.id %}';">Add Entry <i class="fa-solid fa-square-plus"></i></button>
+            <button id="entryButton" onclick="location.href='{% url 'entry-create' object.id %}';">Add Entry <i class="fa-solid fa-square-plus"></i></button>
         </div>
         {% if object.generatedSchedule == True %}
             <div class='container' id="box">
