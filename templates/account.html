@@ -3,7 +3,7 @@
 {% block container %}
     <div class='container' id='box'>
         <div class="header">
-            <img src="{{ user.profile.image.url }}">
+            <img id="img" src="{{ user.profile.image.url }}">
             <h2>Your Account<span style="float:right; margin-right:20px; cursor:pointer;"><i onclick="location.href = '{% url 'logout' %}';" class="fa-solid fa-arrow-right-from-bracket" id="icon"></i></span></h2>
         </div>
         <br>
@@ -21,7 +21,7 @@
                         </svg>
                         <span>{{ user.username }}</span>
                     </p>
-                    <button class="outline" onclick="location.href = '{% url 'profile' user.id %}';">View &#11166;</button>
+                    <button class="outline" onclick="location.href = '{% url 'profile' user.id %}';">View <i class="fa-solid fa-angles-right"></i></button>
                 </div>
             </article>
             {% if user.groups.all.0.name == 'Admin' %}
@@ -36,8 +36,8 @@
                         {% else %}
                             <p>You have 1 tournament</p>
                         {% endif %}
-                        <button class="outline" onclick="location.href = '{% url 'user-tourn-list' %}';">View &#11166;</button>
-                        <button class="outline" onclick="location.href = '{% url 'tourn-create' %}';">New &#128934;</button>
+                        <button class="outline" onclick="location.href = '{% url 'user-tourn-list' %}';">View <i class="fa-solid fa-angles-right"></i></button>
+                        <button class="outline" onclick="location.href = '{% url 'tourn-create' %}';">New <i class="fa-solid fa-plus"></i></button>
                     </div>
                 </article>
                 <article id="card">
@@ -51,8 +51,8 @@
                         {% else %}
                             <p>You have 1 league</p>
                         {% endif %}
-                        <button class="outline" onclick="location.href = '{% url 'user-league-list' %}';">View &#11166;</button>
-                        <button class="outline" onclick="location.href = '{% url 'league-create' %}';">New &#128934;</button>
+                        <button class="outline" onclick="location.href = '{% url 'user-league-list' %}';">View <i class="fa-solid fa-angles-right"></i></button>
+                        <button class="outline" onclick="location.href = '{% url 'league-create' %}';">New <i class="fa-solid fa-plus"></i></button>
                     </div>
                 </article>
                 <article id="card">
@@ -60,7 +60,7 @@
                     <hr>
                     <div class="media-body">
                         <p>View all users, their profiles and orders. Whilst keeping track of finances.</p>
-                        <button class="outline" onclick="location.href = '{% url 'user-list' %}';">View &#11166;</button>
+                        <button class="outline" onclick="location.href = '{% url 'user-list' %}';">View <i class="fa-solid fa-angles-right"></i></button>
                     </div>
                 </article>         
             {% else %}
@@ -75,7 +75,7 @@
                         {% else %}
                             <p>You have 1 entry</p>
                         {% endif %}
-                        <button class="outline" onclick="location.href = '{% url 'user-entry-list' %}';">View &#11166;</button>
+                        <button class="outline" onclick="location.href = '{% url 'user-entry-list' %}';">View <i class="fa-solid fa-angles-right"></i></button>
                     </div>
                 </article>
                 <article id="card">
@@ -83,8 +83,8 @@
                     <hr>
                     <div class="media-body">
                         <p>Create and view season sign up order forms. Invoices will be emailed to you.</p>
-                        <button class="outline" onclick="location.href = '{% url 'order-create' user.id %}';">New &#128934;</button>
-                        <button class="outline" onclick="location.href = '{% url 'order-list' user.id %}';">Your Orders &#11166;</button>
+                        <button class="outline" onclick="location.href = '{% url 'order-list' user.id %}';">Your Orders <i class="fa-solid fa-angles-right"></i></button>
+                        <button class="outline" onclick="location.href = '{% url 'order-create' user.id %}';">New <i class="fa-solid fa-plus"></i></button>
                     </div>
                 </article>
             {% endif %}
@@ -95,8 +95,8 @@
                     <hr>
                     <div class="media-body">
                         <p>Create and view season sign up order forms. Invoices will be emailed to you.</p>
-                        <button class="outline" onclick="location.href = '{% url 'order-create' user.id %}';">New &#128934;</button>
-                        <button class="outline" onclick="location.href = '{% url 'order-list' user.id %}';">Your Orders &#11166;</button>
+                        <button class="outline" onclick="location.href = '{% url 'order-list' user.id %}';">Your Orders <i class="fa-solid fa-angles-right"></i></button>
+                        <button class="outline" onclick="location.href = '{% url 'order-create' user.id %}';">New <i class="fa-solid fa-plus"></i></button>
                     </div>
                 </article>              
                 <article id="card">
@@ -104,7 +104,7 @@
                     <hr>
                     <div class="media-body">
                         <p>View admin page</p>
-                        <button class="outline" onclick="location.href = '{% url 'admin:index' %}';">View &#11166;</button>
+                        <button class="outline" onclick="location.href = '{% url 'admin:index' %}';">View <i class="fa-solid fa-angles-right"></i></button>
                     </div>
                 </article>
             {% endif %}
