@@ -72,7 +72,7 @@ div.row{
     grid-template-columns: 6fr 1fr;
 }
 
-#subtitle {
+#subheading {
     display: block;
 }
 
@@ -241,7 +241,7 @@ nav :is(.menu-btn, .menu-icon) {
         grid-template-columns: 2fr 1fr 2fr;
     }
 
-    #subtitle {
+    #subheading {
         display: none;
     }
 
@@ -321,6 +321,10 @@ nav :is(.menu-btn, .menu-icon) {
     
     #title {
         grid-template-columns: 3fr 1fr;
+    }
+
+    #subheading {
+        display: none;
     }
 
     #tournGrid, #filterGrid {
