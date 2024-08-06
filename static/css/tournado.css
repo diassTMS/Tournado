@@ -286,7 +286,10 @@ nav :is(.menu-btn, .menu-icon) {
         border-width: 8px; 
         border-color: light-dark(#033452, #9BCCFD);  
         border-radius: 20px;          
-        padding: 40px;
+        padding-left: 20px;
+        padding-right: 20px;
+        padding-top: 30px;
+        padding-bottom: 30px;
         background-color: light-dark(#9BCCFD, #033452);
     }
 }
