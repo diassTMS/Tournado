@@ -1,15 +1,3 @@
-let elementsArray = document.querySelectorAll(".float-child");
-
-elementsArray.forEach(function(elem) {
-  console.log(elem);
-  elem.setAttribute("draggable", "true");
-  elem.addEventListener("touchstart", onstart);
-  elem.addEventListener("touchmove", (ev) => ev.preventDefault());
-  elem.addEventListener("touchend", ondrop);
-});
-
-let EL_drag; // Used to remember the dragged element
-
 const onstart = (ev) => EL_drag = ev.currentTarget;
 
 const ondrop = (ev) => {
@@ -35,6 +23,18 @@ const ondrop = (ev) => {
   
   EL_drag = undefined;
 };
+
+let elementsArray = document.querySelectorAll(".float-child");
+
+elementsArray.forEach(function(elem) {
+  console.log(elem);
+  elem.setAttribute("draggable", "true");
+  elem.addEventListener("touchstart", onstart);
+  elem.addEventListener("touchmove", (ev) => ev.preventDefault());
+  elem.addEventListener("touchend", ondrop);
+});
+
+let EL_drag; // Used to remember the dragged element
 
 function send_request(matchOne_id, matchTwo_id){
   $.ajax({
