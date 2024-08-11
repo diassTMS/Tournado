@@ -1,19 +1,14 @@
-// DOM utility functions:
+let elementsArray = document.querySelectorAll(".float-child");
 
-const ELS = (sel, par) => (par || document).querySelectorAll(sel);
-
-// TASK:
-
-const ELS_child = ELS(".float-child");
+elementsArray.forEach(function(elem) {
+  console.log(elem);
+  elem.setAttribute("draggable", "true");
+  elem.addEventListener("touchstart", onstart);
+  elem.addEventListener("touchmove", (ev) => ev.preventDefault());
+  elem.addEventListener("touchend", ondrop);
+});
 
 let EL_drag; // Used to remember the dragged element
-
-const addEvents = (EL_ev) => {
-  EL_ev.setAttribute("draggable", "true");
-  EL_ev.addEventListener("touchstart", onstart);
-  EL_ev.addEventListener("touchmove", (ev) => ev.preventDefault());
-  EL_ev.addEventListener("touchend", ondrop);
-};
 
 const onstart = (ev) => EL_drag = ev.currentTarget;
 
@@ -31,9 +26,6 @@ const ondrop = (ev) => {
   console.log(targId);
   console.log(dragId);
   send_request(dragId, targId);
-
-  //changeData(EL_drag.id, targPitch);
-  //changeData(EL_targ.id, dragPitch);
   
   EL_targ.replaceWith(EL_dragClone);
   EL_drag.replaceWith(EL_targClone);
@@ -43,8 +35,6 @@ const ondrop = (ev) => {
   
   EL_drag = undefined;
 };
-
-ELS_child.forEach((EL_child) => addEvents(EL_child));
 
 function send_request(matchOne_id, matchTwo_id){
   $.ajax({
