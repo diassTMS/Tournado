@@ -8,12 +8,12 @@ from orders.models import Order
 from decimal import Decimal
 from django.db.models import Sum
 
-@receiver(post_save, sender=User)
+@receiver(post_save, sender=User, weak=False)
 def create_profile(sender, instance, created, **kwargs):
     if created:
         Profile.objects.create(user=instance)
 
-@receiver(post_save, sender=User)
+@receiver(post_save, sender=User, weak=False)
 def save_profile(sender, instance, **kwargs):
     instance.profile.save()
 
