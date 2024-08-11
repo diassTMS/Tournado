@@ -11,6 +11,7 @@ from .filters import TournFilter, LeagueFilter, UserFilter
 from django.shortcuts import render, redirect
 from django_filters.views import FilterView
 from django_tables2 import MultiTableMixin
+from django.urls import reverse_lazy
 from django.template.loader import render_to_string
 from django.http import JsonResponse
 from tournaments.models import Match
@@ -39,6 +40,12 @@ class UserCreateView(CreateView):
     model = User
     form_class = UserCreateForm
     template_name = "user-create.html"
+    success_url = ''
+    success_message = "User created successfully!"
+    
+    def get_success_url(self):
+        return reverse_lazy('user-list')
+    
 
 @login_required
 def AccountView(request):
