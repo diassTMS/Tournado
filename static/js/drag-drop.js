@@ -7,7 +7,6 @@ const ELS = (sel, par) => (par || document).querySelectorAll(sel);
 const ELS_child = ELS(".float-child");
 
 let EL_drag; // Used to remember the dragged element
-console.log(EL_drag);
 
 const addEvents = (EL_ev) => {
   EL_ev.setAttribute("draggable", "true");
@@ -21,6 +20,7 @@ const addEvents = (EL_ev) => {
 
 const onstart = (ev) => {
   EL_drag = ev.currentTarget;
+  console.log(EL_drag);
   ev.target.classList.add('droppable-hover');
 }
 
@@ -30,6 +30,8 @@ const ondrop = (ev) => {
   ev.preventDefault();
   
   const EL_targ = ev.currentTarget;
+  console.log(EL_drag);
+  console.log(EL_targ);
   const EL_targClone = EL_targ.cloneNode(true);
   const EL_dragClone = EL_drag.cloneNode(true);
 
