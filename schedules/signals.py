@@ -3,7 +3,7 @@ from .models import Schedule, Timings, Rules
 from tournaments.models import Tournament
 from django.dispatch import receiver
 
-@receiver(post_save, sender=Tournament)
+@receiver(post_save, sender=Tournament, weak=False)
 def create_sched(sender, instance, created, **kwargs):
     if created:
         sched = Schedule.objects.create(tournament=instance)
