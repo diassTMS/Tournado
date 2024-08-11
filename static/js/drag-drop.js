@@ -7,6 +7,7 @@ const ELS = (sel, par) => (par || document).querySelectorAll(sel);
 const ELS_child = ELS(".float-child");
 
 let EL_drag; // Used to remember the dragged element
+console.log(EL_drag);
 
 const addEvents = (EL_ev) => {
   EL_ev.setAttribute("draggable", "true");
@@ -18,7 +19,10 @@ const addEvents = (EL_ev) => {
   EL_ev.addEventListener("touchend", ondrop);
 };
 
-const onstart = (ev) => EL_drag = ev.currentTarget;
+const onstart = (ev) => {
+  EL_drag = ev.currentTarget;
+  ev.target.classList.add('droppable-hover');
+}
 
 const ondrop = (ev) => {
   if (!EL_drag) return;
