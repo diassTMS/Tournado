@@ -1,7 +1,7 @@
 // DOM utility functions:
 
 const ELS = (sel, par) => (par || document).querySelectorAll(sel);
-
+console.log(ELS)
 // TASK:
 
 const ELS_child = ELS(".float-child");
@@ -9,13 +9,12 @@ const ELS_child = ELS(".float-child");
 let EL_drag; // Used to remember the dragged element
 
 const addEvents = (EL_ev) => {
-  EL_ev.setAttribute("draggable", "true");
+  EL_ev.addEventListener("touchstart", onstart, false);
+  EL_ev.addEventListener("touchend", ondrop, false);
+  EL_ev.addEventListener("touchmove", (ev) => ev.preventDefault(), false);
   EL_ev.addEventListener("dragstart", onstart);
-  EL_ev.addEventListener("touchstart", onstart);
   EL_ev.addEventListener("dragover", (ev) => ev.preventDefault());
-  EL_ev.addEventListener("touchmove", (ev) => ev.preventDefault());
   EL_ev.addEventListener("drop", ondrop);
-  EL_ev.addEventListener("touchend", ondrop);
 };
 
 const onstart = (ev) => EL_drag = ev.currentTarget;
