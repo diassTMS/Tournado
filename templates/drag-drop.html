@@ -104,26 +104,5 @@
         </div>
     </div>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
-    <script src="https://code.jquery.com/jquery-1.7.2.min.js"></script>
-    <script src="https://code.jquery.com/ui/1.8.21/jquery-ui.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui-touch-punch/0.2.3/jquery.ui.touch-punch.min.js"></script>
     <script src="{% static "js/drag-drop.js" %}"></script>
-    <script>
-        $('.float-child').draggable({
-            scroll: false,
-            containment: "#card",
-            
-            start: function( event, ui ) {
-                console.log("start top is :" + ui.position.top)
-                console.log("start left is :" + ui.position.left)
-            },
-            drag: function(event, ui) {
-                console.log('draging.....');    
-            },
-            stop: function( event, ui ) {
-                console.log("stop top is :" + ui.position.top)
-                console.log("stop left is :" + ui.position.left)
-            }    
-        });
-    </script>
 {% endblock %}

@@ -21,6 +21,7 @@ const addEvents = (EL_ev) => {
 const onstart = (ev) => {
   EL_drag = ev.currentTarget;
   console.log(EL_drag);
+  console.log(ev.target);
 }
 
 const ondrop = (ev) => {
@@ -31,6 +32,7 @@ const ondrop = (ev) => {
   const EL_targ = ev.currentTarget;
   console.log(EL_drag);
   console.log(EL_targ);
+  console.log(ev.target);
   const EL_targClone = EL_targ.cloneNode(true);
   const EL_dragClone = EL_drag.cloneNode(true);
 
