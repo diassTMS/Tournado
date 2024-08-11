@@ -16,7 +16,7 @@ const addEvents = (EL_ev) => {
   EL_ev.addEventListener("touchmove", (ev) => ev.preventDefault());
   EL_ev.addEventListener("drop", ondrop);
   EL_ev.addEventListener("touchend", ondrop);
-  El_ev.draggable({
+  EL_ev.draggable({
     scroll: false,
     containment: "#card",
     
