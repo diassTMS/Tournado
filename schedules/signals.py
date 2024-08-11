@@ -7,6 +7,7 @@ from django.dispatch import receiver
 def create_sched(sender, instance, created, **kwargs):
     if created:
         sched = Schedule.objects.create(tournament=instance)
+        print(sched)
         sched.save()
 
 @receiver(post_save, sender=Schedule)
