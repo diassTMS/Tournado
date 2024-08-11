@@ -25,7 +25,7 @@ const onstart = (ev) => {
 const onmove = (ev) => {
   ev.preventDefault()
   console.log('hi')
-  console.log(document.elementFromPoint(ev.clientX, ev.clientY));
+  console.log(ev.currentTarget);
 }
 
 const ondrop = (ev) => {
