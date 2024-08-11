@@ -36,7 +36,7 @@ class HomeView(TemplateView):
         context['leagues'] = League.objects.filter(endDate__gte=datetime.date.today(), startDate__lte=datetime.date.today())[:2]
         return context
     
-class UserCreateView(CreateView):
+class UserCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
     model = User
     form_class = UserCreateForm
     template_name = "user-create.html"
