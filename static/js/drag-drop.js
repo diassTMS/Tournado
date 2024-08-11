@@ -13,7 +13,7 @@ const addEvents = (EL_ev) => {
   EL_ev.addEventListener("dragstart", onstart);
   EL_ev.addEventListener("touchstart", onstart);
   EL_ev.addEventListener("dragover", (ev) => ev.preventDefault());
-  EL_ev.addEventListener("touchmove", onstart);
+  EL_ev.addEventListener("touchmove", (ev) => ev.preventDefault());
   EL_ev.addEventListener("drop", ondrop);
   EL_ev.addEventListener("touchend", ondrop);
 };
