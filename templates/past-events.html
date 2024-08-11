@@ -36,19 +36,22 @@
                 }
             })
         };
-        document.getElementById("searchTourn").onsubmit = function (evt) {
-            evt.preventDefault();
-            const data = $(this).val();
-            $.ajax({
-                method: 'GET',
-                dataType: 'json',
-                url: 'search/',
-                data: {'data': data},
-                success : function (data) {
-                    $('#past-tourns').html(data.result)
-                }
-            })
-        };
+        document.getElementById("searchTourn").addEventListener("keypress", function(event) {
+            // If the user presses the "Enter" key on the keyboard
+            if (event.key === "Enter") {
+                evt.preventDefault();
+                const data = $(this).val();
+                $.ajax({
+                    method: 'GET',
+                    dataType: 'json',
+                    url: 'search/',
+                    data: {'data': data},
+                    success : function (data) {
+                        $('#past-tourns').html(data.result)
+                    }
+                })
+            }
+        });
         document.getElementById("searchLeague").onsearch = function (evt) {
             evt.preventDefault();
             const data = $(this).val();
