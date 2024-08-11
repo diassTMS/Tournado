@@ -11,19 +11,12 @@ let EL_drag; // Used to remember the dragged element
 const addEvents = (EL_ev) => {
   EL_ev.setAttribute("draggable", "true");
   EL_ev.addEventListener("dragstart", onstart);
-  EL_ev.addEventListener("touchstart", onstart);
   EL_ev.addEventListener("dragover", (ev) => ev.preventDefault());
-  EL_ev.addEventListener("touchmove", (ev) => ev.preventDefault());
   EL_ev.addEventListener("drop", ondrop);
-  EL_ev.addEventListener("touchend", ondrop);
 };
 
 const onstart = (ev) => {
   EL_drag = ev.currentTarget;
-}
-
-const onmove = (ev) => {
-  console.log(document.elementFromPoint(ev.clientX, ev.clientY));
 }
 
 const ondrop = (ev) => {
