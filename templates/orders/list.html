@@ -12,8 +12,8 @@
                     <i onClick="location.href='{% url 'user-list' %}';" class="fa-solid fa-circle-arrow-left" id="icon"></i>
                     {{ userInput }}'s Orders
                 {% endif %}
-                <span>
-                    <a role="button" style="float: right;" href="{% url 'order-create' userInput.id %}">New Order</a>
+                <span style="float:right; margin-right:20px; cursor:pointer;">
+                    <i style="color: green;" onclick="location.href='{% url 'order-create' userInput.id %}';" class="fa-solid fa-plus"></i>
                 </span>
             </h2>
         </hgroup>
