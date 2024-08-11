@@ -16,6 +16,22 @@ const addEvents = (EL_ev) => {
   EL_ev.addEventListener("touchmove", (ev) => ev.preventDefault());
   EL_ev.addEventListener("drop", ondrop);
   EL_ev.addEventListener("touchend", ondrop);
+  El_ev.draggable({
+    scroll: false,
+    containment: "#card",
+    
+    start: function( event, ui ) {
+        console.log("start top is :" + ui.position.top)
+        console.log("start left is :" + ui.position.left)
+    },
+    drag: function(event, ui) {
+        console.log('draging.....');    
+    },
+    stop: function( event, ui ) {
+        console.log("stop top is :" + ui.position.top)
+        console.log("stop left is :" + ui.position.left)
+    }    
+});
 };
 
 const onstart = (ev) => {
