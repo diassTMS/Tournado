@@ -38,7 +38,7 @@
         };
         document.getElementById("searchTourn").addEventListener("keypress", function(event) {
             // If the user presses the "Enter" key on the keyboard
-            if (event.key === "Enter") {
+            if (event.keyCode == 13) {
                 evt.preventDefault();
                 const data = $(this).val();
                 $.ajax({
