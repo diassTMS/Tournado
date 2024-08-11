@@ -13,7 +13,7 @@ const addEvents = (EL_ev) => {
   EL_ev.addEventListener("dragstart", onstart);
   EL_ev.addEventListener("touchstart", onstart);
   EL_ev.addEventListener("dragover", (ev) => ev.preventDefault());
-  EL_ev.addEventListener("touchmove", onmove);
+  EL_ev.addEventListener("touchmove", (ev) => ev.preventDefault());
   EL_ev.addEventListener("drop", ondrop);
   EL_ev.addEventListener("touchend", ondrop);
 };
@@ -23,8 +23,7 @@ const onstart = (ev) => {
 }
 
 const onmove = (ev) => {
-  console.log('hi')
-  console.log(ev);
+  console.log(document.elementFromPoint(ev.clientX, ev.clientY));
 }
 
 const ondrop = (ev) => {
@@ -33,6 +32,7 @@ const ondrop = (ev) => {
   ev.preventDefault();
   
   const EL_targ = ev.currentTarget;
+  console.log(ev);
   const EL_targClone = EL_targ.cloneNode(true);
   const EL_dragClone = EL_drag.cloneNode(true);
 
