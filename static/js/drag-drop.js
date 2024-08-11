@@ -21,7 +21,6 @@ const addEvents = (EL_ev) => {
 const onstart = (ev) => {
   EL_drag = ev.currentTarget;
   console.log(EL_drag);
-  ev.target.classList.add('droppable-hover');
 }
 
 const ondrop = (ev) => {
