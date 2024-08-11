@@ -8,7 +8,8 @@
                 <i onClick="location.href='{% url 'account' %}';" class="fa-solid fa-circle-arrow-left" id="icon"></i>
                 All Users
                 <span style="float:right; margin-right:20px; cursor:pointer;">
-                <i onclick="filterView()" class="fa-solid fa-sliders" id="icon"></i>
+                    <a role="button" href="{% url 'user-create' %}">New User</a>
+                    <i onclick="filterView()" class="fa-solid fa-sliders" id="icon"></i>
                 </span>
             </h2>
             <form method="get" id="filter" style="display: none;">

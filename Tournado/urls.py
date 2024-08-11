@@ -32,6 +32,7 @@ urlpatterns = [
     path('login/', auth_views.LoginView.as_view(template_name='login.html'), name="login"),
     path('logout/', users_views.LogoutView, name='logout'),
     path('account/', home_views.AccountView, name='account'),
+    path('user/new/', home_views.UserCreateView.as_view(), name='user-create'),
     path('profile/<int:pk>/', users_views.ProfileView.as_view(), name='profile'),
     path('tourn-list/', home_views.TournFilterView.as_view(), name='tourn-list'),
     path('user-list/', home_views.UserFilterView.as_view(), name='user-list'),

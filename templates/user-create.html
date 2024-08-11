@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+{% block container %} 
+        <div class="container" id="box">
+        <h2>
+            <i onClick="location.href='{% url 'account' %}';" class="fa-solid fa-circle-arrow-left" id="icon"></i> 
+            Create New User
+        </h2>
+        <hr>
+        <form method="POST" enctype="multipart/form-data">      
+            {% csrf_token %}    
+            <fieldset>
+                <h4>User Details</h4>
+                <div>
+                    {{ form }}
+                </div>
+            </fieldset>
+            <hr>
+            <button type="submit">Save</button>
+        </form>
+    </div>
+{% endblock %}
+

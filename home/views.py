@@ -17,10 +17,12 @@ from tournaments.models import Match
 from django.contrib import messages
 from django.db.models import F, Q
 from leagues.models import League
+from .forms import UserCreateForm
 import datetime
 from django.views.generic import (TemplateView,
                                   DetailView,
                                   ListView,
+                                  CreateView,
                                   )
 
 
@@ -32,6 +34,11 @@ class HomeView(TemplateView):
         context['tournaments'] = Tournament.objects.filter(date__gte=datetime.date.today()).order_by('date')[:3]
         context['leagues'] = League.objects.filter(endDate__gte=datetime.date.today(), startDate__lte=datetime.date.today())[:2]
         return context
+    
+class UserCreateView(CreateView):
+    model = User
+    form_class = UserCreateForm
+    template_name = "user-create.html"
 
 @login_required
 def AccountView(request):
