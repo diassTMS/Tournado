@@ -61,6 +61,7 @@ class AdminOrderTable(tables.Table):
 
 class ProductTable(tables.Table):
     tag_price = tables.Column(orderable=False, verbose_name='Price')
+    date = tables.Column(orderable=False)
     action = tables.TemplateColumn('''
             <button data-href="{% url "ajax-add" instance.id record.id %}" class="outline secondary add_button" style="border: none; padding-bottom: 0px; cursor: pointer;"><h2 style="color: #005F3D;"><i class="fa-solid fa-square-plus"></i></h2></button>
     ''', orderable=False)
@@ -68,7 +69,7 @@ class ProductTable(tables.Table):
     class Meta:
         model = Tournament
         template_name = 'django_tables2/bootstrap.html'
-        fields = ['name', 'tag_price',]
+        fields = ['name', 'date', 'tag_price',]
 
 class OrderItemTable(tables.Table):
     tag_price = tables.Column(orderable=False, verbose_name='Price')
