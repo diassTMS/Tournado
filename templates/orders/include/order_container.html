@@ -10,7 +10,7 @@
             {% render_table order_items %}
         {% endif %}
         <hr>
-        <h6 align="right"><b>Total :</b> {{ instance.tag_final_value }}</h6>
+        <h5 align="right">Total : {{ instance.tag_final_value }}</h5>
         </hr>
         <button style="width:100%;" onClick="location.href='{% url 'submit-order' instance.id %}';" type="submit"> Submit </button>
     </div>
