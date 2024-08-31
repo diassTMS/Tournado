@@ -61,7 +61,8 @@ class AdminOrderTable(tables.Table):
 
 class ProductTable(tables.Table):
     tag_price = tables.Column(orderable=False, verbose_name='Price')
-    date = tables.DateColumn(format ='d/m/Y', orderable=False)
+    date = tables.DateColumn(format ='d/m/Y')
+    name = tables.Column(orderable=False, verbose_name='Event')
     action = tables.TemplateColumn('''
             <button data-href="{% url "ajax-add" instance.id record.id %}" class="outline secondary add_button" style="border: none; padding-bottom: 0px; cursor: pointer;"><h2 style="color: #005F3D;"><i class="fa-solid fa-square-plus"></i></h2></button>
     ''', orderable=False, verbose_name="")
@@ -73,6 +74,8 @@ class ProductTable(tables.Table):
 
 class OrderItemTable(tables.Table):
     tag_price = tables.Column(orderable=False, verbose_name='Price')
+    tournament = tables.Column(orderable=False, verbose_name='Event')
+    qty = tables.Column(orderable=False)
     action = tables.TemplateColumn('''
             <button data-href="{% url "ajax-modify" record.id %}" class="outline secondary edit_button" style="border: none; padding-bottom: 0px; cursor: pointer;"><h2 style="color: #AF291D;"><i class="fa-solid fa-square-minus"></i></h2></button>
     ''', orderable=False, verbose_name="")
