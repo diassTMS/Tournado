@@ -17,7 +17,7 @@ def create_profile(sender, instance, created, **kwargs):
 def save_profile(sender, instance, **kwargs):
     instance.profile.save()
 
-@receiver(post_save, sender=Order)
+@receiver(post_save, sender=Order, weak=False)
 def order_price_update(sender, instance, created, *args, **kwargs):
     prof = Profile.objects.get(user=instance.user)
     orders_user = Order.objects.filter(user=instance.user)
@@ -27,7 +27,7 @@ def order_price_update(sender, instance, created, *args, **kwargs):
     prof.balance = Decimal(prof.paid) - Decimal(prof.due)
     prof.save()
 
-@receiver(pre_delete, sender=Order)
+@receiver(pre_delete, sender=Order, weak=False)
 def order_price_update(sender, instance, *args, **kwargs):
     prof = Profile.objects.get(user=instance.user)
     orders_user = Order.objects.filter(user=instance.user)

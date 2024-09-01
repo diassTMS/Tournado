@@ -10,7 +10,7 @@ def create_sched(sender, instance, created, **kwargs):
         print(sched)
         sched.save()
 
-@receiver(post_save, sender=Schedule)
+@receiver(post_save, sender=Schedule, weak=False)
 def create_sched(sender, instance, created, **kwargs):
     if created:
         rules = [

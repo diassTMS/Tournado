@@ -6,7 +6,7 @@ from django.db.models import Sum
 from decimal import Decimal
 
 
-@receiver(post_save, sender=OrderItem)
+@receiver(post_save, sender=OrderItem, weak=False)
 def order_price_update(sender, instance, created, *args, **kwargs):
     order = instance.order
     order_items = order.order_items.all()
