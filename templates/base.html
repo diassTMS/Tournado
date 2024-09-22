@@ -70,7 +70,7 @@
                 {% if messages %}                                                                                                                                                             
                     <article id="msg" class="messages">
                         {% for message in messages %}
-                            <li{% if message.tags %} class="{{ message.tags }}"{% endif %}><b>{{ message }}</b><span onclick="window.location.reload();" style="float:right; cursor:pointer;">&#128942;</span></li>
+                            <li{% if message.tags %} class="{{ message.tags }}"{% endif %}><b>{{ message }}</b><span onclick="window.location.reload();" style="float:right; cursor:pointer;"><i class="fa-solid fa-x"></i></span></li>
                         {% endfor %}
                     </article>
                 {% endif %}
