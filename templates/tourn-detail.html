@@ -44,6 +44,10 @@
                         </ul> 
                 </span>
             </p>
+            {% if object.notes %}
+                <p><i class="fa-solid fa-note-sticky"></i><span> <b>Notes:</b></span></p>
+                <div style="margin-left:40px;">{{ object.notes|linebreaks }}</div>
+            {% endif %}
         </div>
         <div class='container' id='box'>
             <h2>Tournament Manager</h2>

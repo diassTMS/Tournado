@@ -50,6 +50,10 @@
         li {
             font-size: 16px;
         }
+
+        p {
+            font-size: 16px;
+        }
     </style>
     <body>
         <div class='wrapper'>
@@ -118,6 +122,10 @@
                     <li>{{ rule }}</li>
                 {% endfor %}
             </ul>
+            {% if tournament.notes %}
+                <h4><u>Notes:</u></h4>
+                <p>{{ tournament.notes|linebreaks }}</p>
+            {% endif %}
         </div>
     </body>
 </html>

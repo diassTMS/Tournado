@@ -60,6 +60,10 @@
                         </ul> 
                 </span>
             </p>
+            {% if object.notes %}
+                <p><i class="fa-solid fa-note-sticky"></i><span> <b>Notes:</b></span></p>
+                <div style="margin-left:40px;">{{ object.notes|linebreaks }}</div>
+            {% endif %}
             <hr>
             <div class="grid" id="tournPage">
                 <button class="secondary" onclick="location.href='{% url 'tourn-update' object.id %}';">Update Info</button>

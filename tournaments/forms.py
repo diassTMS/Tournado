@@ -10,12 +10,13 @@ import datetime
 class TournForm(forms.ModelForm):
     class Meta:
         model = Tournament
-        fields = ['name', 'age', 'gender', 'date', 'venue', 'noPitches', 'noDivisions', 'startTime', 'meetTime', 'matchType', 'knockoutRounds', 'liveScores', 'umpires', 'teamsheets','entryPrice', 'vat', 'level', 'group']
+        fields = ['name', 'age', 'gender', 'date', 'venue', 'noPitches', 'noDivisions', 'startTime', 'meetTime', 'matchType', 'knockoutRounds', 'liveScores', 'umpires', 'teamsheets','entryPrice', 'vat', 'level', 'group', 'notes']
 
         widgets = {
             'date': forms.DateInput(attrs={'type':'date'}),
             'startTime': forms.TimeInput(attrs={'type': 'time'}),
             'meetTime': forms.TimeInput(attrs={'type': 'time'}),
+            'notes': forms.Textarea(attrs={'rows':3}),
         }
 
     def __init__(self, *args, **kwargs):
