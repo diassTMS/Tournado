@@ -67,6 +67,9 @@ class OrderItem(models.Model):
     def tag_price(self):
         return f'{CURRENCY}{self.price}'
     
+    def tag_total_price(self):
+        return f'{CURRENCY}{self.total_price}'
+    
     def tag_teams(self):
         return f'{self.qty}'
 
