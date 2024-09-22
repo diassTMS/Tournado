@@ -6,6 +6,6 @@
 </head>
 <body>
     <h4>{{ entry }} has requested to delete their entry for {{ tourn }}.</h4>
-    <a href="https://gloucestershire.tournado.co.uk{% url 'user-tourn-detail' pk %}">Follow this link to delete their entry.</a>
+    <a href="https://gloucestershire.tournado.co.uk{% url 'entry-delete' entry.id %}">Follow this link to delete their entry.</a>
 </body>
 </html>

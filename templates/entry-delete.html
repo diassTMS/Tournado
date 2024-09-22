@@ -22,7 +22,8 @@
             {% csrf_token %}      
             <fieldset class="form-group">
                 <h3>Are you sure you want to delete this entry?</h3>
-                <h4>{{ entry }}</h4>
+                <h4>Entry: {{ entry }}</h4>
+                <h4>Event: {{ object.tournament }}</h4>
             </fieldset>
             <div class="grid">
                 <button style="background-color: #AF291D; color: white;" onclick="delete_item({{ object.pk }});">Yes, Delete <i class="fa-solid fa-trash-can" id="icon"></i></button>
