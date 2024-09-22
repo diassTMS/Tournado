@@ -8,7 +8,7 @@ from django.contrib.auth.decorators import login_required
 from tournaments.models import Entry, Match, Tournament
 from django.shortcuts import HttpResponseRedirect
 from django.urls import reverse_lazy, reverse
-from django.shortcuts import render, redirect
+from django.shortcuts import get_object_or_404, render, redirect
 from .models import Schedule, Timings, Rules
 from django.http import JsonResponse
 from django.contrib import messages
@@ -50,6 +50,19 @@ class ScheduleCreateView(LoginRequiredMixin, UserPassesTestMixin, SuccessMessage
             return True
         return False
     
+def publish_schedule(request, pk):
+    sched = get_object_or_404(Schedule, id=pk)
+    if sched.published == True:
+        sched.published = False
+        sched.save()
+        messages.success(request, 'Schedule unpublished!')
+    else:
+        sched.published = True
+        sched.save()
+        messages.success(request, 'Schedule published!')
+    
+    return redirect(reverse_lazy('user-tourn-detail',  kwargs={'pk': sched.tournament.id}))
+
 class SchedulePDFView(LoginRequiredMixin, UserPassesTestMixin, SuccessMessageMixin, UpdateView):
     model = Schedule
     form_class = SchedulePDFForm

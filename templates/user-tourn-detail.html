@@ -142,7 +142,11 @@
                     {% endif %}
                     <button onclick="location.href='{% url 'user-tourn-customise' object.id %}';">Customisation</button>
                     <button class="secondary" onclick="location.href='{% url 'schedule-create' object.id %}';">Regenerate</button>     
-                    <button onclick="location.href='#';">Publish</button>                                 
+                    {% if sched.published %}
+                        <button style="background-color: #AF291D; color: white;" data-target="modal-unpublish" onclick="toggleModal(event)">Unpublish?</button>  
+                    {% else %}   
+                        <button data-target="modal-publish" onclick="toggleModal(event)">Publish?</button>                          
+                    {% endif %}    
                 </div>
             {% endif %}
         </div>
@@ -174,22 +178,48 @@
                 <button style="background-color: #AF291D; color: white;" onclick="delete_item({{ object.pk }});">Delete</button>
             </footer>
         </article>
-        </dialog>  
-        
-        <!-- Delete Form & Script 4 Tourn -->
-        <form method="post" action="{% url 'tourn-delete' object.id %}" id="delete_form">
-            {% csrf_token %}
-            <input type="hidden" name="pk" id="delete_pk">
-        </form>
+    </dialog>  
 
-        <script>
-            function delete_item(pk) {
-                var hidden_item = document.getElementById("delete_pk");
-                hidden_item.value = pk;
-                var form = document.getElementById("delete_form");
-                form.submit();
-            } 
-        </script>
-        <script src="{% static "js/modal.js" %}"></script>
+    <dialog id="modal-publish">
+        <article>
+            <header>
+                <h3>Are you sure you want to publish this schedule?</h3>
+            </header>
+            <p>All users will be able to view the schedule.</p>
+            <footer>
+                <button class="secondary" data-target="modal-publish" onclick="toggleModal(event)">Cancel</button>
+                <button onclick="location.href='{% url 'schedule-publish' sched.id %}';">Publish</button>
+            </footer>
+        </article>
+    </dialog>  
+
+    <dialog id="modal-unpublish">
+        <article>
+            <header>
+                <h3>Are you sure you want to unpublish this schedule?</h3>
+            </header>
+            <p>All users will no longer be able to view the schedule.</p>
+            <footer>
+                <button class="secondary" data-target="modal-unpublish" onclick="toggleModal(event)">Cancel</button>
+                <button style="background-color: #AF291D; color: white;" onclick="location.href='{% url 'schedule-publish' sched.id %}';">Unpublish</button>
+            </footer>
+        </article>
+    </dialog>  
+        
+    <!-- Delete Form & Script 4 Tourn -->
+    <form method="post" action="{% url 'tourn-delete' object.id %}" id="delete_form">
+        {% csrf_token %}
+        <input type="hidden" name="pk" id="delete_pk">
+    </form>
+
+    <script>
+        function delete_item(pk) {
+            var hidden_item = document.getElementById("delete_pk");
+            hidden_item.value = pk;
+            var form = document.getElementById("delete_form");
+            form.submit();
+        } 
+    </script>
+    <script src="{% static "js/modal.js" %}"></script>
 
 {% endblock%}
