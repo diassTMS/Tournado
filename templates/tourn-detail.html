@@ -79,7 +79,7 @@
                 {% elif request.user.is_authenticated %}
                     <button style="height:60px;" onclick="location.href='{% url 'entry-create' object.id %}';">Enter Event</button>
                 {% endif %}
-                {% if object.generatedSchedule == True %}
+                {% if sched.published == True %}
                     <a role="button" href="{% url 'pdf' object.id %}" target="_blank" >Match Schedule <i class="fa-solid fa-file-pdf"></i></a>
                     {% if object.umpires %}
                         <a role="button" href="{% url 'umpire-pdf' object.id %}" target="_blank" >Umpire Schedule <i class="fa-solid fa-file-pdf"></i></a>

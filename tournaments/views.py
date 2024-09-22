@@ -49,6 +49,7 @@ class TournDetailView(DetailView):
 
         context["entered"] = entered
         context['live'] = live
+        context["sched"] = Schedule.objects.get(tournament=self.object.id)
         return context
 
 @login_required
