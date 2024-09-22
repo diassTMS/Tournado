@@ -168,19 +168,19 @@ div.row{
 #Club{
     border-style: solid; 
     border-width: 1px; 
-    border-color: light-dark(#3C71F7, #9CA7FA);  
+    border-color: light-dark(#017FC0, #51B4FF);  
     border-radius: 10px;          
     padding: 8px;
-    background-color: light-dark(#9CA7FA, #3C71F7);
+    background-color: light-dark(#51B4FF, #017FC0);
 }
 
 #Social{
     border-style: solid; 
     border-width: 1px; 
-    border-color: light-dark(#017FC0, #51B4FF);  
+    border-color: light-dark(#3C71F7, #9CA7FA);  
     border-radius: 10px;          
     padding: 8px;
-    background-color: light-dark(#51B4FF, #017FC0);
+    background-color: light-dark(#9CA7FA, #3C71F7);
 }
 
 #County{
