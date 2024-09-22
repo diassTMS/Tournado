@@ -84,6 +84,7 @@ class Tournament(models.Model):
     vat = models.BooleanField(default=True)
     level = models.CharField(max_length=10, choices=LEVEL)
     group = models.CharField(max_length=7, choices=GROUP)
+    notes = models.TextField(blank=True)
 
     def __str__(self):                    #Displaying tournament id as a concatenation of info
         return f'{self.name} {self.date}'
