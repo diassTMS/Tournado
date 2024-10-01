@@ -29,9 +29,6 @@
         <div class="grid" id="title">
             <div class ="grid" style="grid-template-columns: 1fr;">
                 <img id="img" src="{{ tournament.user.profile.image.url }}">
-                {% if tournament.user.username == "Hockey_Fever" %}
-                    <img id="img" src="{% static 'images/gha_logo.jpg' %}">
-                {% endif %}
             </div>
             <hgroup>
                 <h2>{{ title }} Results - {{ tournament.name }}</h2>
