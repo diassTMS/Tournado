@@ -3,8 +3,12 @@
 {% load static %}
 {% block container %} 
     <style>
-        #title {
+        #titleBig {
             grid-template-columns: 1fr 11fr 1fr;
+        }
+
+        #titleSmall {
+            display: none;
         }
 
         #smallTable {
@@ -12,8 +16,12 @@
         }
 
         @media (width < 50em) {
-            #title {
-                grid-template-columns: 1fr 4fr;
+            #titleBig {
+                display: none;
+            }
+
+            #titleSmall {
+                display: block;
             }
 
             #largeTable {
@@ -26,7 +34,7 @@
         }
     </style>
     <div id="box"> 
-        <div class="grid" id="title">
+        <div class="grid" id="titleBig">
             <div class ="grid" style="grid-template-columns: 1fr;">
                 <img id="img" src="{{ tournament.user.profile.image.url }}">
             </div>
@@ -42,6 +50,17 @@
             {% if tournament.user.username == "Hockey_Fever" %}
                 <img id="img" src="{% static 'images/gha_logo.jpg' %}">
             {% endif %}
+        </div>
+        <div class="grid" id="titleSmall">
+            <hgroup>
+                <h2>{{ title }} Results - {{ tournament.name }}</h2>
+                <p>        
+                    <i class="fa-solid fa-circle-info"></i>
+                    <span>
+                        <b>Click on a team to see its individual statistics</b>
+                    </span>
+                </p> 
+            </hgroup>
         </div>
         {% if tournament.finished == True and winner != None %}
             <hr>
