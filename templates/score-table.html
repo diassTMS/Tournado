@@ -111,7 +111,9 @@
                         </td>
                     </tr>
                 {% else %}
-                    {% render_table table %}
+                    <div class="overflow-auto">
+                        {% render_table table %}
+                    </div>
                 {% endif %}
             </div>
         {% endfor %}
