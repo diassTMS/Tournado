@@ -34,10 +34,10 @@
                 <h3>No leagues are currently ongoing</h3>
             </div>
         {% endif %}
-        {% if leagues|length < 1 %}
+        {% if leagues|length > 1 %}
             <div class="grid" id="tournPage">
         {% else %}
-            <div class="grid" style="grid-template-columns: 1fr 1fr;">
+            <div class="grid" style="grid-template-columns: 1fr;">
         {% endif %}
             {% for league in leagues %}
                 <article>
