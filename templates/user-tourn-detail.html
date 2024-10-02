@@ -94,7 +94,7 @@
                                 {% elif entry.teamsheet == None %}
                                     <td style="text-align:center; color: #AF291D;"><i class="fa-solid fa-x"></i></td>
                                 {% else %}
-                                    <td style="text-align:center; color: green;"><a href="{{entry.teamsheet.url}}" target="_blank"><i class="fa-solid fa-check"></i></a></td>
+                                    <td style="text-align:center; color: green;"><i class="fa-solid fa-check"></i></td>
                                 {% endif %} 
                             {% endif %}                           
                             <td style="text-align:center; cursor:pointer;"><i onclick="location.href='{% url 'entry-update' entry.id %}';" class="fa-solid fa-pen-to-square" id="icon"></i></td>
