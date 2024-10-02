@@ -39,7 +39,9 @@
                 <img id="img" src="{{ tournament.user.profile.image.url }}">
             </div>
             <hgroup>
-                <h2>{{ title }} Results - {{ tournament.name }}</h2>
+                <h2 style="float: center;">{{ title }} Results</h2>
+                <hr>
+                <h2>{{ tournament.name }}</h2>
                 <p>        
                     <i class="fa-solid fa-circle-info"></i>
                     <span>
@@ -53,7 +55,9 @@
         </div>
         <div class="grid" id="titleSmall">
             <hgroup>
-                <h2>{{ title }} Results - {{ tournament.name }}</h2>
+                <h2 style="float: center;">{{ title }} Results</h2>
+                <hr>
+                <h2>{{ tournament.name }}</h2>
                 <p>        
                     <i class="fa-solid fa-circle-info"></i>
                     <span>
@@ -65,9 +69,11 @@
         {% if tournament.finished == True and winner != None %}
             <hr>
             <article>
-                <h2 style="text-align: center; margin-top: 10px; color: #DAA520;"><i class="fa-solid fa-trophy"></i> {{ winner.teamName }} <i class="fa-solid fa-trophy"></i></h2>
-                <hr>
-                <h4 style="text-align: center; margin-top: 10px;"><i class="fa-solid fa-medal"></i> {{ runnerUp.teamName }} <i class="fa-solid fa-medal"></i></h4>
+                <div class="overflow-auto"> 
+                    <h2 style="text-align: center; margin-top: 10px; color: #DAA520;"><i class="fa-solid fa-trophy"></i> {{ winner.teamName }} <i class="fa-solid fa-trophy"></i></h2>
+                    <hr>
+                    <h4 style="text-align: center; margin-top: 10px;"><i class="fa-solid fa-medal"></i> {{ runnerUp.teamName }} <i class="fa-solid fa-medal"></i></h4>
+                </div>
             </article>
         {% endif %}
     </div>
