@@ -8,7 +8,7 @@
                 <h3>No events are currently live</h3>
             </div>
         {% endif %}
-        {% if tournaments|length > 1 %}
+        {% if tournaments|length < 1 %}
             <div class="grid" id="tournPage">
         {% else %}
             <div class="grid" style="grid-template-columns: 1fr 1fr;">
@@ -34,7 +34,7 @@
                 <h3>No leagues are currently ongoing</h3>
             </div>
         {% endif %}
-        {% if leagues|length > 1 %}
+        {% if leagues|length < 1 %}
             <div class="grid" id="tournPage">
         {% else %}
             <div class="grid" style="grid-template-columns: 1fr 1fr;">
