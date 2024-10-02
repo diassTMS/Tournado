@@ -8,6 +8,7 @@ from django.contrib.auth.models import User, Group
 from django.urls import reverse_lazy, reverse
 from .models import Tournament, Entry, Match
 from django_filters.views import FilterView
+from orders.models import Order, OrderItem
 from .threads import EntryUpdateThread
 from django.core.mail import send_mail
 from django.contrib.auth import logout
@@ -180,6 +181,25 @@ class EntryCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
         
         if self.kwargs.get('pk') != 0:
             form.instance.tournament = Tournament.objects.get(pk=self.kwargs.get('pk'))
+
+        #Create Order and Order Item for entry
+        userId = form.instance.user.pk
+        user = User.objects.get(pk=userId)
+        new_order = Order.objects.create(
+                                        title='Order 69',
+                                        user=user,
+                                        date=datetime.datetime.today().date()
+                                        )
+        new_order.title = f'Order #{new_order.id}'
+        new_order.save()
+
+        new_order_item = OrderItem.objects.create(
+                                        order=Order.objects.get(id=new_order.id),
+                                        tournament=form.instance.tournament,
+                                        qty=1,
+                                        price=form.instance.tournament.entryPrice,
+                                        )
+        new_order_item.save()
 
         redirect_url = super(EntryCreateView, self).form_valid(form)
         return redirect_url
