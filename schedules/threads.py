@@ -391,9 +391,11 @@ class GenerateScheduleThread(threading.Thread):
                     y += 1
             
             print(stanDev)
+            print(optimumSchedule)
             #Creating Matches
             for i in range(len(optimumSchedule)):
                 for j in range(len(optimumSchedule[i])):
+                    print('i', i, 'j',j)
                     if not(optimumSchedule[i][j] == [0,0]):
                         if self.instance.matchType == "One Way":
                             duration = match_duration + break_duration
@@ -449,7 +451,7 @@ class GenerateScheduleThread(threading.Thread):
                         if self.instance.matchType == "One Way":
                             duration = match_duration + break_duration
                             match = Match(tournament = self.instance,
-                                            division = int(entriesData[(optimumSchedule[i][j][0])-1][1]),
+                                            division = -1,
                                             entryOne = Entry.objects.get(Q(tournament=self.instance) & Q(pk=entriesData[0][0].id)),
                                             entryTwo = Entry.objects.get(Q(tournament=self.instance) & Q(pk=entriesData[0][0].id)),
                                             pitch = j+1,
@@ -461,7 +463,7 @@ class GenerateScheduleThread(threading.Thread):
                             full_match_duration = (2 * match_duration) + halftime_duration
                             duration = full_match_duration + break_duration
                             match = Match(tournament = self.instance,
-                                            division = int(entriesData[(optimumSchedule[i][j][0])-1][1]),
+                                            division = -1,
                                             entryOne = Entry.objects.get(Q(tournament=self.instance) & Q(pk=entriesData[0][0].id)),
                                             entryTwo = Entry.objects.get(Q(tournament=self.instance) & Q(pk=entriesData[0][0].id)),
                                             pitch = j+1,
