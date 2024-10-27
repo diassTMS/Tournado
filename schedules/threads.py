@@ -315,7 +315,7 @@ class GenerateScheduleThread(threading.Thread):
             divisions = divisionCalc(noDivs, noEntries)
             #Updating entry divisions
             for i in range(len(divisions)):
-                for j in range(len(divisions[i][1])-1):
+                for j in range(len(divisions[i][1])):
                     #Don't question line 264-265. They work!
                     entriesData[(divisions[i][1][j])-1].append(divisions[i][0])
                     entry = Entry.objects.get(Q(tournament=self.instance) & Q(pk=entriesData[(divisions[i][1][j])-1][0].id))
