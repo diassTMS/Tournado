@@ -102,8 +102,6 @@ class PDFView(View):
             row.append(qs.first())
             for j in range(len(qs)):
                 row.append(qs[j])
-                print(qs[j])
-
             
             while len(row) < (tournament.noPitches + 1):
                 row.append('blank')
