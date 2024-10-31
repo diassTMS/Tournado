@@ -44,7 +44,7 @@ class Order(models.Model):
         return f'{CURRENCY}{self.value}'
     
 class OrderItem(models.Model):
-    tournament = models.ForeignKey(Tournament, on_delete=models.PROTECT)
+    tournament = models.ForeignKey(Tournament, on_delete=models.CASCADE)
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='order_items')
     qty = models.PositiveIntegerField(default=1)
     price = models.DecimalField(default=0.00, decimal_places=2, max_digits=20)
