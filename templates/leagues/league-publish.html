@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+{% block container %}  
+    <div class="container" id="leagueBox">
+        <h2>
+            <i onClick="javascript:history.go(-1);" class="fa-solid fa-circle-arrow-left" id="icon"></i>      
+            Publish League Matches
+        </h2>
+        <hr>
+        <form method="POST" enctype="multipart/form-data">      
+            {% csrf_token %}    
+            <fieldset>
+                <h4>Are you sure you want to publish these league matches?</h4>
+                <p>Once you select the checkbox all users will be able to view the matches.</p>
+                <div>
+                    {{ form|crispy }}
+                </div>
+            </fieldset>
+            <div>
+                <button type="submit">Save</button>
+            </div>  
+        </form>
+    </div>
+{% endblock %}
+

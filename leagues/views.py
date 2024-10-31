@@ -144,10 +144,10 @@ class LeaguePublishView(LoginRequiredMixin, UserPassesTestMixin, SuccessMessageM
     model = League
     form_class = PublishForm
     success_url = ''
+    template_name = 'leagues/league-publish.html'
     success_message = "Your league has been published!"
 
     def form_valid(self, form):
-        form.instance.publish = True
         form.save()
         return super().form_valid(form)
     

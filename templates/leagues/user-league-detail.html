@@ -95,46 +95,18 @@
                     <button onclick="location.href='{% url 'league-schedule-create' object.id %}';">Generate Matches</button>
                 {% else %}
                     <button onclick="location.href='{% url 'league-schedule-create' object.id %}';" class="secondary">Regenerate Matches</button>
+                    {% if object.publish %}
+                        <button style="background-color: #AF291D; color: white;" onclick="location.href='{% url 'league-publish' object.id %}';">Unpublish Matches?</button>  
+                    {% else %}   
+                        <button onclick="location.href='{% url 'league-publish' object.id %}';">Publish Matches?</button>                          
+                    {% endif %}   
                 {% endif %}
-                {% if object.publish %}
-                    <button style="background-color: #AF291D; color: white;" data-target="modal-unpublish" onclick="toggleModal(event)">Unpublish Matches?</button>  
-                {% else %}   
-                    <button data-target="modal-publish" onclick="toggleModal(event)">Publish Matches?</button>                          
-                {% endif %}   
                 <button onclick="location.href='{% url 'league-entry-create' object.id %}';">Add Entry <i class="fa-solid fa-square-plus"></i></button>
                 <button class="secondary" onclick="location.href='{% url 'league-update' object.id %}';">Update Info</button>
                 <button style="background-color: #AF291D; color: white;" data-target="modal-delete" onclick="toggleModal(event)">Delete League <i class="fa-solid fa-trash-can" id="icon"></i></button>
             </div>
         </div>
     </section>
-    
-     <!-- Publish Modal -->
-    <dialog id="modal-publish">
-        <article>
-            <header>
-                <h3>Are you sure you want to publish these league matches?</h3>
-            </header>
-            <p>All users will be able to view the matches.</p>
-            <footer>
-                <button class="secondary" data-target="modal-publish" onclick="toggleModal(event)">Cancel</button>
-                <button onclick="location.href='#';">Publish</button>
-            </footer>
-        </article>
-    </dialog>  
-
-     <!-- Unpublish Modal -->
-    <dialog id="modal-unpublish">
-        <article>
-            <header>
-                <h3>Are you sure you want to unpublish these league matches?</h3>
-            </header>
-            <p>All users will no longer be able to view the matches.</p>
-            <footer>
-                <button class="secondary" data-target="modal-unpublish" onclick="toggleModal(event)">Cancel</button>
-                <button style="background-color: #AF291D; color: white;" onclick="location.href='#';">Unpublish</button>
-            </footer>
-        </article>
-    </dialog>  
 
     <!-- Tourn Delete Modal -->
     <dialog id="modal-delete">
