@@ -55,14 +55,16 @@
                         <button class="outline" onclick="location.href = '{% url 'league-create' %}';">New <i class="fa-solid fa-plus"></i></button>
                     </div>
                 </article>
-                <article id="card">
-                    <h4>User Management</h4>
-                    <hr>
-                    <div class="media-body">
-                        <p>View all users, their profiles and orders. Whilst keeping track of finances.</p>
-                        <button class="outline" onclick="location.href = '{% url 'user-list' %}';">View <i class="fa-solid fa-angles-right"></i></button>
-                    </div>
-                </article>         
+                {% if user.username != 'West_Hockey' %}
+                    <article id="card">
+                        <h4>User Management</h4>
+                        <hr>
+                        <div class="media-body">
+                            <p>View all users, their profiles and orders. Whilst keeping track of finances.</p>
+                            <button class="outline" onclick="location.href = '{% url 'user-list' %}';">View <i class="fa-solid fa-angles-right"></i></button>
+                        </div>
+                    </article>  
+                {% endif %}       
             {% else %}
                 <article id="card">
                     <h4>Entries</h4>
