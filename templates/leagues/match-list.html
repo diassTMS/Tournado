@@ -16,7 +16,7 @@
                 <label>Venue {{ filter.form.venue }}</label>
                 <label>Date {{ filter.form.date }}</label>
                 <button class="primaryLeague" style="height: calc(1rem* var(--pico-line-height) + var(--pico-form-element-spacing-vertical)* 2 + var(--pico-border-width)* 2); margin-top: 35px;" onclick="submit"><i class="fa-solid fa-filter"></i></button>
-                <input style="margin-top: 35px;" class="secondary" type="button" onclick="location.href='{% url 'league-match-list' return %}';" value="X" />
+                <input style="margin-top: 35px;" class="secondary" type="button" onclick="location.href='{% url 'league-match-list-normal' return %}';" value="X" />
             </fieldset>
         </form>
         <hr>
