@@ -51,9 +51,9 @@
                         <tr>
                             <td scope="row">{{ match }}</td>
                             {% if match.played == True %}
-                                <td style="text-align: center; color: green;"><i class="fa-solid fa-check"></i>&emsp;<a style="color: #705bd7" href="#">{{ match.goalsOne }} - {{ match.goalsTwo }}</a></td>
+                                <td style="text-align: center; color: green;"><i class="fa-solid fa-check"></i>&emsp;<a style="color: #705bd7" href="{% url 'league-match-result' match.id %}">{{ match.goalsOne }} - {{ match.goalsTwo }}</a></td>
                             {% else %}
-                                <td style="text-align: center; color: red;"><i class="fa-solid fa-xmark"></i>&emsp;<a style="color: #705bd7" href="#"><b><u>Add</u></b></a></td>
+                                <td style="text-align: center; color: red;"><i class="fa-solid fa-xmark"></i>&emsp;<a style="color: #705bd7" href="{% url 'league-match-result' match.id %}"><b><u>Add</u></b></a></td>
                             {% endif %}
                             {% if match.data == True %}
                                 <td style="text-align: center; color: green;"><i class="fa-solid fa-check"></i>&emsp;<a style="color: #705bd7" href="{% url 'league-match-update' match.id %}">Update</a></td>
