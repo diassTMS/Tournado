@@ -127,5 +127,5 @@ class LeagueScoreTable(tables.Table):
     class Meta:
         model = LeagueEntry
         template_name = "django_tables2/bootstrap4-responsive.html"
-        fields = ("teamName", "played",  "points", "won", "drawn", "lost", "forGoals", "againstGoals", "goalDiff",)
+        fields = ("teamName", "played", "won", "drawn", "lost", "forGoals", "againstGoals", "goalDiff", "points")
         orderable = False
