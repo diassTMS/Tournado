@@ -34,16 +34,6 @@ class TournForm(forms.ModelForm):
         self.fields['vat'].label = f'Incl. VAT'
         self.fields['teamsheets'].label = f'Collect Team Sheets?'
 
-
-    def clean_date(self):
-        cleaned_data = self.clean()
-        date = cleaned_data.get('date')
-        now = datetime.date.today()
-        if date < now:
-            self.add_error('date', "Date cannot be in the past")
-        
-        return date
-
     def clean_noPitches(self):
         cleaned_data = self.clean()
         pitches = cleaned_data.get('noPitches')

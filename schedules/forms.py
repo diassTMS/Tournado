@@ -155,7 +155,8 @@ class SchedulePDFForm(forms.ModelForm):
     def save(self):
         schedule = self.instance
         schedule.timed = self.cleaned_data["timed"]
-
+        schedule.save()
+        print(self.cleaned_data["timed"])
         oldTimings = Timings.objects.filter(schedule=schedule)
         oldTimings.delete()
 
