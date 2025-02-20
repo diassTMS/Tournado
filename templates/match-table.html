@@ -35,7 +35,7 @@
         <div class='header'>
             <h2 style=" margin-bottom: 20px;">
                 <i onClick="location.href='{% url 'user-tourn-detail' return %}';" class="fa-solid fa-circle-arrow-left" id="icon"></i> 
-                Matches Table
+                {{ sched.tournament.age }} {{ sched.tournament.gender }} {{ sched.tournament.date|date:"d/m/Y" }} : Matches Table
             </h2>
         </div>
         <hr>
