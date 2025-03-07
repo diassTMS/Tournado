@@ -248,11 +248,12 @@ class GenerateScheduleThread(threading.Thread):
 
                         while len(arr[i][j]) != 2:
                             match = schedule[i][j]
-                            entry = Entry.objects.get(Q(tournament=self.instance) & Q(pk=data[(umpires[count]-1)][0].id))
 
                             if match == [0,0]:
                                 arr[i][j] = [0,0]
                             else:
+                                entry = Entry.objects.get(Q(tournament=self.instance) & Q(pk=data[(umpires[count]-1)][0].id))
+                                
                                 if not(entry.umpire in match) and not(entry.umpire in rowCurrent) and not(entry.user in users):
                                     if entry.umpire in arr[i][j]:
                                         arr[i][j].append('Ind.')
