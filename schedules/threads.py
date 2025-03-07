@@ -246,7 +246,8 @@ class GenerateScheduleThread(threading.Thread):
                         for k in range(nPitch):
                             rowCurrent += arr[i][k]
 
-                        while len(arr[i][j]) != 2:
+                        temp = 0
+                        while len(arr[i][j]) != 2 and temp < 20:
                             match = schedule[i][j]
 
                             if match == [0,0]:
@@ -264,6 +265,8 @@ class GenerateScheduleThread(threading.Thread):
                                     count = 0
                                 else:
                                     count += 1
+
+                            temp += 1
                 
                 return arr
 
