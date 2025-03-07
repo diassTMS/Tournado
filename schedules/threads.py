@@ -236,7 +236,9 @@ class GenerateScheduleThread(threading.Thread):
                 
                         users = []
                         for l in range(2):
-                            user = Entry.objects.get(Q(tournament=self.instance) & Q(pk=data[(schedule[i][j][l])-1][0].id)).user
+                            if schedule[i][j] != [0,0]:
+                                user = Entry.objects.get(Q(tournament=self.instance) & Q(pk=data[(schedule[i][j][l])-1][0].id)).user
+                                
                             if not(user.groups.filter(name="Admin").exists()):
                                 users.append(user)
                         
