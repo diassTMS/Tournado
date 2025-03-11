@@ -85,9 +85,9 @@
                 {% endif %}
                 {% if sched.published == True %}
                     <a role="button" href="{% url 'pdf' object.id %}" target="_blank" >Match Schedule <i class="fa-solid fa-file-pdf"></i></a>
-                    {% if object.umpires %}
+                    <!--{% if object.umpires %}
                         <a role="button" href="{% url 'umpire-pdf' object.id %}" target="_blank" >Umpire Schedule <i class="fa-solid fa-file-pdf"></i></a>
-                    {% endif %}
+                    {% endif %}-->
                 {% else %}
                     <button disabled style="height:60px;">Match Schedule</button>
                 {% endif %}
