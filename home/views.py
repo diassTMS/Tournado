@@ -190,7 +190,7 @@ class LeagueCurrentScoreView(MultiTableMixin, TemplateView):
         table = LeagueScoreTable(qs)
 
         if league.finished == True:
-            ranks = LeagueEntry.objects.filter(league=league.id).order_by(F('points').desc(), F('goalDiff').desc(), F('forGoals').desc()).first()
+            ranks = LeagueEntry.objects.filter(league=league.id).order_by(F('points').desc(), F('goalDiff').desc(), F('forGoals').desc())
             winner = ranks[0]
             runnerUp = ranks[1]
         else:
