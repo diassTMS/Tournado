@@ -55,6 +55,7 @@ urlpatterns = [
     path('entry/<int:pk>/results/', home_views.EntryStatsView.as_view(), name='entry-stats'),
     path('schedule/<int:pk>/', sched_views.ScheduleCreateView.as_view(), name='schedule-create'),
     path('schedule/<int:pk>/publish/', sched_views.publish_schedule, name='schedule-publish'),
+    path('schedule/<int:pk>/publish/umpire/', sched_views.publish_umpire_schedule, name='schedule-publish-umpire'),
     path('schedule/<int:pk>/detail/', sched_views.SchedulePDFView.as_view(), name='schedule-pdf'),
     path('schedule/<int:pk>/pdf/', sched_views.PDFView.as_view(), name='pdf'),
     path('umpire-schedule/<int:pk>/pdf/', sched_views.UmpirePDFView.as_view(), name='umpire-pdf'),

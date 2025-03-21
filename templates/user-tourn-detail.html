@@ -151,6 +151,11 @@
                     {% endif %}    
                     {% if object.umpires %}
                         <a role="button" class="secondary" href="{% url 'umpire-pdf' object.id %}" target="_blank">View Umpire <i class="fa-solid fa-file-pdf"></i></a>
+                        {% if sched.umpire_published %}
+                            <button style="background-color: #AF291D; color: white;" data-target="modal-unpublish-umpire" onclick="toggleModal(event)">Unpublish Umpire <i class="fa-solid fa-file-pdf"></i>?</button>  
+                        {% else %}   
+                            <button data-target="modal-publish-umpire" onclick="toggleModal(event)">Publish Umpire <i class="fa-solid fa-file-pdf"></i>? </button>                          
+                    {% endif %}  
                     {% endif %}
                 </div>
             {% endif %}
@@ -207,6 +212,33 @@
             <footer>
                 <button class="secondary" data-target="modal-unpublish" onclick="toggleModal(event)">Cancel</button>
                 <button style="background-color: #AF291D; color: white;" onclick="location.href='{% url 'schedule-publish' sched.id %}';">Unpublish</button>
+            </footer>
+        </article>
+    </dialog>  
+
+    <!--Umpire Schedule-->
+    <dialog id="modal-publish-umpire">
+        <article>
+            <header>
+                <h3>Are you sure you want to publish this umpire schedule?</h3>
+            </header>
+            <p>All users will be able to view the umpire schedule.</p>
+            <footer>
+                <button class="secondary" data-target="modal-publish-umpire" onclick="toggleModal(event)">Cancel</button>
+                <button onclick="location.href='{% url 'schedule-publish-umpire' sched.id %}';">Publish</button>
+            </footer>
+        </article>
+    </dialog>  
+
+    <dialog id="modal-unpublish-umpire">
+        <article>
+            <header>
+                <h3>Are you sure you want to unpublish this umpire schedule?</h3>
+            </header>
+            <p>All users will no longer be able to view the umpire schedule.</p>
+            <footer>
+                <button class="secondary" data-target="modal-unpublish-umpire" onclick="toggleModal(event)">Cancel</button>
+                <button style="background-color: #AF291D; color: white;" onclick="location.href='{% url 'schedule-publish-umpire' sched.id %}';">Unpublish</button>
             </footer>
         </article>
     </dialog>  

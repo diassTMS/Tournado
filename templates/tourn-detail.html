@@ -85,11 +85,11 @@
                 {% endif %}
                 {% if sched.published == True %}
                     <a role="button" href="{% url 'pdf' object.id %}" target="_blank" >Match Schedule <i class="fa-solid fa-file-pdf"></i></a>
-                    <!--{% if object.umpires %}
-                        <a role="button" href="{% url 'umpire-pdf' object.id %}" target="_blank" >Umpire Schedule <i class="fa-solid fa-file-pdf"></i></a>
-                    {% endif %}-->
                 {% else %}
                     <button disabled style="height:60px;">Match Schedule</button>
+                {% endif %}
+                {% if sched.umpire_published == True %}
+                    <a role="button" href="{% url 'umpire-pdf' object.id %}" target="_blank" >Umpire Schedule <i class="fa-solid fa-file-pdf"></i></a>
                 {% endif %}
                 {% if live == True %}
                     <button style="height:60px;" onclick="location.href='{% url 'live-score' object.id %}';">Live Score Table</button>

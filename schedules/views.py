@@ -59,6 +59,19 @@ def publish_schedule(request, pk):
     
     return redirect(reverse_lazy('user-tourn-detail',  kwargs={'pk': sched.tournament.id}))
 
+def publish_umpire_schedule(request, pk):
+    sched = get_object_or_404(Schedule, id=pk)
+    if sched.umpire_published == True:
+        sched.umpire_published = False
+        sched.save()
+        messages.success(request, 'Umpire schedule unpublished!')
+    else:
+        sched.umpire_published = True
+        sched.save()
+        messages.success(request, 'Umpire schedule published!')
+    
+    return redirect(reverse_lazy('user-tourn-detail',  kwargs={'pk': sched.tournament.id}))
+
 class SchedulePDFView(LoginRequiredMixin, UserPassesTestMixin, SuccessMessageMixin, UpdateView):
     model = Schedule
     form_class = SchedulePDFForm
