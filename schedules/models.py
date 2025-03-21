@@ -11,6 +11,7 @@ class Schedule(models.Model):
     tournament = models.OneToOneField(Tournament, on_delete=models.CASCADE)
     timed = models.CharField(max_length=15, choices=TIMED, default="Centrally Timed")
     published = models.BooleanField(default=False)
+    umpire_published = models.BooleanField(default=False)
 
     def __str__(self):
         return f'{self.tournament.name} Schedule'
