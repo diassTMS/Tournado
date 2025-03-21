@@ -141,8 +141,6 @@ class Match(models.Model):    #Creating match table/entity
     goalsTwo = models.IntegerField(default=0)
     pfOne = models.IntegerField(default=0)
     pfTwo = models.IntegerField(default=0)
-    umpireOne = models.CharField(max_length=100, blank=True, null=True)
-    umpireTwo = models.CharField(max_length=100, blank=True, null=True)
     umpireOneName = models.ForeignKey(Entry, on_delete=models.CASCADE, related_name='UmpireOne', blank=True, null=True)
     umpireTwoName = models.ForeignKey(Entry, on_delete=models.CASCADE, related_name='UmpireTwo', blank=True, null=True)
 
