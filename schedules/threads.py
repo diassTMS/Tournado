@@ -268,7 +268,7 @@ class GenerateScheduleThread(threading.Thread):
                                     if entry.umpire in arr[i][j]:
                                         arr[i][j].append('Ind.')
                                     else:
-                                        arr[i][j].append(entry.umpire)
+                                        arr[i][j].append(entry)
                                 
                                 if count == (len(umpires)-1):
                                     count = 0
@@ -772,8 +772,8 @@ class GenerateScheduleThread(threading.Thread):
                                                 pitch = j+1,
                                                 start = datetime.datetime.strptime(start, '%H:%M:%S') + datetime.timedelta(minutes=(duration * i)),
                                                 end = datetime.datetime.strptime(start, '%H:%M:%S') + datetime.timedelta(minutes=(match_duration + (duration * i))),
-                                                umpireOne = UmpireSchedule[i][j][0],
-                                                umpireTwo = UmpireSchedule[i][j][1],
+                                                umpireOneName = UmpireSchedule[i][j][0],
+                                                umpireTwoName = UmpireSchedule[i][j][1],
                                                 )
                                 match.save()
                             else:
@@ -797,8 +797,8 @@ class GenerateScheduleThread(threading.Thread):
                                             pitch = j+1,
                                             start = datetime.datetime.strptime(start, '%H:%M:%S') + datetime.timedelta(minutes=(duration * i)),
                                             end = datetime.datetime.strptime(start, '%H:%M:%S') + datetime.timedelta(minutes=(full_match_duration + (duration * i))),
-                                            umpireOne = UmpireSchedule[i][j][0],
-                                            umpireTwo = UmpireSchedule[i][j][1],
+                                            umpireOneName = UmpireSchedule[i][j][0],
+                                            umpireTwoName = UmpireSchedule[i][j][1],
                                             )
                                 match.save()
                             else:
