@@ -35,7 +35,7 @@ class GenerateScheduleThread(threading.Thread):
             y = 0
             stanDev = 99
             increase = 0
-            MAX = 1000
+            MAX = 100
 
 #--------------------------------------------------------------------------------------------------
 #Sub Programs
