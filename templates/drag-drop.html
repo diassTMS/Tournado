@@ -52,15 +52,24 @@
         }
     </style>
     <div class="container" id="card">
-        <hgroup>
+        <div class="grid">
             <h2>
-                <i onClick="location.href='{% url 'user-tourn-customise' return %}';" class="fa-solid fa-circle-arrow-left" id="icon"></i>
-                Match Schedule
+                Schedule {{ tourn }}
             </h2>
+            <hgroup>
+                <h4 style="text-align: center; margin-bottom:5px;">Step 4/4</h4>
+                <progress value="100" max="100" />
+            </hgroup>
+        </div>
+    </div>
+    <br>
+    <div id="card">
+        <hgroup>
+            <h3>4. Drag & Drop Alterations</h3>
             <p>        
-                &emsp;&emsp;<i class="fa-solid fa-circle-info"></i>
+                <i class="fa-solid fa-circle-info"></i>
                 <span>
-                    <b>Drag and drop matches to rearrange the schedule (Not available for mobiles)</b>
+                    <b>Make any final touches to the schedule (Unavailable on mobile)</b>
                 </span>
             </p> 
         </hgroup>
@@ -83,7 +92,11 @@
                                     <td scope="row" style="text-align:center; border: 1px solid;">{{ match.start|time:"H:i" }} - {{ match.end|time:"H:i"}}</th>
                                 {% else %}
                                     {% if match.entryOne == match.entryTwo %}
-                                        <td class="float-child" id="{{ match.id }}" style="text-align:center; border: 1px solid;">Free</td>
+                                        {% if match.type != "Division" and match.type != "Free" %}
+                                            <td class="float-child" id="{{ match.id }}" style="text-align:center; border: 1px solid; background-color: light-dark(lavender, #301934);">{{ match.type }}</td>
+                                        {% else %}
+                                            <td class="float-child" id="{{ match.id }}" style="text-align:center; border: 1px solid;"></td>
+                                        {% endif %}
                                     {% elif match.division == 1 %}
                                         <td class="float-child" id="{{ match.id }}" style="text-align:center; border: 1px solid; background-color: light-dark(#D3BFE8, #5B2D9C); cursor: pointer;">{{ match }}</td>
                                     {% elif match.division == 2 %}
@@ -92,8 +105,10 @@
                                         <td class="float-child" id="{{ match.id }}" style="text-align:center; border: 1px solid; background-color: light-dark(#C1E1C1, #015234); cursor: pointer;">{{ match }}</td>
                                     {% elif match.division == 4 %}
                                         <td class="float-child" id="{{ match.id }}" style="text-align:center; border: 1px solid; background-color: light-dark(#FDF1B4, #997300); cursor: pointer;">{{ match }}</td>
+                                    {% elif match.type != 'Division' %}
+                                        <td class="float-child" id="{{ match.id }}" style="text-align:center; border: 1px solid; background-color: light-dark(lavender, #301934);">{{ match.type }}</td>
                                     {% else %}
-                                        <td class="float-child" id="{{ match.id }}" style="text-align:center; border: 1px solid; background-color: light-dark(#C1E1C1, #015234); cursor: pointer;">{{ match }}</td>
+                                        <td class="float-child" id="{{ match.id }}" style="text-align:center; border: 1px solid; background-color: light-dark(lavender, #301934); cursor: pointer;">{{ match }}</td>
                                     {% endif %}
                                 {% endif %}
                             {% endfor %}
@@ -103,6 +118,69 @@
             </table>
         </div>
     </div>
+    <br>
+    <div class="grid">
+        <button class="primary" data-target="modal-finish" onclick="toggleModal(event)">Finish</button>
+    </div>  
+
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
     <script src="{% static "js/drag-drop.js" %}"></script>
+
+    <dialog id="modal-finish">
+        <article>
+            <header>
+                <h3>Successfully scheduled tournament!</h3>
+            </header>
+            <p>Your schedule is now ready to be viewed and published.</p>
+            {% if tourn.umpires == True %}
+                <div class="grid">
+                    <a role="button" class="outline" href="{% url 'pdf' tourn.id %}" target="_blank">Main <i class="fa-solid fa-file-pdf"></i></a>
+                    <a role="button" class="outline" href="{% url 'umpire-pdf' tourn.id %}" target="_blank">Umpire <i class="fa-solid fa-file-pdf"></i></a>
+                </div>
+            {% else %}
+                <div class="grid">
+                    <a role="button" class="outline" href="{% url 'pdf' tourn.id %}" target="_blank">View <i class="fa-solid fa-file-pdf"></i></a>
+                </div>
+            {% endif %}
+            <footer>
+                <a role="button" class="secondary outline" href="{% url 'user-tourn-detail' tourn.id %}";>&larr; Tournament Page</a>
+                <a role="button" class="secondary outline" href="{% url 'entry_assign_div' tourn.id %}";>Reschedule</a>
+            </footer>
+        </article>
+    </dialog>  
+
+    <dialog id="modal-wait">
+        <article>
+            <header>
+                <h3>Your schedule is still being generated!</h3>
+            </header>
+            <p>Please wait until it is finished, this page will automatically refresh every 5 seconds.</p>
+            <progress />
+            <footer>
+                <button
+                    role="button"
+                    class="secondary"
+                    data-target="modal-wait"
+                    onclick="toggleModal(event)"
+                >
+                Close</button>
+            </footer>
+        </article>
+    </dialog>  
+
+    <script>
+        // Check whether schedule has finished generating
+        window.onload = function() {
+            var modal = document.getElementById("modal-wait");
+            var schedule = '{{ schedule|escapejs }}';
+
+            if ( schedule == '[]' ) {
+                modal.showModal();
+                setTimeout(function () {
+                    location.reload();
+                }, 5000);
+            };
+        };
+    </script>
+
 {% endblock %}

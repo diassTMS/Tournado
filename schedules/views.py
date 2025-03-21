@@ -14,6 +14,7 @@ from django.http import JsonResponse
 from django.contrib import messages
 from Tournado import renderers
 from django.db.models import Q
+import datetime
 import time
 
 #TOURNAMENTS
@@ -22,7 +23,6 @@ class ScheduleCreateView(LoginRequiredMixin, UserPassesTestMixin, SuccessMessage
     model = Tournament
     form_class = ScheduleForm
     success_url = reverse_lazy('/')
-    success_message = 'Your schedule has been successfully generated!'       
     template_name = "schedule-create.html" 
     
     def form_valid(self, form):        
@@ -30,13 +30,9 @@ class ScheduleCreateView(LoginRequiredMixin, UserPassesTestMixin, SuccessMessage
         return super().form_valid(form)
     
     def get_success_url(self):
-        if self.object.umpires == True:
-            time.sleep(15)
-        else:
-            time.sleep(8)
-
         tourn = self.object.id
-        return reverse_lazy('user-tourn-detail', kwargs={'pk': tourn})
+        sched = Schedule.objects.get(tournament__id=tourn)
+        return reverse_lazy('schedule-pdf', kwargs={'pk': sched.id})
 
     def get_context_data(self,*args, **kwargs):
         context = super(ScheduleCreateView, self).get_context_data(*args,**kwargs)
@@ -92,21 +88,25 @@ class PDFView(View):
     def get(self, request, pk):
         tournament = Tournament.objects.get(pk=pk)
         schedule = []
-        start = Match.objects.filter(Q(tournament=tournament.id) & ~Q(division=0)).values('start').distinct().order_by('start')
+        start = Match.objects.filter(Q(tournament=tournament.id)).values('start').distinct().order_by('start')
         length = start.count()
 
         for i in range(length):
-            qs = Match.objects.filter(Q(tournament=tournament.id) & Q(start=start[i].get('start')) & ~Q(division=0)).order_by('pitch')
+            qs = Match.objects.filter(Q(tournament=tournament.id) & Q(start=start[i].get('start'))).order_by('pitch')
             row = []
 
             row.append(qs.first())
+            freeCount = 0
             for j in range(len(qs)):
                 row.append(qs[j])
-            
-            while len(row) < (tournament.noPitches + 1):
-                row.append('blank')
+                if qs[j].type == 'Free':
+                    freeCount += 1
 
-            schedule.append(row)
+            while len(row) < (tournament.noPitches + 1):
+                row.append("blank")
+
+            if freeCount != tournament.noPitches:
+                schedule.append(row)
 
         title = tournament.name
         sched = Schedule.objects.get(tournament=tournament)
@@ -210,19 +210,23 @@ class DragDropView(DetailView):
             row = []
 
             row.append(qs.first())
+            freeCount = 0
             for j in range(len(qs)):
                 row.append(qs[j])
-                print(qs[j])
+                if qs[j].type == 'Free':
+                    freeCount += 1
 
-            
             while len(row) < (self.object.noPitches + 1):
-                row.append('blank')
+                row.append("blank")
 
+            if freeCount != self.object.noPitches:
+                print('freerow')
+           
             schedule.append(row)
-
+                
         context['schedule'] = schedule
         context['range'] = range(self.object.noPitches)
-        context['return'] = self.object.id
+        context['tourn'] = self.object
         return context
     
 class ChangeSheetAssign(LoginRequiredMixin, View):

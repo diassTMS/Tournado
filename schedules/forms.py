@@ -13,7 +13,7 @@ class ScheduleForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super(ScheduleForm, self).__init__(*args, **kwargs)
         self.fields['noTeams'].disabled = True
-        self.fields['matchType'].disabled = True
+        self.fields['noDivisions'].disabled = True
 
         self.fields['noPitches'].label = f'No. Playable Pitches'
         self.fields['noDivisions'].label = f'No. Divisions'
@@ -25,11 +25,7 @@ class ScheduleForm(forms.ModelForm):
         self.fields['matchType'].label = f'Match Structure'
         self.fields['matchDuration'].label = f'Half Durations'
         self.fields['breakDuration'].label = f'Break Duration'
-        self.fields['halftimeDuration'].label = f'Half-time Duration'
-
-        if self.instance.matchType == "One Way":
-            self.fields['halftimeDuration'].disabled = True
-            
+        self.fields['halftimeDuration'].label = f'Half-time Duration'            
 
     def clean_noTeams(self):
         cleaned_data = self.clean()

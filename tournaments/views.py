@@ -1,6 +1,6 @@
 from .forms import TournForm, EntryForm, EntryUpdateForm, MatchKnockoutUpdateForm, ResultForm, SignupForm
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
-from django.shortcuts import render, get_object_or_404, redirect
+from django.shortcuts import render, get_object_or_404, redirect, HttpResponseRedirect
 from django.contrib.messages.views import SuccessMessageMixin
 from django.contrib.auth.decorators import login_required
 from .filters import TournUserFilter, EntryUserFilter
@@ -13,6 +13,7 @@ from .threads import EntryUpdateThread
 from django.core.mail import send_mail
 from django.contrib.auth import logout
 from schedules.models import Schedule
+from django.http import HttpResponse, JsonResponse
 from django.contrib import messages
 from users.models import Profile
 from django.db.models import Q
@@ -55,10 +56,15 @@ class TournDetailView(DetailView):
 
 @login_required
 def TournUserView(request):
-    tourns = Tournament.objects.filter(user=request.user).order_by('date')
-    tourn_filter = TournUserFilter(request.GET, queryset=tourns)
+    past_tourns = Tournament.objects.filter(Q(user=request.user) & Q(date__lt=datetime.datetime.today().date())).order_by('-date')
+    future_tourns = Tournament.objects.filter(Q(user=request.user) & Q(date__gte=datetime.datetime.today().date())).order_by('date')
+    future_tourn_filter = TournUserFilter(request.GET, queryset=future_tourns)
+    past_tourn_filter = TournUserFilter(request.GET, queryset=past_tourns)
 
-    return render(request, 'user-tourn-list.html', {'filter': tourn_filter})
+    return render(request, 'user-tourn-list.html', {'filterFuture': future_tourn_filter,
+                                                    'filterPast': past_tourn_filter, 
+                                                    'tournaments': past_tourns, 
+                                                    'tournamentsFuture': future_tourns})
 
 class TournUserDetailView(LoginRequiredMixin, UserPassesTestMixin, DetailView):
     model = Tournament
@@ -424,3 +430,225 @@ class TournCustomiseView(DetailView):
         context["sched"] = Schedule.objects.get(tournament=self.object.id)
 
         return context
+    
+#Assign Entry to Division Drag & Drop
+class ChangeEntryDivision(LoginRequiredMixin, View):
+
+    @staticmethod
+    def get(request, *args, **kwargs):
+        emp_id= kwargs['emp_id']
+        task_id= kwargs['task_id']
+
+        div = emp_id
+        entry = Entry.objects.get(id=task_id)
+        entry.division = div
+        entry.save()
+
+        return redirect(reverse_lazy('entry_assign_div', kwargs={'pk': entry.tournament.id}))
+
+class AssignEntryView(LoginRequiredMixin, View):
+
+    @staticmethod
+    def get(request, *args, **kwargs):
+        tourn = Tournament.objects.get(id=kwargs['pk'])
+        entries = Entry.objects.filter(tournament__id=kwargs['pk'])
+
+        #dynamically change no. divs
+        if request.GET.get('divs') != None:
+            if tourn.noDivisions != request.GET.get('divs'):
+                tourn.noDivisions = int(request.GET.get('divs'))
+                print(tourn.noDivisions)
+                tourn.save()
+
+                #unassign enrties if their div is deleted
+                for entry in entries:
+                    if int(entry.division) > int(tourn.noDivisions):
+                        print(tourn.noDivisions)
+                        entry.division = 0
+                        entry.save()
+
+        unassigned = Entry.objects.filter(tournament__id=kwargs['pk'], division=0)
+
+        context = {'divs': range(0,tourn.noDivisions), 
+                   'entries': entries, 
+                   'unassigned': unassigned,
+                   'tourn': tourn,
+                   'redirect': False,
+                   }
+
+        return render(request, 'entry-assign-division.html', context)
+    
+class AssignEntryClearView(LoginRequiredMixin, View):
+
+    @staticmethod
+    def get(request, *args, **kwargs):
+        tourn = Tournament.objects.get(id=kwargs['pk'])
+        entries = Entry.objects.filter(tournament__id=kwargs['pk'])
+
+        for entry in entries:
+            entry.division = 0
+            entry.save()
+
+        unassigned = Entry.objects.filter(tournament__id=kwargs['pk'], division=0)
+
+        context = {'divs': range(0,tourn.noDivisions), 
+                   'entries': entries, 
+                   'unassigned': unassigned,
+                   'tourn': tourn,
+                   'redirect': False,
+                   }
+
+        return render(request, 'entry-assign-division.html', context)
+    
+class AssignEntryAutoView(LoginRequiredMixin, View):
+
+    @staticmethod
+    def get(request, *args, **kwargs):
+        tourn = Tournament.objects.get(id=kwargs['pk'])
+        entries = Entry.objects.filter(tournament__id=kwargs['pk'])
+
+        count = 1
+        for entry in entries:
+            if count > tourn.noDivisions:
+                count = 1
+
+            entry.division = count
+            entry.save()
+
+            count += 1
+
+        unassigned = Entry.objects.filter(tournament__id=kwargs['pk'], division=0)
+
+        context = {'divs': range(0,tourn.noDivisions), 
+                   'entries': entries, 
+                   'unassigned': unassigned,
+                   'tourn': tourn,
+                   'redirect': False,
+                   }
+
+        return render(request, 'entry-assign-division.html', context)
+    
+class UnassignCheckView(LoginRequiredMixin, View):
+
+    @staticmethod
+    def get(request, *args, **kwargs):
+        tourn = Tournament.objects.get(id=kwargs['pk'])
+        entries = Entry.objects.filter(tournament__id=kwargs['pk'])
+        print(request)
+        unassigned = Entry.objects.filter(tournament__id=kwargs['pk'], division=0)
+        
+        try:
+            if unassigned[0].division == 0:
+                print('sup')
+
+            return render(request, 'entry-assign-division.html', context)  
+        except:
+            context = {'divs': range(0,tourn.noDivisions), 
+                    'entries': entries, 
+                    'unassigned': unassigned,
+                    'tourn': tourn,
+                    }
+            return render(request, 'entry-assign-division.html', context)
+        
+def search_bar_past(request):
+    if request.method == 'GET':
+        search_query = request.GET.get('data', None)
+        date = request.GET.get('date', None)
+        age = request.GET.get('age', None)
+        gender = request.GET.get('gender', None)
+        group = request.GET.get('group', None)
+
+        filterFields = []
+        kwargs = {
+            'user': request.user,
+            '{0}__{1}'.format('date', 'lt'): datetime.datetime.today().date(), 
+        }
+        filterFields.append(['date', date])
+        filterFields.append(['age', age])
+        filterFields.append(['gender', gender])
+        filterFields.append(['group', group])
+
+        empty = 0
+        for item in filterFields:
+            if item[1] != "" and item[1] != None:
+                kwargs.update({item[0]: item[1]})
+            else:
+                empty += 1
+
+
+        filters = Tournament.objects.filter(**kwargs).order_by('-date')
+
+        if search_query == "All" or (search_query == "" and empty == 4):
+            qs = Tournament.objects.filter(user=request.user, date__lt=datetime.datetime.today().date()).order_by('-date')
+        
+        elif search_query == "":
+            qs = filters
+
+        else:
+            qsOne = Tournament.objects.filter(user=request.user, name__icontains = search_query, date__lt=datetime.datetime.today().date()).order_by('-date')
+            qsTwo = Tournament.objects.filter(user=request.user, gender__icontains = search_query, date__lt=datetime.datetime.today().date()).order_by('-date')
+            qsThree = Tournament.objects.filter(user=request.user, group__icontains = search_query, date__lt=datetime.datetime.today().date()).order_by('-date')
+            qsFour = Tournament.objects.filter(user=request.user, date__icontains = search_query, date__lt=datetime.datetime.today().date()).order_by('-date')
+            qsFive = Tournament.objects.filter(user=request.user, venue__icontains = search_query, date__lt=datetime.datetime.today().date()).order_by('-date')
+            qsSix = Tournament.objects.filter(user=request.user, level__icontains = search_query, date__lt=datetime.datetime.today().date()).order_by('-date')
+
+            qs = qsOne | qsTwo | qsThree | qsFour | qsFive | qsSix
+
+        data = dict()
+        data['result'] = render_to_string(template_name='include/user-past-tourns.html',
+                                        request=request,
+                                        context={'tournaments': qs,
+                                                }
+                                        )
+        return JsonResponse(data)
+
+def search_bar_future(request):
+    if request.method == 'GET':
+        search_query = request.GET.get('data', None)
+        date = request.GET.get('date', None)
+        age = request.GET.get('age', None)
+        gender = request.GET.get('gender', None)
+        group = request.GET.get('group', None)
+
+        filterFields = []
+        kwargs = {
+            'user': request.user,
+            '{0}__{1}'.format('date', 'gte'): datetime.datetime.today().date(), 
+        }
+        filterFields.append(['date', date])
+        filterFields.append(['age', age])
+        filterFields.append(['gender', gender])
+        filterFields.append(['group', group])
+
+        empty = 0
+        for item in filterFields:
+            if item[1] != "" and item[1] != None:
+                kwargs.update({item[0]: item[1]})
+            else:
+                empty += 1
+
+        filters = Tournament.objects.filter(**kwargs).order_by('date')
+
+        if search_query == "All" or (search_query == "" and empty == 4):
+            qs = Tournament.objects.filter(user=request.user, date__gte=datetime.datetime.today().date()).order_by('date')
+        
+        elif search_query == "":
+            qs = filters
+
+        else:
+            qsOne = Tournament.objects.filter(user=request.user, name__icontains = search_query, date__gte=datetime.datetime.today().date()).order_by('date')
+            qsTwo = Tournament.objects.filter(user=request.user, gender__icontains = search_query, date__gte=datetime.datetime.today().date()).order_by('date')
+            qsThree = Tournament.objects.filter(user=request.user, group__icontains = search_query, date__gte=datetime.datetime.today().date()).order_by('date')
+            qsFour = Tournament.objects.filter(user=request.user, date__icontains = search_query, date__gte=datetime.datetime.today().date()).order_by('date')
+            qsFive = Tournament.objects.filter(user=request.user, venue__icontains = search_query, date__gte=datetime.datetime.today().date()).order_by('date')
+            qsSix = Tournament.objects.filter(user=request.user, level__icontains = search_query, date__gte=datetime.datetime.today().date()).order_by('date')
+
+            qs = qsOne | qsTwo | qsThree | qsFour | qsFive | qsSix
+
+        data = dict()
+        data['result'] = render_to_string(template_name='include/user-past-tourns.html',
+                                        request=request,
+                                        context={'tournaments': qs,
+                                                }
+                                        )
+        return JsonResponse(data)

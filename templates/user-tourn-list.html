@@ -2,67 +2,302 @@
 {% load static %}
 {% load crispy_forms_tags %}
 {% block container %}
+    <style>
+        #filter {
+            grid-template-columns: repeat(4, 2fr) 1fr;
+            grid-auto-flow: row
+        }
+
+        @media (width < 50em) {
+            #filter {
+                display: grid;
+                grid-template-columns: 1fr;
+                grid-column-gap: 0px;
+                grid-row-gap: 0px;
+            }
+        }
+    </style>
     <section>
-        <div class='container' id='box'>
-            <h2>
-                <i onClick="location.href='{% url 'account' %}';" class="fa-solid fa-circle-arrow-left" id="icon"></i> 
-                Your Events
-                <span style="float:right; margin-right:20px; cursor:pointer;">
-                <i onclick="filterView()" class="fa-solid fa-sliders" id="icon"></i>
-                </span>
-            </h2>
-            <form method="get" id="filter" style="display: none;">
-                <fieldset class="grid" id="filterGrid">
-                    <label>Age {{ filter.form.age }}</label>
-                    <label>Gender {{ filter.form.gender }}</label>
-                    <label>Group {{ filter.form.group }}</label>
-                    <label>Date {{ filter.form.date }}</label>
-                    <button style="height: calc(1rem* var(--pico-line-height) + var(--pico-form-element-spacing-vertical)* 2 + var(--pico-border-width)* 2); margin-top: 35px;" onclick="submit"><i class="fa-solid fa-filter"></i></button>
-                    <input style="margin-top: 35px;" class="secondary" type="button" onclick="location.href='{% url 'user-tourn-list' %}';" value="X" />
-                </fieldset>
-            </form>
-            <hr>
-            <div class="grid" id="tournGrid">
-                {% for tourn in filter.qs  %}
-                    <article>
-                        <hgroup>
-                            <h4><a href="{% url 'user-tourn-detail' tourn.id %}">{{ tourn.name }}</a></h4>
-                            <p>{{ tourn.date|date:"D, M dS Y" }} - {{ tourn.meetTime|date:"H:i" }}</p>
-                        </hgroup>
-                        <hr>
-                        <p>
-                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-map-pin-filled" width="28" height="28" viewBox="0 0 24 24" stroke-width="1.5" stroke="#01aaff" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-                            <path d="M18.364 4.636a9 9 0 0 1 .203 12.519l-.203 .21l-4.243 4.242a3 3 0 0 1 -4.097 .135l-.144 -.135l-4.244 -4.243a9 9 0 0 1 12.728 -12.728zm-6.364 3.364a3 3 0 1 0 0 6a3 3 0 0 0 0 -6z" stroke-width="0" fill="currentColor" />
-                            </svg>
-                            <span>
-                                {{ tourn.venue }}
-                            </span>
-                        </p>
-                        <p>
-                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-clock-filled" width="28" height="28" viewBox="0 0 24 24" stroke-width="1.5" stroke="#01aaff" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-                            <path d="M17 3.34a10 10 0 1 1 -14.995 8.984l-.005 -.324l.005 -.324a10 10 0 0 1 14.995 -8.336zm-5 2.66a1 1 0 0 0 -.993 .883l-.007 .117v5l.009 .131a1 1 0 0 0 .197 .477l.087 .1l3 3l.094 .082a1 1 0 0 0 1.226 0l.094 -.083l.083 -.094a1 1 0 0 0 0 -1.226l-.083 -.094l-2.707 -2.708v-4.585l-.007 -.117a1 1 0 0 0 -.993 -.883z" stroke-width="0" fill="currentColor" />
-                            </svg>
-                            <span>
-                                {{ tourn.startTime|date:"H:i" }}
-                            </span>
-                        </p>
-                        <hr>
-                        <small id="{{ tourn.group }}">{{ tourn.group }}</small>
-                    </article>
-                {% endfor %}
+        <div id="box">
+            <div class="grid">
+                <hgroup>
+                    <h2>
+                        <i onClick="location.href='{% url 'account' %}';" class="fa-solid fa-circle-arrow-left" id="icon"></i> 
+                        Your Events
+                    </h2>
+                    <p>        
+                        &emsp;&emsp;<i class="fa-solid fa-circle-info"></i>
+                        <span>
+                            <b>Toggle between you past and future events</b>
+                        </span>
+                    </p> 
+                </hgroup>
+                <div role="group">
+                    <button style="width: 50%;" class="primary" id="futureButton">Upcoming</button>
+                    <button style="width: 50%;" class="secondary" id="pastButton">Past</button>
+                  </div>
+            </div>
+        </div>
+        <br>
+        <div id="futureBlock">
+            <div class='container' id='box'>
+                <div class="grid">
+                    <h2 style="margin-top: 10px;">Upcoming Events</h2>
+                    <div class="grid" style="grid-template-columns: 5fr 1fr;">
+                        <input type="search" id="searchTournFuture" name="search" placeholder="Search" />
+                        <h1 style="text-align: center; margin-top: 6px;"><i onclick="filterView()" class="fa-solid fa-sliders" id="icon"></i></h1>
+                    </div>
+                </div>
+                <hr>
+                <form method="get" id="filterFuture" style="display: none;">
+                    <fieldset class="grid" id="filter">
+                        <label>Age {{ filterFuture.form.age }}</label>
+                        <label>Gender {{ filterFuture.form.gender }}</label>
+                        <label>Group {{ filterFuture.form.group }}</label>
+                        <label>Date {{ filterFuture.form.date }}</label>
+                        <input id="resetFuture" style="margin-top: 35px;" class="secondary" type="button" onclick="reset()" value="Clear" />
+                    </fieldset>
+                    <hr>
+                </form>
+                <div id="user-future-tourns">
+                    {% include 'include/user-future-tourns.html' %}
+                </div>
+            </div>
+            <br>
+        </div>
+        <div id="pastBlock">
+            <div class='container' id='box'>
+                <div class="grid">
+                    <h2 style="margin-top: 10px;">Past Events</h2>
+                    <div class="grid" style="grid-template-columns: 5fr 1fr;">
+                        <input type="search" id="searchTournPast" name="search" placeholder="Search" />
+                        <h1 style="text-align: center; margin-top: 6px;"><i onclick="filterViewPast()" class="fa-solid fa-sliders" id="icon"></i></h1>
+                    </div>
+                </div>
+                <hr>
+                <form method="get" id="filterPast" style="display: none;">
+                    <fieldset class="grid" id="filter">
+                        <label>Age {{ filterPast.form.age }}</label>
+                        <label>Gender {{ filterPast.form.gender }}</label>
+                        <label>Group {{ filterPast.form.group }}</label>
+                        <label>Date {{ filterPast.form.date }}</label>
+                        <input id="resetPast" style="margin-top: 35px;" class="secondary" type="button" onclick="reset()" value="Clear" />
+                    </fieldset>
+                    <hr>
+                </form>
+                <div id="user-past-tourns">
+                    {% include 'include/user-past-tourns.html' %}
+                </div>
             </div>
         </div>
     </section>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
     <script>
+
+        //Past or Future Views
+        document.getElementById("futureButton").addEventListener("click",function(e) {
+            document.getElementById("futureBlock").style.display = "block";
+            document.getElementById("pastBlock").style.display = "none";
+            document.getElementById("futureButton").className = "primary";
+            document.getElementById("pastButton").className = "secondary";            
+        });
+
+        document.getElementById("pastButton").addEventListener("click",function(e) {
+            document.getElementById("futureBlock").style.display = "none";
+            document.getElementById("pastBlock").style.display = "block";  
+            document.getElementById("futureButton").className = "secondary";
+            document.getElementById("pastButton").className = "primary";            
+        });
+        
+        window.onload = function() {
+            document.getElementById("futureBlock").style.display = "block";
+            document.getElementById("pastBlock").style.display = "none"; 
+        };
+
         function filterView() {
-            var x = document.getElementById("filter");
+            var x = document.getElementById("filterFuture");
             if (x.style.display === "none") {
               x.style.display = "block";
             } else {
               x.style.display = "none";
             }
-          }
+        }
+
+        function filterViewPast() {
+            var x = document.getElementById("filterPast");
+            if (x.style.display === "none") {
+              x.style.display = "block";
+            } else {
+              x.style.display = "none";
+            }
+        }
+
+        document.getElementById("filterFuture").addEventListener("change",function(evt) {
+            evt.preventDefault();
+            var search = $(document.getElementById("searchTournFuture")).val();            
+            var filter = document.getElementById("filterFuture");
+            var age = filter.age.value;
+            var gender = filter.gender.value;
+            var group = filter.group.value;
+            var date = filter.date.value;
+            
+            $.ajax({
+                method: 'GET',
+                dataType: 'json',
+                url: 'search-future/',
+                data: {'age': age,
+                        'gender': gender,
+                        'group': group,
+                        'date': date,
+                        'data': search,
+                    },
+                success : function (data) {
+                    $('#user-future-tourns').html(data.result)
+                }
+            })
+        });
+
+        document.getElementById("resetFuture").addEventListener("click",function(evt) {
+            evt.preventDefault();
+            var search = $(document.getElementById("searchTournFuture")).val();            
+            var filter = document.getElementById("filterFuture");
+            var age = filter.age.value;
+            var gender = filter.gender.value;
+            var group = filter.group.value;
+            var date = filter.date.value;
+            
+            $.ajax({
+                method: 'GET',
+                dataType: 'json',
+                url: 'search-future/',
+                data: {'age': age,
+                        'gender': gender,
+                        'group': group,
+                        'date': date,
+                        'data': search,
+                    },
+                success : function (data) {
+                    $('#user-future-tourns').html(data.result)
+                }
+            })
+        });
+
+        document.getElementById("filterPast").addEventListener("change",function(evt) {
+            evt.preventDefault();
+            console.log('hi')
+            var search = $(document.getElementById("searchTournPast")).val();
+            var filter = document.getElementById("filterPast");
+            var age = filter.age.value;
+            var gender = filter.gender.value;
+            var group = filter.group.value;
+            var date = filter.date.value;
+            
+            $.ajax({
+                method: 'GET',
+                dataType: 'json',
+                url: 'search-past/',
+                data: {'age': age,
+                        'gender': gender,
+                        'group': group,
+                        'date': date,
+                        'data': search,
+                    },
+                success : function (data) {
+                    $('#user-past-tourns').html(data.result)
+                }
+            })
+        });
+
+        document.getElementById("resetPast").addEventListener("change",function(evt) {
+            evt.preventDefault();
+            console.log('hi')
+            var search = $(document.getElementById("searchTournPast")).val();
+            var filter = document.getElementById("filterPast");
+            var age = filter.age.value;
+            var gender = filter.gender.value;
+            var group = filter.group.value;
+            var date = filter.date.value;
+            
+            $.ajax({
+                method: 'GET',
+                dataType: 'json',
+                url: 'search-past/',
+                data: {'age': age,
+                        'gender': gender,
+                        'group': group,
+                        'date': date,
+                        'data': search,
+                    },
+                success : function (data) {
+                    $('#user-past-tourns').html(data.result)
+                }
+            })
+        });
+
+        document.getElementById("searchTournFuture").onsearch = function (evt) {
+            evt.preventDefault();
+            const data = $(this).val();
+            $.ajax({
+                method: 'GET',
+                dataType: 'json',
+                url: 'search-future/',
+                data: {'data': data},
+                success : function (data) {
+                    $('#user-future-tourns').html(data.result)
+                }
+            })
+        };
+
+        document.getElementById("searchTournFuture").addEventListener("keypress", function(event) {
+            // If the user presses the "Enter" key on the keyboard
+            if (event.keyCode == 13) {
+                event.preventDefault();
+                const data = $(this).val();
+                $.ajax({
+                    method: 'GET',
+                    dataType: 'json',
+                    url: 'search-future/',
+                    data: {'data': data},
+                    success : function (data) {
+                        $('#user-future-tourns').html(data.result)
+                    }
+                })
+            }
+        });
+
+        //Past tournaments
+        document.getElementById("searchTournPast").onsearch = function (evt) {
+            evt.preventDefault();
+            const data = $(this).val();
+            $.ajax({
+                method: 'GET',
+                dataType: 'json',
+                url: 'search-past/',
+                data: {'data': data},
+                success : function (data) {
+                    $('#user-past-tourns').html(data.result)
+                }
+            })
+        };
+
+        document.getElementById("searchTournPast").addEventListener("keypress", function(event) {
+            // If the user presses the "Enter" key on the keyboard
+            if (event.keyCode == 13) {
+                event.preventDefault();
+                const data = $(this).val();
+                $.ajax({
+                    method: 'GET',
+                    dataType: 'json',
+                    url: 'search-past/',
+                    data: {'data': data},
+                    success : function (data) {
+                        $('#user-past-tourns').html(data.result)
+                    }
+                })
+            }
+        });
+
     </script>
+
 {% endblock %}

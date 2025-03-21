@@ -2,78 +2,105 @@
 {% load crispy_forms_tags %}
 {% load static %}
 {% block container %}
-    <div class="container" id="box">
+<div class="grid" id="box">
+    <div class="grid">
         <h2>
-            <i onClick="javascript:history.go(-1);" class="fa-solid fa-circle-arrow-left" id="icon"></i>      
-            Generate Schedule for {{ tournament }}
+            Schedule {{ object }}
         </h2>
-        <hr>
-        <form method="POST">      
-            {% csrf_token %}    
-            <fieldset>
-                <h4>Schedule Info</h4>
-                <div class="grid">
-                    {{ form.noTeams|as_crispy_field }}
-                    {{ form.noDivisions|as_crispy_field }}
-                    {{ form.noPitches|as_crispy_field }}
-                </div>
-                <hr>
-                <h4>Timings</h4>
-                <div class="grid">
-                    {{ form.startTime|as_crispy_field }}
-                    <a href="{% url 'tourn-update' tournament.id %}" style="text-decoration: none;" data-tooltip="Change value in 'Update Info'">
-                        {{ form.matchType|as_crispy_field }}
-                    </a>
-                </div>
-                {% if tournament.matchType == "One Way" %}
-                    <div class="grid">
-                        {{ form.matchDuration|as_crispy_field }}
-                        {{ form.breakDuration|as_crispy_field }}
-                    </div>
-                {% else %}
-                    <div class="grid">
-                        {{ form.matchDuration|as_crispy_field }}
-                        {{ form.halftimeDuration|as_crispy_field }}
-                        {{ form.breakDuration|as_crispy_field }}
-                    </div>
-                {% endif %}
-                <hr>
-                <h4>Customisation</h4>
-                <div class="grid">
-                    <div>
-                        {{ form.knockoutRounds|as_crispy_field }}
-                        <br>
-                        {{ form.liveScores|as_crispy_field }}
-                        {{ form.umpires|as_crispy_field }}
-                    </div>
-                    <div>
-                        <article>
-                            <p>Both 'Final' and 'Playoffs, Semis & Final' options can only be selected if there are two divisions.</p>
-                            <p>'Semis' option can be selected if there are two, three or four divisions.</p>
-                        </article>
-                    </div>
-                </div>
-                <hr>
-            </fieldset>
-            <div class="form-group">
-                <input type="button" value="Generate" data-target="modal-wait" onclick="submit(); toggleModal(event);"/>
-            </div>  
-        </form>
+        <hgroup>
+            <h4 style="text-align: center; margin-bottom:5px;">Step 2/4</h4>
+            <progress value="50" max="100" />
+        </hgroup>
     </div>
-
-    <!--Loading Dialog-->
-    <dialog id="modal-wait">
+</div>
+<br>
+<div id="box">
+    <div class="grid">
+        <hgroup>
+            <h3>2. Tournament Info</h3>
+            <p>        
+                <i class="fa-solid fa-circle-info"></i>
+                <span>
+                    <b>Update form below then click 'Next' to continue</b>
+                </span>
+            </p> 
+        </hgroup>
         <article>
-            <header>
-            <h3>Your schedule is being generated</h3>
-            <hr>
-            <p>Max Wait Time: 15 Seconds</p>
-            </header>
-            <progress />
+            Entries: <b>{{ object.noTeams }}</b>
+            <br>
+            Divisions: <b>{{ object.noDivisions }}</b>
         </article>
-    </dialog>  
+    </div>
+    <hr>
+    <form method="POST">      
+        {% csrf_token %}    
+        <fieldset>
+            <h4>Pitches</h4>
+            <hr>
+            <div class="grid">
+                {{ form.noPitches|as_crispy_field }}
+            </div>
+            <hr>
+            <h4>Timings</h4>
+            <hr>
+            <div class="grid">
+                {{ form.startTime|as_crispy_field }}
+                <fieldset id="matchType">{{ form.matchType|as_crispy_field }}</fieldset>
+            </div>
+            <div class="grid" id="oneWay">
+                {{ form.matchDuration|as_crispy_field }}
+                {{ form.breakDuration|as_crispy_field }}
+            </div>
+            <div class="grid" id="eachWay">
+                {{ form.matchDuration|as_crispy_field }}
+                {{ form.halftimeDuration|as_crispy_field }}
+                {{ form.breakDuration|as_crispy_field }}
+            </div>
+            <hr>
+            <h4>Knockouts</h4>
+            <hr>
+            <div>
+                {{ form.knockoutRounds|as_crispy_field }}
+            </div>
+            <article>
+                <p>No knockout options are available for three divisions.</p>
+                <p>Just 'Final' option cannot be selected for four divisions.</p>
+            </article>
+            <hr>
+            <h4>Extra</h4>
+            <hr>
+            <div class="grid">
+                {{ form.liveScores|as_crispy_field }}
+                {{ form.umpires|as_crispy_field }}
+            </div>
+        </fieldset>
+    </div>
+    <br>
+        <div class="form-group">
+            <input type="button" value="Next" onclick="submit()"/>
+        </div>  
+    </form>
+
+<script>
+    document.getElementById("matchType").addEventListener("change",function(e) {
+        if(e.target.value == "One Way") {
+            document.getElementById("eachWay").style.display = "none";
+            document.getElementById("oneWay").style.display = "grid";
+        } else {
+            document.getElementById("eachWay").style.display = "grid";
+            document.getElementById("oneWay").style.display = "none";            };
+        });
     
-    <script src="{% static "js/modal.js" %}"></script>
+    window.onload = function() {
+        var e = '{{ tournament.matchType|escapejs }}';
+        if(e == "One Way") {
+            document.getElementById("eachWay").style.display = "none";
+            document.getElementById("oneWay").style.display = "grid";
+        } else {
+            document.getElementById("eachWay").style.display = "grid";
+            document.getElementById("oneWay").style.display = "none";            };
+    };
+</script>
 
 {% endblock %}
 

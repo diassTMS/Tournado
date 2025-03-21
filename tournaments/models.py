@@ -84,7 +84,7 @@ class Tournament(models.Model):
     vat = models.BooleanField(default=True)
     level = models.CharField(max_length=10, choices=LEVEL)
     group = models.CharField(max_length=7, choices=GROUP)
-    notes = models.TextField(blank=True)
+    notes = models.TextField(blank=True) #default
 
     def __str__(self):                    #Displaying tournament id as a concatenation of info
         return f'{self.name} {self.date}'
@@ -123,7 +123,8 @@ class Match(models.Model):    #Creating match table/entity
         ('9th/10th Playoff', '9th/10th Playoff'),
         ('Quarter-Final','Quarter-Final'),
         ('Semi-Final','Semi-Final'),
-        ('Final','Final')
+        ('Final','Final'),
+        ('Free','Free')
     ]
 
     tournament = models.ForeignKey(Tournament, on_delete=models.CASCADE)

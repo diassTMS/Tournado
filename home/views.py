@@ -120,8 +120,12 @@ class LiveScoreView(MultiTableMixin, TemplateView):
             final = Match.objects.filter(Q(tournament=tournament.id) & Q(division=0) & Q(type="Final"))
             semis = Match.objects.filter(Q(tournament=tournament.id) & Q(division=0) & Q(type="Semi-Final"))
             threeFour = Match.objects.filter(Q(tournament=tournament.id) & Q(division=0) & Q(type="3rd/4th Playoff"))
-            playoffs = Match.objects.filter(Q(tournament=tournament.id) & Q(division=0) & ~Q(type="Semi-Final") & ~Q(type="Final"))
+            playoffs = Match.objects.filter(Q(tournament=tournament.id) & Q(division=0) & ~Q(type="Free") & ~Q(type="Semi-Final") & ~Q(type="Final"))
             qs = final | semis | threeFour | playoffs
+
+            for match in qs:
+                if match.entryOne == match.entryTwo:
+                    qs = qs.exclude(id=match.id)
 
             LKnockoutTable = LargeKnockoutTable(qs)
             SKnockoutTable = SmallKnockoutTable(qs)
@@ -190,7 +194,7 @@ class LeagueCurrentScoreView(MultiTableMixin, TemplateView):
         table = LeagueScoreTable(qs)
 
         if league.finished == True:
-            ranks = LeagueEntry.objects.filter(league=league.id).order_by(F('points').desc(), F('goalDiff').desc(), F('forGoals').desc()).first()
+            ranks = LeagueEntry.objects.filter(league=league.id).order_by(F('points').desc(), F('goalDiff').desc(), F('forGoals').desc())
             winner = ranks[0]
             runnerUp = ranks[1]
         else:

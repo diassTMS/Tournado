@@ -41,6 +41,8 @@ urlpatterns = [
     path('tourn/<int:pk>/delete/', tourn_views.TournDeleteView.as_view(), name='tourn-delete'),
     path('tourn/<int:pk>/update/', tourn_views.TournUpdateView.as_view(), name='tourn-update'),
     path('account/tourn-list/', tourn_views.TournUserView, name='user-tourn-list'),
+    path('account/tourn-list/search-past/', tourn_views.search_bar_past, name='past-user-tourn-search'),
+    path('account/tourn-list/search-future/', tourn_views.search_bar_future, name='future-user-tourn-search'),
     path('account/league-list/', league_views.LeagueUserView, name='user-league-list'),
     path('account/tourn/<int:pk>/', tourn_views.TournUserDetailView.as_view(), name='user-tourn-detail'),
     path('account/tourn/<int:pk>/customise', tourn_views.TournCustomiseView.as_view(), name='user-tourn-customise'),
@@ -97,6 +99,12 @@ urlpatterns = [
     path('password-reset-complete', auth_views.PasswordResetCompleteView.as_view(template_name='password_reset_complete.html'), name='password_reset_complete'),   
     path('past-events/search/', home_views.search_bar, name='past-tourn-search'),
     path('past-events/search-league/', home_views.search_bar_leagues, name='past-league-search'),
+    path('entry-assign/<int:pk>/', tourn_views.AssignEntryView.as_view(), name='entry_assign_div'),
+    path('entry-assign-clear/<int:pk>/', tourn_views.AssignEntryClearView.as_view(), name='entry_assign_clear'),
+    path('entry-assign-auto/<int:pk>/', tourn_views.AssignEntryAutoView.as_view(), name='entry_assign_auto'),
+    path('unassign-check/<int:pk>/', tourn_views.UnassignCheckView.as_view(), name='unassign-check'),
+    path('entry-assign/<str:emp_id>/<str:task_id>/', tourn_views.ChangeEntryDivision.as_view(), name='change_entry_div'),
+
 ]
 
 if settings.DEBUG:

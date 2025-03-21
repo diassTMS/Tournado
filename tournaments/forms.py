@@ -128,7 +128,7 @@ class EntryForm(forms.ModelForm):
 class EntryUpdateForm(forms.ModelForm):
     class Meta:
         model = Entry
-        fields = ['tournament', 'user', 'teamName', 'umpire', 'teamsheet', 'rank',]
+        fields = ['tournament', 'user', 'teamName', 'umpire', 'teamsheet',]
 
     def __init__(self, *args, **kwargs):
         tourn = kwargs.pop('tourn')
@@ -138,11 +138,8 @@ class EntryUpdateForm(forms.ModelForm):
         self.fields['teamName'].label = f'Team Name'
         self.fields['tournament'].label = f'Event'
 
-        if self.request.user.groups.filter(name="Admin").exists():
-            self.fields['rank'].label = f'Seeding Rank'
-        else:
+        if not(self.request.user.groups.filter(name="Admin").exists()):
             self.fields['user'].disabled = True
-            self.fields['rank'].widget = HiddenInput()
         
         if tourn.id != 0:
             self.fields['tournament'].initial = tourn

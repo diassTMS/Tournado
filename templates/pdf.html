@@ -81,7 +81,11 @@
                                     <td scope="row" style="text-align:center; border: 1px solid; width:110px;">{{ match.start|time:"H:i" }} - {{ match.end|time:"H:i"}}</th>
                                 {% else %}
                                     {% if match.entryOne == match.entryTwo %}
-                                        <td style="text-align:center; border: 1px solid;">Free</td>
+                                        {% if match.type != "Division" and match.type != "Free" %}
+                                            <td class="float-child" id="{{ match.id }}" style="text-align:center; border: 1px solid; background-color: lavender;">{{ match.type }}</td>
+                                        {% else %}
+                                            <td class="float-child" id="{{ match.id }}" style="text-align:center; border: 1px solid;"></td>
+                                        {% endif %}
                                     {% elif match.division == 1 %}
                                         <td style="text-align:center; border: 1px solid; background-color: #D3BFE8;">{{ match }}</td>
                                     {% elif match.division == 2 %}
@@ -90,6 +94,8 @@
                                         <td style="text-align:center; border: 1px solid; background-color: #C1E1C1;">{{ match }}</td>
                                     {% elif match.division == 4 %}
                                         <td style="text-align:center; border: 1px solid; background-color: #FDF1B4;">{{ match }}</td>
+                                    {% elif match.type != 'Division' %}
+                                        <td class="float-child" id="{{ match.id }}" style="text-align:center; border: 1px solid; background-color: lavender;">{{ match.type }}</td>
                                     {% else %}
                                         <td style="text-align:center; border: 1px solid; background-color: lavender;">{{ match }}</td>
                                     {% endif %}
