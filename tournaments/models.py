@@ -84,7 +84,7 @@ class Tournament(models.Model):
     vat = models.BooleanField(default=True)
     level = models.CharField(max_length=10, choices=LEVEL)
     group = models.CharField(max_length=7, choices=GROUP)
-    notes = models.TextField(blank=True) #default
+    notes = models.TextField(blank=True, default="Entry & attendance at the tournament is deemed to be consent for photographs to be taken and used by the organiser, Hockey Fever. Clubs are entirely responsible for ensuring that anyone attending has photographic consent. Please inform organisers if someone associated with your club does not have consent, each time they attend a tournament. Players & Coaches MUST wait off the pitch area when they are not playing in a tournament game Spectators MUST remain behind the barriers (Teams may have one coach, one manager and one umpire on the sideline of the pitch area during games)") #default
 
     def __str__(self):                    #Displaying tournament id as a concatenation of info
         return f'{self.name} {self.date}'
