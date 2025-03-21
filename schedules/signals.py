@@ -14,14 +14,13 @@ def create_sched(sender, instance, created, **kwargs):
 def create_sched(sender, instance, created, **kwargs):
     if created:
         club_rules = [
+            "Players & Coaches MUST wait off the pitch area between games",
+            "Spectators MUST remain behind the barriers (Teams may have one coach, one manager and one umpire on the pitch area)",
+            "No food on the playing areas please",
+            "Each team is responsible for providing first aid - including ice packs",
             "The toss of a coin shall decide which team shall have the first push back or choice of end",
             "Match Ball: 1st named team to provide the match ball",
             "Clash of shirts: 2nd named team to change",
-            "Each team is responsible for providing first aid - including ice packs",
-            "Players & Coaches should wait off the pitch area between games",
-            "Spectators to remain behind the barriers (Teams may have one coach, one manager and one umpire on the pitch area)",
-            "No food on the playing areas please",
-            "Entry & attendance at the tournament is deemed to be consent for photographs to be taken and used by the organiser, Hockey Fever. Clubs are entirely responsible for ensuring that anyone attending has photographic consent. Please inform organisers if someone associated with your club does not have consent, each time they attend a tournament.",
          ]
         
         school_rules = [
