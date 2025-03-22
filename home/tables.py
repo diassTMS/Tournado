@@ -129,3 +129,18 @@ class LeagueScoreTable(tables.Table):
         template_name = "django_tables2/bootstrap4-responsive.html"
         fields = ("teamName", "played", "won", "drawn", "lost", "forGoals", "againstGoals", "goalDiff", "points")
         orderable = False
+
+class FinalRankTable(tables.Table):
+    teamName = tables.LinkColumn("entry-stats",  
+                                 text=lambda record: record.teamName, 
+                                 args=[A("pk")], verbose_name="Team Name",)
+    rank = tables.Column(verbose_name="Rank",
+                           attrs={
+                                'th':{'style':'text-align: center;'},
+                                'td':{'style':'text-align: center;'},
+                            })
+    class Meta:
+        model = Entry
+        template_name = "django_tables2/bootstrap4-responsive.html"
+        fields = ("rank", "teamName")
+        orderable = False

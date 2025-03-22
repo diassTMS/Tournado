@@ -1,6 +1,6 @@
 from typing import Any
 from django.db.models.query import QuerySet
-from .tables import ScoreTable, LargeKnockoutTable, SmallKnockoutTable, LeagueScoreTable
+from .tables import ScoreTable, LargeKnockoutTable, SmallKnockoutTable, LeagueScoreTable, FinalRankTable
 from django.contrib.messages.views import SuccessMessageMixin
 from leagues.models import League, LeagueEntry, LeagueMatch
 from django.contrib.auth.decorators import login_required
@@ -103,8 +103,8 @@ class LiveScoreView(MultiTableMixin, TemplateView):
         context = super(LiveScoreView, self).get_context_data(*args,**kwargs)
         tables = []
         tournament = Tournament.objects.get(pk=kwargs['pk'])
-
         noDivs = tournament.noDivisions
+
         for i in range(noDivs):
             qs = Entry.objects.filter(Q(tournament=tournament.id) & Q(division=(i+1))).order_by(F('points').desc(), F('goalDiff').desc(), F('forGoals').desc())
             tables.append(ScoreTable(qs))
@@ -121,7 +121,7 @@ class LiveScoreView(MultiTableMixin, TemplateView):
             semis = Match.objects.filter(Q(tournament=tournament.id) & Q(division=0) & Q(type="Semi-Final"))
             threeFour = Match.objects.filter(Q(tournament=tournament.id) & Q(division=0) & Q(type="3rd/4th Playoff"))
             playoffs = Match.objects.filter(Q(tournament=tournament.id) & Q(division=0) & ~Q(type="Free") & ~Q(type="Semi-Final") & ~Q(type="Final"))
-            qs = final | semis | threeFour | playoffs
+            qs = final.union(semis).union(threeFour).union(playoffs)
 
             for match in qs:
                 if match.entryOne == match.entryTwo:
@@ -151,17 +151,43 @@ class LiveScoreView(MultiTableMixin, TemplateView):
                     else:
                         winner = final.entryTwo 
                         runnerUp = final.entryOne
+
+                ranks = Entry.objects.filter(tournament=tournament.id).exclude(rank=0).order_by('rank')
+                noRank = Entry.objects.filter(tournament=tournament.id, rank=0).order_by(F('points').desc(), F('goalDiff').desc(), F('forGoals').desc())
+
+                count = ranks.count() + 1
+                for entry in noRank:
+                    entry.rank = count 
+                    entry.save()
+                    count += 1
+
+                ranksQs = Entry.objects.filter(tournament=tournament.id).order_by('rank')
+                rankingTable = FinalRankTable(ranksQs)
+                
             else:
-                if tournament.noDivisions == 0:
-                    ranks = Entry.objects.filter(Q(tournament=tournament.id) & Q(division=(i+1))).order_by(F('points').desc(), F('goalDiff').desc(), F('forGoals').desc()).first()
-                    winner = ranks[0]
-                    runnerUp = ranks[1]
+                if tournament.noDivisions == 1:
+                    ranksQs = Entry.objects.filter(tournament=tournament.id).order_by(F('points').desc(), F('goalDiff').desc(), F('forGoals').desc())
+                    winner = ranksQs[0]
+                    runnerUp = ranksQs[1]
+
+                    count = 1
+                    for entry in ranksQs:
+                        entry.rank = count
+                        entry.save()
+                        count += 1
+                        
+                    rankingTable = FinalRankTable(ranksQs)
+
                 else:
                     winner = None
                     runnerUp = None
+                    rankingTable = []
+
         else:
             winner = None
             runnerUp = None
+            rankingTable = []
+
 
         currentTime = datetime.datetime.now().time() 
         #Complicated query!: Match in tourn amd either (match timings are current time) or (current is true) whilst excluding matches shere finished is true
@@ -170,6 +196,7 @@ class LiveScoreView(MultiTableMixin, TemplateView):
         context['tables'] = tables
         context['LKnockoutTable'] = LKnockoutTable
         context['SKnockoutTable'] = SKnockoutTable
+        context['rankingTable'] = rankingTable
         context['winner'] = winner
         context['runnerUp'] = runnerUp
         context['current'] = currentMatches
@@ -242,8 +269,10 @@ def search_bar(request):
         search_query = request.GET.get('data', None)
         if search_query == "":
             qs = Tournament.objects.filter(name__icontains = search_query, date__lt=datetime.datetime.today().date()).order_by('-date')[:2]
+        elif search_query == "All" or search_query == "all":
+            qs = Tournament.objects.filter(date__lt=datetime.datetime.today().date()).order_by('-date')
         else:
-            qs = Tournament.objects.filter(name__icontains = search_query, date__lt=datetime.datetime.today().date()).order_by('-date')
+            qs = Tournament.objects.filter(Q(name__icontains = search_query) | Q(date__icontains = search_query) | Q(group__icontains = search_query) | Q(level__icontains = search_query) | Q(gender__icontains = search_query) | Q(age__icontains = search_query), date__lt=datetime.datetime.today().date()).order_by('-date')
         data = dict()
         data['result'] = render_to_string(template_name='include/past-tourns.html',
                                         request=request,
@@ -256,9 +285,11 @@ def search_bar_leagues(request):
     if request.method == 'GET':
         search_query = request.GET.get('data', None)
         if search_query == "":
-            qs = League.objects.filter(name__icontains = search_query, endDate__lt=datetime.date.today()).order_by('-endDate')[:2]
+            qs = League.objects.filter(name__icontains = search_query, date__lt=datetime.datetime.today().date()).order_by('-date')[:2]
+        elif search_query == "All" or search_query == "all":
+            qs = League.objects.filter(date__lt=datetime.datetime.today().date()).order_by('-date')
         else:
-            qs = League.objects.filter(name__icontains = search_query, endDate__lt=datetime.date.today()).order_by('-endDate')
+            qs = League.objects.filter(Q(name__icontains = search_query) | Q(group__icontains = search_query) | Q(level__icontains = search_query) | Q(gender__icontains = search_query) | Q(age__icontains = search_query), endDate__lt=datetime.date.today()).order_by('-endDate')
         data = dict()
         data['result'] = render_to_string(template_name='include/past-leagues.html',
                                         request=request,
@@ -326,7 +357,7 @@ class PastScoreView(MultiTableMixin, TemplateView):
             semis = Match.objects.filter(Q(tournament=tournament.id) & Q(division=0) & Q(type="Semi-Final"))
             threeFour = Match.objects.filter(Q(tournament=tournament.id) & Q(division=0) & Q(type="3rd/4th Playoff"))
             playoffs = Match.objects.filter(Q(tournament=tournament.id) & Q(division=0) & ~Q(type="Semi-Final") & ~Q(type="Final"))
-            qs = final | semis | threeFour | playoffs
+            qs = final.union(semis).union(threeFour).union(playoffs)
 
             LKnockoutTable = LargeKnockoutTable(qs)
             SKnockoutTable = SmallKnockoutTable(qs)
@@ -352,23 +383,32 @@ class PastScoreView(MultiTableMixin, TemplateView):
                     else:
                         winner = final.entryTwo 
                         runnerUp = final.entryOne
+
+                ranksQs = Entry.objects.filter(tournament=tournament.id).order_by('rank')
+                rankingTable = FinalRankTable(ranksQs)
+
             else:
-                if tournament.noDivisions == 0:
-                    ranks = Entry.objects.filter(Q(tournament=tournament.id) & Q(division=(i+1))).order_by(F('points').desc(), F('goalDiff').desc(), F('forGoals').desc()).first()
+                if tournament.noDivisions == 1:
+                    ranks = Entry.objects.filter(tournament=tournament.id).order_by(F('points').desc(), F('goalDiff').desc(), F('forGoals').desc())
                     winner = ranks[0]
-                    runnerUp = ranks[1]  
+                    runnerUp = ranks[1] 
+                    rankingTable = FinalRankTable(ranks)
+ 
                 else:
                     winner = None
                     runnerUp = None
+                    rankingTable = []
         else:
             winner = None
             runnerUp = None
+            rankingTable = []
 
         currentMatches = []
 
         context['tables'] = tables
         context['LKnockoutTable'] = LKnockoutTable
         context['SKnockoutTable'] = SKnockoutTable
+        context['rankingTable'] = rankingTable
         context['winner'] = winner
         context['runnerUp'] = runnerUp
         context['current'] = currentMatches

@@ -472,6 +472,7 @@ class EntryUpdateThread(threading.Thread):
 
             if match.division == 0:
                 if played == True:
+                    print('ranking', entryOne, entryTwo, match)
                     ranking(entryOne, entryTwo, match)
             else:
                 if self.prevMatch.played == True:
