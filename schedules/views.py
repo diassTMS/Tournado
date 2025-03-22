@@ -280,3 +280,28 @@ class ChangeSheetAssign(LoginRequiredMixin, View):
         print('updated')
 
         return redirect(reverse_lazy('drag-drop', kwargs={'pk': matchOne.tournament.id}))
+    
+def pitches_change(request):
+    if request.method == 'GET':
+        tourn_id = request.GET.get('id', None)
+        noPitches = request.GET.get('pitches', None)
+
+        tourn = Tournament.objects.get(pk=tourn_id)
+        sched = Schedule.objects.get(tournament=tourn)
+
+        tourn.noPitches = noPitches
+        tourn.save()
+
+        pitches = PitchNames.objects.filter(schedule=sched)
+        while len(pitches) != int(noPitches):
+            if len(pitches) < int(noPitches):
+                pitchNew = PitchNames.objects.create(schedule=sched, name="")
+                pitchNew.save()
+
+            else:
+                pitchOld = pitches.last()
+                pitchOld.delete()
+
+            pitches = PitchNames.objects.filter(schedule=sched)
+        
+    return redirect(reverse_lazy('schedule-create', kwargs={'pk': tourn_id}))

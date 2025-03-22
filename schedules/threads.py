@@ -677,21 +677,6 @@ class GenerateScheduleThread(threading.Thread):
             match_duration = self.instance.matchDuration
             break_duration = self.instance.breakDuration
             halftime_duration = self.instance.halftimeDuration
-            sched = Schedule.objects.get(tournament=self.instance)
-
-
-            #Pitch names
-            pitches = PitchNames.objects.filter(schedule=sched)
-            while len(pitches) != noPitches:
-                if len(pitches) < noPitches:
-                    pitchNew = PitchNames.objects.create(schedule=sched, name="")
-                    pitchNew.save()
-
-                else:
-                    pitchOld = pitches.last()
-                    pitchOld.delete()
-
-                pitches = PitchNames.objects.filter(schedule=sched)
 
             #Mapping entries
             entries = Entry.objects.filter(tournament=self.instance)

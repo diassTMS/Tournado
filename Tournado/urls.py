@@ -105,6 +105,7 @@ urlpatterns = [
     path('entry-assign-auto/<int:pk>/', tourn_views.AssignEntryAutoView.as_view(), name='entry_assign_auto'),
     path('unassign-check/<int:pk>/', tourn_views.UnassignCheckView.as_view(), name='unassign-check'),
     path('entry-assign/<str:emp_id>/<str:task_id>/', tourn_views.ChangeEntryDivision.as_view(), name='change_entry_div'),
+    path('pitches-change/', sched_views.pitches_change, name='pitches-change'),
 
 ]
 

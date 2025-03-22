@@ -38,7 +38,7 @@
             <h4>Pitches</h4>
             <hr>
             <div class="grid">
-                {{ form.noPitches|as_crispy_field }}
+                <fieldset id="noPitches">{{ form.noPitches|as_crispy_field }}</fieldset>
             </div>
             <hr>
             <h4>Timings</h4>
@@ -81,6 +81,7 @@
         </div>  
     </form>
 
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
 <script>
     document.getElementById("matchType").addEventListener("change",function(e) {
         if(e.target.value == "One Way") {
@@ -100,6 +101,20 @@
             document.getElementById("eachWay").style.display = "grid";
             document.getElementById("oneWay").style.display = "none";            };
     };
+
+    document.getElementById("noPitches").addEventListener("change",function(e) {
+        var noPitches = e.target.value;
+        var id = {{ object.id }};
+        
+        $.ajax({
+            method: 'GET',
+            dataType: 'json',
+            url: `/pitches-change/`,
+            data: {'pitches': noPitches,
+                    'id': id,
+                }
+        });
+    });
 </script>
 
 {% endblock %}
