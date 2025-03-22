@@ -49,6 +49,7 @@ class OrderItem(models.Model):
     qty = models.PositiveIntegerField(default=1)
     price = models.DecimalField(default=0.00, decimal_places=2, max_digits=20)
     total_price = models.DecimalField(default=0.00, decimal_places=2, max_digits=20)
+    invoiced = models.BooleanField(default=False)
 
     def __str__(self):
         return f'{self.tournament.name}'

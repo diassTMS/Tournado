@@ -17,6 +17,7 @@ from tournaments.models import Tournament, Entry
 from Tournado import renderers
 import datetime
 from django.contrib.auth.models import User
+from users.models import Profile
 
 class OrderListView(TemplateView):
     model = User
@@ -26,13 +27,22 @@ class OrderListView(TemplateView):
         context = super().get_context_data(**kwargs)
         pk = self.kwargs.pop('pk')
         user = User.objects.get(id=pk) 
-        qs = Order.objects.filter(user=user)
-        print(self.request.user.groups.first())
+        qs = OrderItem.objects.filter(order__user=user).order_by('-tournament__date')
+
+        noEntries = 0
+        for item in qs:
+            noEntries += item.qty
+
+        cost = Profile.objects.get(user=user).tag_due
+
         if self.request.user.groups.first().name == "Admin":
             context['orders'] = AdminOrderTable(qs)
         else:
             context['orders'] = OrderTable(qs)
+
         context['userInput'] = user
+        context['cost'] = cost
+        context['entries'] = noEntries
         return context
     
 @login_required
@@ -189,30 +199,32 @@ def delete_order(request, pk):
     return JsonResponse(data)
 
 @login_required
-def paid_order(request, pk):
-    print('hi')
-    instance = get_object_or_404(Order, id=pk)
-    user = instance.user
+def invoice_tourn(request, pk):
+    instance = get_object_or_404(OrderItem, id=pk)
+    user = instance.order.user
     
-    if instance.paid == False:
-        instance.paid = True
+    if instance.invoiced == False:
+        instance.invoiced = True
     else:
-        instance.paid = False
+        instance.invoiced = False
     instance.save()
-    print('save')
+
     data = dict()
     instance.refresh_from_db()
-    order_list = Order.objects.filter(user=instance.user)
+    qs = OrderItem.objects.filter(order__user=user).order_by('-tournament__date')
+
+
     if request.user.groups.first().name == "Admin":
-        orders = AdminOrderTable(order_list)
+        orders = AdminOrderTable(qs)
     else:
-        orders = OrderTable(order_list)
+        orders = OrderTable(qs)
+
     RequestConfig(request).configure(orders)
     data['result'] = render_to_string(template_name='orders/include/order_table.html',
                                       request=request,
                                       context={
-                                          'userInput': instance.user,
-                                          'orders': orders
+                                          'userInput': user,
+                                          'orders': orders,
                                       }
                                       )
     return JsonResponse(data)

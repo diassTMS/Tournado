@@ -7,56 +7,68 @@ from django.urls import reverse, reverse_lazy
 
 
 class OrderTable(tables.Table):
-    tag_final_value = tables.Column(orderable=False, verbose_name='Value')
-    paid = tables.BooleanColumn(orderable=False, verbose_name='Paid', attrs={
-                                'th':{'style':'text-align: center;'},
+    tournament = tables.Column(orderable=False, 
+                               verbose_name='Tournament')
+    
+    qty = tables.Column(orderable=False, 
+                        verbose_name='No. Teams',
+                        attrs={ 'th':{'style':'text-align: center;'},
                                 'td':{'style':'text-align: center;'},
                             })
-    action = tables.TemplateColumn(
-        '<a href="{{ record.get_edit_url }}" class="btn btn-info"><i class="fa fa-edit"></i></a>', orderable=False, verbose_name="Edit", attrs={
+    
+    tag_total_price = tables.Column(orderable=False, 
+                                    verbose_name='Total Cost',
+                                    attrs={'th':{'style':'text-align: center;'},
+                                            'td':{'style':'text-align: center;'},
+                                            })
+    
+    invoiced = tables.BooleanColumn(orderable=False, verbose_name='Invoiced', attrs={
                                 'th':{'style':'text-align: center;'},
                                 'td':{'style':'text-align: center;'},
                             })
 
     class Meta:
-        model = Order
+        model = OrderItem
         template_name = 'django_tables2/bootstrap.html'
-        fields = ['date', 'title', 'tag_final_value',]
+        fields = ['tournament', 'qty', 'tag_total_price', 'invoiced']
 
-    def render_paid(self, value, bound_column, record):
+    def render_invoiced(self, value, bound_column, record):
         if value:
             return mark_safe(f'''<i style="color: green; font-size: 26px;" class="fa-solid fa-check"></i>''')
         else:
             return mark_safe(f'''<i style="color: red; font-size: 24px;" class="fa-solid fa-x"></i>''')
 
 class AdminOrderTable(tables.Table):
-    tag_final_value = tables.Column(orderable=False, verbose_name='Value')
-    action = tables.TemplateColumn(
-        '<a href="{{ record.get_edit_url }}" class="btn btn-info"><i class="fa fa-edit"></i></a>', orderable=False, attrs={
-                                'th':{'style':'text-align: center;'},
+    tournament = tables.Column(orderable=False, 
+                               verbose_name='Tournament')
+    
+    qty = tables.Column(orderable=False, 
+                        verbose_name='No. Teams',
+                        attrs={ 'th':{'style':'text-align: center;'},
                                 'td':{'style':'text-align: center;'},
                             })
-    delete = tables.TemplateColumn('''
-            <a onclick="return confirm('Are you sure?')" class="delete_button" data-href="{% url 'delete-order' record.id %}" style="color: #AF291D;"><i class="fa-solid fa-trash-can" id="icon"></i></a>
-    ''', orderable=False, attrs={
-                                'th':{'style':'text-align: center;'},
-                                'td':{'style':'text-align: center;'},
-                            })
-    paid = tables.BooleanColumn(orderable=False, verbose_name='Paid', attrs={
+    
+    tag_total_price = tables.Column(orderable=False, 
+                                    verbose_name='Total Cost',
+                                    attrs={'th':{'style':'text-align: center;'},
+                                            'td':{'style':'text-align: center;'},
+                                            })
+    
+    invoiced = tables.BooleanColumn(orderable=False, verbose_name='Invoiced', attrs={
                                 'th':{'style':'text-align: center;'},
                                 'td':{'style':'text-align: center;'},
                             })
 
     class Meta:
-        model = Order
+        model = OrderItem
         template_name = 'django_tables2/bootstrap.html'
-        fields = ['date', 'title', 'tag_final_value','action', 'paid', 'delete',]
+        fields = ['tournament', 'qty', 'tag_total_price', 'invoiced']
 
-    def render_paid(self, value, record):
+    def render_invoiced(self, value, record):
         if value:
-            return mark_safe(f'''<input type="checkbox" class='paid_button' pk='{record.id}' checked />''')
+            return mark_safe(f'''<input type="checkbox" class='invoice_button' pk='{record.id}' checked />''')
         else:
-            return mark_safe(f'''<input type="checkbox" class='paid_button' pk='{record.id}' />''')
+            return mark_safe(f'''<input type="checkbox" class='invoice_button' pk='{record.id}' />''')
 
 
 class ProductTable(tables.Table):

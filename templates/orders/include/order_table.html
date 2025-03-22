@@ -27,7 +27,7 @@
         })
     });
 
-    $('.paid_button').click(function (evt) {
+    $('.invoice_button').click(function (evt) {
         evt.preventDefault();
         const btn = $(this);
         const pk = btn.attr('pk')
@@ -35,9 +35,9 @@
         $.ajax({
             method: 'GET',
             dataType: 'json',
-            url: `/paid/${pk}/`,
+            url: `/invoice/${pk}/`,
             success : function (data) {
-                console.log('paid');
+                console.log('invoice');
                 console.log(data);
                 $('#order_container').html(data.result);
             }

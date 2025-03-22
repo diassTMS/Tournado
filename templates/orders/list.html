@@ -7,16 +7,21 @@
             <h2>
                 {% if user == userInput %}
                     <i onClick="location.href='{% url 'account' %}';" class="fa-solid fa-circle-arrow-left" id="icon"></i>
-                    {{ user }}'s Orders
+                    {{ user }}'s Entries
                 {% else %}
                     <i onClick="location.href='{% url 'user-list' %}';" class="fa-solid fa-circle-arrow-left" id="icon"></i>
-                    {{ userInput }}'s Orders
+                    {{ userInput }}'s Entries
                 {% endif %}
                 <span style="float:right; margin-right:20px; cursor:pointer;">
                     <i style="color: green;" onclick="location.href='{% url 'order-create' userInput.id %}';" class="fa-solid fa-plus"></i>
                 </span>
             </h2>
         </hgroup>
+        <hr>
+        <div class="grid">
+            <article style="text-align: center;">No. Entries = {{ entries }}</article>
+            <article style="text-align: center;">Overall Cost = {{ cost }}</article>
+        </div>
         <hr>
         <article>
             <div class="overflow-auto">
