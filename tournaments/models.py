@@ -109,6 +109,7 @@ class Entry(models.Model):    #Creating entry table/entity
     againstGoals = models.IntegerField(default=0)
     goalDiff = models.IntegerField(default=0)
     played = models.IntegerField(default=0)
+    invoiced = models.BooleanField(default=False)
 
     def __str__(self):                    #Displaying self id as a concatenation of info
         return str(self.teamName)

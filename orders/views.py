@@ -10,6 +10,7 @@ from django.http import JsonResponse
 from django.db.models import Sum
 from django.urls import reverse, reverse_lazy
 from django_tables2 import RequestConfig
+from django.db.models import F, Q
 from .models import Order, OrderItem, CURRENCY
 from .forms import OrderCreateForm, OrderEditForm
 from .tables import ProductTable, OrderItemTable, OrderTable, AdminOrderTable
@@ -19,7 +20,7 @@ import datetime
 from django.contrib.auth.models import User
 from users.models import Profile
 
-class OrderListView(TemplateView):
+class UserEntryListView(TemplateView):
     model = User
     template_name = 'orders/list.html'
 
@@ -27,13 +28,12 @@ class OrderListView(TemplateView):
         context = super().get_context_data(**kwargs)
         pk = self.kwargs.pop('pk')
         user = User.objects.get(id=pk) 
-        qs = OrderItem.objects.filter(order__user=user).order_by('-tournament__date')
+        qs = Entry.objects.filter(user=user).order_by(F('tournament__date').desc(), F('tournament__name'))
+        noEntries = qs.count()
+        cost = 0
 
-        noEntries = 0
-        for item in qs:
-            noEntries += item.qty
-
-        cost = Profile.objects.get(user=user).tag_due
+        for entry in qs:
+            cost += entry.tournament.entryPrice
 
         if self.request.user.groups.first().name == "Admin":
             context['orders'] = AdminOrderTable(qs)
@@ -198,10 +198,11 @@ def delete_order(request, pk):
                                       )
     return JsonResponse(data)
 
+#Doesn't actually use orders, relies on Entry Model!
 @login_required
 def invoice_tourn(request, pk):
-    instance = get_object_or_404(OrderItem, id=pk)
-    user = instance.order.user
+    instance = get_object_or_404(Entry, id=pk)
+    user = instance.user
     
     if instance.invoiced == False:
         instance.invoiced = True
@@ -211,8 +212,7 @@ def invoice_tourn(request, pk):
 
     data = dict()
     instance.refresh_from_db()
-    qs = OrderItem.objects.filter(order__user=user).order_by('-tournament__date')
-
+    qs = Entry.objects.filter(user=user).order_by(F('tournament__date').desc(), F('tournament__name'))
 
     if request.user.groups.first().name == "Admin":
         orders = AdminOrderTable(qs)

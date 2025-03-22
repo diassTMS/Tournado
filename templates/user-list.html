@@ -28,9 +28,7 @@
                             <th>User</th>
                             <th style="text-align: center;">Profile</th>
                             <th style="text-align: center; border-right: 2px solid;">Orders</th>
-                            <th style="text-align: center;">Due</th>
-                            <th style="text-align: center;">Paid</th>
-                            <th style="text-align: center;">Balance</th>
+                            <th style="text-align: center;">Total Entry Cost</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -39,12 +37,10 @@
                                 <td>{{ user.username }}</td>
                                 <td style="text-align: center;"><a href="{% url 'profile' user.id %}"><i class="fa fa-edit"></i></a></td>
                                 <td style="text-align: center; border-right: 2px solid;"><a href="{% url 'order-list' user.id %}">View</a></td>
-                                <td style="text-align: center;">{{ user.profile.tag_due }}</td>
-                                <td style="text-align: center;">{{ user.profile.tag_paid }}</td>
-                                {% if user.profile.balance < 0 %}
-                                    <td style="text-align: center; color: red;">{{ user.profile.tag_balance }}</td>
+                                {% if user.profile.due == 0 %}
+                                    <td style="text-align: center; color: black;">{{ user.profile.tag_due }}</td>
                                 {% else %}
-                                    <td style="text-align: center; color: green;">{{ user.profile.tag_balance }}</td>
+                                    <td style="text-align: center; color: green;">{{ user.profile.tag_due }}</td>
                                 {% endif %}
                             </tr>
                         {% endfor %}

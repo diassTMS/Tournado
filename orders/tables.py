@@ -1,6 +1,6 @@
 import django_tables2 as tables
 from .models import OrderItem, Order
-from tournaments.models import Tournament
+from tournaments.models import Tournament, Entry
 from django.utils.safestring import mark_safe
 from django_tables2.utils import Accessor, AttributeDict, computed_values
 from django.urls import reverse, reverse_lazy
@@ -42,14 +42,8 @@ class AdminOrderTable(tables.Table):
     tournament = tables.Column(orderable=False, 
                                verbose_name='Tournament')
     
-    qty = tables.Column(orderable=False, 
-                        verbose_name='No. Teams',
-                        attrs={ 'th':{'style':'text-align: center;'},
-                                'td':{'style':'text-align: center;'},
-                            })
-    
-    tag_total_price = tables.Column(orderable=False, 
-                                    verbose_name='Total Cost',
+    tournament__tag_price = tables.Column(orderable=False, 
+                                    verbose_name='Entry Price',
                                     attrs={'th':{'style':'text-align: center;'},
                                             'td':{'style':'text-align: center;'},
                                             })
@@ -60,9 +54,9 @@ class AdminOrderTable(tables.Table):
                             })
 
     class Meta:
-        model = OrderItem
+        model = Entry
         template_name = 'django_tables2/bootstrap.html'
-        fields = ['tournament', 'qty', 'tag_total_price', 'invoiced']
+        fields = ['tournament', 'tournament__tag_price', 'invoiced']
 
     def render_invoiced(self, value, record):
         if value:
