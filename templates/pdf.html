@@ -68,8 +68,8 @@
                 <thead>
                     <tr>
                         <th scope="col" style="text-align:center; border: 1px solid;">Timings</th>
-                        {% for i in range %}
-                            <th style="text-align:center; border: 1px solid;">Pitch {{forloop.counter}}</th>
+                        {% for pitch in pitches %}
+                            <th style="text-align:center; border: 1px solid;">{{ pitch.name }}</th>
                         {% endfor %}
                     </tr>
                 </thead>

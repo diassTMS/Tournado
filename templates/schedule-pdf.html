@@ -23,14 +23,21 @@
                 </span>
             </p> 
         </hgroup>
-        <hr>
-        <h3>Pitch Names</h3>
-        <hr>
-    </div>
-        <br>
         <form method="POST" id="form">      
             {% csrf_token %}    
             <fieldset>
+                <hr>
+                <h3>Pitch Names</h3>
+                <hr>
+                {% for field in form.get_pitch_fields %}
+                    <div>
+                        <p>Pitch {{ forloop.counter }} Name</p>
+                        {{ field }}
+                    </div>
+                {% endfor %}
+                <button type="submit" class="secondary">Update</button>
+            </div>
+                <br>
                 <div class="grid">
                     <div id="box">
                         <h3>Timings</h3>

@@ -1,5 +1,5 @@
 from django.db.models.signals import post_save
-from .models import Schedule, Timings, Rules
+from .models import Schedule, Timings, Rules, PitchNames
 from tournaments.models import Tournament
 from django.dispatch import receiver
 

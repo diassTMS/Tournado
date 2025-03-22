@@ -3,7 +3,7 @@ from tournaments.models import Tournament
 from leagues.models import League
 from django.forms.widgets import HiddenInput
 import math
-from .models import Timings, Schedule, Rules
+from .models import Timings, Schedule, Rules, PitchNames
 
 class ScheduleForm(forms.ModelForm): 
     class Meta:
@@ -104,6 +104,8 @@ class SchedulePDFForm(forms.ModelForm):
             schedule=self.instance
         ).order_by('order')
 
+        pitches = PitchNames.objects.filter(schedule=self.instance)
+
         for i in range(len(timings) + 1):
             field_name = 'timing_%s' % (i + 1,)
             self.fields[field_name] = forms.CharField(required=False)
@@ -122,9 +124,18 @@ class SchedulePDFForm(forms.ModelForm):
                 self.initial[field_name] = ""
                 self.fields[field_name] = forms.CharField(widget=forms.TextInput(attrs={'placeholder': 'Enter new rule here'}), required=False)
 
+        for i in range(len(pitches)):
+            field_name = 'pitch_%s' % (i + 1,)
+            self.fields[field_name] = forms.CharField(required=False)
+            try:
+                self.initial[field_name] = pitches[i].name
+            except IndexError:
+                self.initial[field_name] = ""
+
     def clean(self):
         timings = []
         rules = []
+        pitches = []
         i = 0
         field_name = 'timing_%s' % (i + 1,)
 
@@ -148,16 +159,35 @@ class SchedulePDFForm(forms.ModelForm):
         
         self.cleaned_data["rules"] = rules
 
+        k = 0
+        field_name = 'pitch_%s' % (k + 1,)
+
+        for field_name in self.fields:
+            if field_name.startswith("pitch_"):
+                if self.cleaned_data.get(field_name) != "":
+                    pitch = self.cleaned_data[field_name]
+                    pitches.append(pitch)
+        
+        self.cleaned_data["pitches"] = pitches
+
     def save(self):
         schedule = self.instance
         schedule.timed = self.cleaned_data["timed"]
         schedule.save()
-        print(self.cleaned_data["timed"])
+
         oldTimings = Timings.objects.filter(schedule=schedule)
         oldTimings.delete()
 
         oldRules = Rules.objects.filter(schedule=schedule)
         oldRules.delete()
+
+        oldPitches = PitchNames.objects.filter(schedule=schedule)
+
+        count = 0
+        for pitch in oldPitches:
+            pitch.name = self.cleaned_data["pitches"][count]
+            pitch.save()
+            count += 1
 
         count = 1
         for timing in self.cleaned_data["timings"]:
@@ -185,6 +215,11 @@ class SchedulePDFForm(forms.ModelForm):
     def get_rule_fields(self):
         for field_name in self.fields:
             if field_name.startswith("rule_"):
+                yield self[field_name]
+
+    def get_pitch_fields(self):
+        for field_name in self.fields:
+            if field_name.startswith("pitch_"):
                 yield self[field_name]
 
 #LEAGUES

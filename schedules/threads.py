@@ -7,6 +7,7 @@ import math
 import random
 import threading
 from tournaments.models  import Entry, Match, Tournament
+from schedules.models import PitchNames, Schedule
 from leagues.models import League, LeagueEntry, LeagueMatch
 from django.contrib import messages
 from ast import literal_eval
@@ -646,6 +647,7 @@ class GenerateScheduleThread(threading.Thread):
                     matches = Match.objects.filter(tournament=self.instance).delete()
                     entriesPrev = Entry.objects.filter(tournament=self.instance)
                     tourn = Tournament.objects.get(pk=self.instance.id)
+
                     if tourn.finished == True:
                         tourn.finished = False
                         tourn.save()
@@ -660,6 +662,8 @@ class GenerateScheduleThread(threading.Thread):
                         entryPrev.goalDiff = 0
                         entryPrev.played = 0
                         entryPrev.save()
+
+                    
                 except:
                     print('already generated but no data')
 
@@ -673,6 +677,21 @@ class GenerateScheduleThread(threading.Thread):
             match_duration = self.instance.matchDuration
             break_duration = self.instance.breakDuration
             halftime_duration = self.instance.halftimeDuration
+            sched = Schedule.objects.get(tournament=self.instance)
+
+
+            #Pitch names
+            pitches = PitchNames.objects.filter(schedule=sched)
+            while len(pitches) != noPitches:
+                if len(pitches) < noPitches:
+                    pitchNew = PitchNames.objects.create(schedule=sched, name="")
+                    pitchNew.save()
+
+                else:
+                    pitchOld = pitches.last()
+                    pitchOld.delete()
+
+                pitches = PitchNames.objects.filter(schedule=sched)
 
             #Mapping entries
             entries = Entry.objects.filter(tournament=self.instance)

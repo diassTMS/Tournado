@@ -9,7 +9,7 @@ from tournaments.models import Entry, Match, Tournament
 from django.shortcuts import HttpResponseRedirect
 from django.urls import reverse_lazy, reverse
 from django.shortcuts import get_object_or_404, render, redirect
-from .models import Schedule, Timings, Rules
+from .models import Schedule, Timings, Rules, PitchNames
 from django.http import JsonResponse
 from django.contrib import messages
 from Tournado import renderers
@@ -125,6 +125,7 @@ class PDFView(View):
         sched = Schedule.objects.get(tournament=tournament)
         timings = Timings.objects.filter(schedule=sched)
         rules = Rules.objects.filter(schedule=sched)
+        pitches = PitchNames.objects.filter(schedule=sched)
         timed = sched.timed
 
         data = {
@@ -134,6 +135,7 @@ class PDFView(View):
             'timings': timings,
             'rules': rules,
             'timed': timed,
+            'pitches': pitches,
             'range': range(tournament.noPitches),
         }
         
@@ -164,6 +166,7 @@ class UmpirePDFView(View):
         sched = Schedule.objects.get(tournament=tournament)
         timings = Timings.objects.filter(schedule=sched)
         rules = Rules.objects.filter(schedule=sched)
+        pitches = PitchNames.objects.filter(schedule=sched)
         timed = sched.timed
 
         data = {
@@ -173,6 +176,7 @@ class UmpirePDFView(View):
             'timings': timings,
             'rules': rules,
             'timed': timed,
+            'pitches': pitches,
             'range': range(tournament.noPitches),
         }
         
@@ -236,10 +240,14 @@ class DragDropView(DetailView):
                 print('freerow')
            
             schedule.append(row)
+
+        sched = Schedule.objects.get(tournament=self.object)
+        pitches = PitchNames.objects.filter(schedule=sched)
                 
         context['schedule'] = schedule
         context['range'] = range(self.object.noPitches)
         context['tourn'] = self.object
+        context['pitches'] = pitches
         return context
     
 class ChangeSheetAssign(LoginRequiredMixin, View):

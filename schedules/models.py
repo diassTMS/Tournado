@@ -31,5 +31,12 @@ class Timings(models.Model):
 
     def __str__(self):
         return f'{self.timing}'
+    
+class PitchNames(models.Model):
+    name = models.CharField(max_length=500)
+    schedule = models.ForeignKey(Schedule, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f'{self.name}'
 
 
