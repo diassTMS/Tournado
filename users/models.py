@@ -13,23 +13,12 @@ class Profile(models.Model):
     phone_number = models.CharField(max_length=16, blank=True, null=True)
     invoice_email = models.EmailField(blank=True, null=True)
     due = models.DecimalField(default=0.00, decimal_places=2, max_digits=20)
-    paid = models.DecimalField(default=0.00, decimal_places=2, max_digits=20)
-    balance = models.DecimalField(default=0.00, decimal_places=2, max_digits=20)
 
     def __str__(self):
         return f'{self.user.username}'
     
     def tag_due(self):
         return f'{CURRENCY}{self.due}'
-
-    def tag_paid(self):
-        return f'{CURRENCY}{self.paid}'
-
-    def tag_balance(self):
-        if self.balance < 0:
-            return f'-{CURRENCY}{self.balance * -1}'
-        else:
-            return f'{CURRENCY}{self.balance}'
 
     def save(self, *args, **kwargs):
         super().save()
