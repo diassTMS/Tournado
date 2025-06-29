@@ -215,14 +215,18 @@ class EntryCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
         kwargs['request'] = self.request
         kwargs['tourn'] = Tournament.objects.get(pk=self.kwargs.get('pk'))
         return kwargs
-    
 
 @login_required
 def EntryUserView(request):
-    entries = Entry.objects.filter(user=request.user)
-    entries_filter = EntryUserFilter(request.GET, queryset=entries)
+    future_entries = Entry.objects.filter(Q(user=request.user) & Q(tournament__date__gte=datetime.datetime.today().date())).order_by('tournament__date')
+    past_entries = Entry.objects.filter(Q(user=request.user) & Q(tournament__date__lt=datetime.datetime.today().date())).order_by('-tournament__date')
+    future_entry_filter = EntryUserFilter(request.GET, queryset=future_entries)
+    past_entry_filter = EntryUserFilter(request.GET, queryset=past_entries)
 
-    return render(request, 'user-entry-list.html', {'filter': entries_filter})
+    return render(request, 'user-entry-list.html', {'filterFuture': future_entry_filter,
+                                                    'filterPast': past_entry_filter, 
+                                                    'entriesFuture': future_entries, 
+                                                    'entriesPast': past_entries})
 
 class EntryUpdateView(LoginRequiredMixin, UserPassesTestMixin, SuccessMessageMixin, UpdateView):
     model = Entry
@@ -646,9 +650,98 @@ def search_bar_future(request):
             qs = qsOne | qsTwo | qsThree | qsFour | qsFive | qsSix
 
         data = dict()
-        data['result'] = render_to_string(template_name='include/user-past-tourns.html',
+        data['result'] = render_to_string(template_name='include/user-future-tourns.html',
                                         request=request,
-                                        context={'tournaments': qs,
+                                        context={'tournamentsFuture': qs,
+                                                }
+                                        )
+        return JsonResponse(data)
+
+def search_past_entries(request):
+    if request.method == 'GET':
+        month = request.GET.get('month', None)
+        day = request.GET.get('day', None)
+        year = request.GET.get('year', None)
+        age = request.GET.get('age', None)
+        gender = request.GET.get('gender', None)
+        level = request.GET.get('level', None)
+
+        filterFields = []
+        kwargs = {
+            'user': request.user,
+            'tournament__{0}__{1}'.format('date', 'lt'): datetime.datetime.today().date(), 
+        }
+        
+        filterFields.append(['tournament__age', age])
+        filterFields.append(['tournament__gender', gender])
+        filterFields.append(['tournament__level', level])
+        filterFields.append(['tournament__date__month', month])
+        filterFields.append(['tournament__date__day', day])
+        filterFields.append(['tournament__date__year', year])
+
+
+        empty = 0
+        for item in filterFields:
+            if item[1] != "" and item[1] != None:
+                kwargs.update({item[0]: item[1]})
+            else:
+                empty += 1
+
+        filters = Entry.objects.filter(**kwargs).order_by('-tournament__date')
+
+        if empty == 6:
+            qs = Entry.objects.filter(user=request.user, tournament__date__lt=datetime.datetime.today().date()).order_by('-tournament__date')
+        else:
+            qs = filters
+        
+        data = dict()
+        data['result'] = render_to_string(template_name='include/user-past-entries.html',
+                                        request=request,
+                                        context={'entriesPast': qs,
+                                                }
+                                        )
+        return JsonResponse(data)
+
+def search_future_entries(request):
+    if request.method == 'GET':
+        month = request.GET.get('month', None)
+        day = request.GET.get('day', None)
+        year = request.GET.get('year', None)
+        age = request.GET.get('age', None)
+        gender = request.GET.get('gender', None)
+        level = request.GET.get('level', None)
+
+        filterFields = []
+        kwargs = {
+            'user': request.user,
+            'tournament__{0}__{1}'.format('date', 'gte'): datetime.datetime.today().date(), 
+        }
+        
+        filterFields.append(['tournament__age', age])
+        filterFields.append(['tournament__gender', gender])
+        filterFields.append(['tournament__level', level])
+        filterFields.append(['tournament__date__month', month])
+        filterFields.append(['tournament__date__day', day])
+        filterFields.append(['tournament__date__year', year])
+
+        empty = 0
+        for item in filterFields:
+            if item[1] != "" and item[1] != None:
+                kwargs.update({item[0]: item[1]})
+            else:
+                empty += 1
+
+        filters = Entry.objects.filter(**kwargs).order_by('tournament__date')
+
+        if empty == 6:
+            qs = Entry.objects.filter(user=request.user, tournament__date__gte=datetime.datetime.today().date()).order_by('tournament__date')
+        else:
+            qs = filters
+
+        data = dict()
+        data['result'] = render_to_string(template_name='include/user-future-entries.html',
+                                        request=request,
+                                        context={'entriesFuture': qs,
                                                 }
                                         )
         return JsonResponse(data)

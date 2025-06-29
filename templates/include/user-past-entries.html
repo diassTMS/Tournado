@@ -1,0 +1,36 @@
+{% if entriesPast|length == 0 %}
+    <div class="content-section">
+        <h3>None</h3>
+    </div>
+{% endif %}
+{% if entriesPast|length > 1 %}
+    <div class="grid" id="tournPage">
+{% else %}
+    <div class="grid" style="grid-template-columns: 1fr;">
+{% endif %}
+{% for entry in entriesPast %}
+    <article>
+        <h4>
+            {{ entry.teamName }} {{ entry.tournament.age }} {{ entry.tournament.gender }}
+            <span style="float: right;">
+                <a style="color: #AF291D;" href="{% url 'entry-request-delete' entry.id %}" onclick="return confirm('Request for delete will be emailed to tournament manager.')"><i class="fa-solid fa-trash-can" id="icon"></i></a>
+            </span>
+        </h4>
+        <hr>
+        <p><b><i class="fa-solid fa-trophy"></i> Event:</b>&emsp;<a href="{% url 'tourn-detail' entry.tournament.id %}">{{ entry.tournament.name }}</a></p>
+        <p><b><i class="fa-solid fa-calendar-days"></i> Date:</b>&emsp;{{ entry.tournament.date|date:"l, F dS Y" }}</p>
+        <p><b><i class="fa-solid fa-tags"></i> Tags:</b>&ensp;&emsp;<small id="{{ entry.tournament.group }}">{{ entry.tournament.group }}</small></p>
+        <hr>
+        {% if entry.tournament.teamsheets %}
+            {% if entry.teamsheet == "" %}
+                <p style="color: #AF291D;"><b>Please upload a team sheet for this entry:</b></p>
+            {% elif entry.teamsheet == None %}
+                <p style="color: #AF291D;"><b>Please upload a team sheet for this entry:</b></p>
+            {% else %}
+                <p style="color: green;"><b><i class="fa-solid fa-check"></i>&ensp; Team sheet uploaded</b></p>
+            {% endif %}
+        {% endif %}
+        <button class="outline primary" style="width: 100%;" onclick="location.href='{% url 'entry-update' entry.id %}';">Update</button>
+    </article>
+{% endfor %}
+</div>

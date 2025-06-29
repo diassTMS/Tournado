@@ -2,61 +2,249 @@
 {% load static %}
 {% load crispy_forms_tags %}
 {% block container %}
+    <style>
+        #filter {
+            grid-template-columns: repeat(4, 2fr) 1fr;
+            grid-auto-flow: row
+        }
+
+        @media (width < 50em) {
+            #filter {
+                display: grid;
+                grid-template-columns: 1fr;
+                grid-column-gap: 0px;
+                grid-row-gap: 0px;
+            }
+        }
+    </style>
     <section>
-        <div class='container' id='box'>
-            <h2>
-                <i onClick="location.href='{% url 'account' %}';" class="fa-solid fa-circle-arrow-left" id="icon"></i> 
-                Your Entries
-                <span style="float:right; margin-right:20px; cursor:pointer;">
-                <i onclick="filterView()" class="fa-solid fa-sliders" id="icon"></i>
-                </span>
-            </h2>
-            <form method="get" id="filter" style="display: none;">
-                <fieldset class="grid" style="grid-template-columns: 5fr 1fr 1fr;">
-                    <label>Tourament {{ filter.form.tournament }}</label>
-                    <button style="height: calc(1rem* var(--pico-line-height) + var(--pico-form-element-spacing-vertical)* 2 + var(--pico-border-width)* 2); margin-top: 35px;" onclick="submit"><i class="fa-solid fa-filter"></i></button>
-                    <input style="margin-top: 35px;" class="secondary" type="button" onclick="location.href='{% url 'user-entry-list' %}';" value="X" />
-                </fieldset>
-            </form>
-            <hr>
-            <div class="grid" id="tournPage">
-                {% for entry in filter.qs  %}
-                    <article>
-                        <h4>
-                            {{ entry.teamName }} {{ entry.tournament.age }} {{ entry.tournament.gender }}
-                            <span style="float: right;">
-                                <a style="color: #AF291D;" href="{% url 'entry-request-delete' entry.id %}" onclick="return confirm('Request for delete will be emailed to tournament manager.')"><i class="fa-solid fa-trash-can" id="icon"></i></a>
-                            </span>
-                        </h4>
-                        <hr>
-                        <p><b><i class="fa-solid fa-trophy"></i> Event:</b>&emsp;<a href="{% url 'tourn-detail' entry.tournament.id %}">{{ entry.tournament.name }}</a></p>
-                        <p><b><i class="fa-solid fa-calendar-days"></i> Date:</b>&emsp;{{ entry.tournament.date|date:"l, F dS Y" }}</p>
-                        <p><b><i class="fa-solid fa-tags"></i> Tags:</b>&ensp;&emsp;<small id="{{ entry.tournament.group }}">{{ entry.tournament.group }}</small></p>
-                        <hr>
-                        {% if entry.tournament.teamsheets %}
-                            {% if entry.teamsheet == "" %}
-                                <p style="color: #AF291D;"><b>Please upload a team sheet for this entry:</b></p>
-                            {% elif entry.teamsheet == None %}
-                                <p style="color: #AF291D;"><b>Please upload a team sheet for this entry:</b></p>
-                            {% else %}
-                                <p style="color: green;"><b><i class="fa-solid fa-check"></i>&ensp; Team sheet uploaded</b></p>
-                            {% endif %}
-                        {% endif %}
-                        <button class="outline primary" style="width: 100%;" onclick="location.href='{% url 'entry-update' entry.id %}';">Update</button>
-                    </article>
-                {% endfor %}
+        <div id="box">
+            <div class="grid">
+                <hgroup>
+                    <h2>
+                        <i onClick="location.href='{% url 'account' %}';" class="fa-solid fa-circle-arrow-left" id="icon"></i> 
+                        Your Entries
+                    </h2>
+                    <p>        
+                        &emsp;&emsp;<i class="fa-solid fa-circle-info"></i>
+                        <span>
+                            <b>Toggle between you past and future entries</b>
+                        </span>
+                    </p> 
+                </hgroup>
+                <div role="group">
+                    <button style="width: 50%;" class="primary" id="futureButton">Upcoming</button>
+                    <button style="width: 50%;" class="secondary" id="pastButton">Past</button>
+                  </div>
+            </div>
+        </div>
+        <br>
+        <div id="futureBlock">
+            <div class='container' id='box'>
+                <div class="grid">
+                    <h2 style="margin-top: 10px;">
+                        Upcoming Entries
+                        <span style="float:right; margin-right:20px; cursor:pointer;">
+                        <i onclick="filterView()" class="fa-solid fa-sliders" id="icon"></i>
+                        </span>
+                    </h2>
+                </div>
+                <hr>
+                <form method="get" id="filterFuture" style="display: none;">
+                    <fieldset class="grid" id="filter">
+                        <label>Age {{ filterFuture.form.tournament__age }}</label>
+                        <label>Gender {{ filterFuture.form.tournament__gender }}</label>
+                        <label>Level {{ filterFuture.form.tournament__level }}</label>
+                        <label>Date {{ filterFuture.form.tournament__date }}</label>
+                        <input id="resetFuture" style="margin-top: 35px;" class="secondary" type="button" onclick="reset()" value="Clear" />
+                    </fieldset>
+                    <hr>
+                </form>
+                <div id="user-future-entries">
+                    {% include 'include/user-future-entries.html' %}
+                </div>
+            </div>
+            <br>
+        </div>
+        <div id="pastBlock">
+            <div class='container' id='box'>
+                <div class="grid">
+                    <h2 style="margin-top: 10px;">
+                        Past Entries
+                        <span style="float:right; margin-right:20px; cursor:pointer;">
+                        <i onclick="filterViewPast()" class="fa-solid fa-sliders" id="icon"></i>
+                        </span>
+                    </h2>
+                </div>
+                <hr>
+                <form method="get" id="filterPast" style="display: none;">
+                    <fieldset class="grid" id="filter">
+                        <label>Age {{ filterPast.form.tournament__age }}</label>
+                        <label>Gender {{ filterPast.form.tournament__gender }}</label>
+                        <label>Level {{ filterPast.form.tournament__level }}</label>
+                        <label>Date {{ filterPast.form.tournament__date }}</label>
+                        <input id="resetPast" style="margin-top: 35px;" class="secondary" type="button" onclick="reset()" value="Clear" />
+                    </fieldset>
+                    <hr>
+                </form>
+                <div id="user-past-entries">
+                    {% include 'include/user-past-entries.html' %}
+                </div>
             </div>
         </div>
     </section>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
     <script>
+
+        //Past or Future Views
+        document.getElementById("futureButton").addEventListener("click",function(e) {
+            document.getElementById("futureBlock").style.display = "block";
+            document.getElementById("pastBlock").style.display = "none";
+            document.getElementById("futureButton").className = "primary";
+            document.getElementById("pastButton").className = "secondary";            
+        });
+
+        document.getElementById("pastButton").addEventListener("click",function(e) {
+            document.getElementById("futureBlock").style.display = "none";
+            document.getElementById("pastBlock").style.display = "block";  
+            document.getElementById("futureButton").className = "secondary";
+            document.getElementById("pastButton").className = "primary";            
+        });
+        
+        window.onload = function() {
+            document.getElementById("futureBlock").style.display = "block";
+            document.getElementById("pastBlock").style.display = "none"; 
+        };
+
         function filterView() {
-            var x = document.getElementById("filter");
+            var x = document.getElementById("filterFuture");
             if (x.style.display === "none") {
-                x.style.display = "block";
+              x.style.display = "block";
             } else {
-                x.style.display = "none";
+              x.style.display = "none";
             }
+        }
+
+        function filterViewPast() {
+            var x = document.getElementById("filterPast");
+            if (x.style.display === "none") {
+              x.style.display = "block";
+            } else {
+              x.style.display = "none";
             }
+        }
+
+        document.getElementById("filterFuture").addEventListener("change",function(evt) {
+            evt.preventDefault();
+            var filter = document.getElementById("filterFuture");
+            var age = filter.tournament__age.value;
+            var gender = filter.tournament__gender.value;
+            var level = filter.tournament__level.value;
+            var month = filter.tournament__date_month.value;
+            var day = filter.tournament__date_day.value;
+            var year = filter.tournament__date_year.value;
+            
+            $.ajax({
+                method: 'GET',
+                dataType: 'json',
+                url: 'search-future-entries/',
+                data: {'age': age,
+                        'gender': gender,
+                        'level': level,
+                        'month': month,
+                        'day': day,
+                        'year': year,
+                    },
+                success : function (data) {
+                    $('#user-future-entries').html(data.result)
+                }
+            })
+        });
+
+        document.getElementById("resetFuture").addEventListener("click",function(evt) {
+            evt.preventDefault();
+            var filter = document.getElementById("filterFuture");
+            var age = filter.tournament__age.value;
+            var gender = filter.tournament__gender.value;
+            var level = filter.tournament__level.value;
+            var month = filter.tournament__date_month.value;
+            var day = filter.tournament__date_day.value;
+            var year = filter.tournament__date_year.value;
+            
+            $.ajax({
+                method: 'GET',
+                dataType: 'json',
+                url: 'search-future-entries/',
+                data: {'age': age,
+                        'gender': gender,
+                        'level': level,
+                        'month': month,
+                        'day': day,
+                        'year': year,
+                    },
+                success : function (data) {
+                    $('#user-future-entries').html(data.result)
+                }
+            })
+        });
+
+        document.getElementById("filterPast").addEventListener("change",function(evt) {
+            evt.preventDefault();
+            console.log('hi')
+            var filter = document.getElementById("filterPast");
+            var age = filter.tournament__age.value;
+            var gender = filter.tournament__gender.value;
+            var level = filter.tournament__level.value;
+            var month = filter.tournament__date_month.value;
+            var day = filter.tournament__date_day.value;
+            var year = filter.tournament__date_year.value;
+            
+            $.ajax({
+                method: 'GET',
+                dataType: 'json',
+                url: 'search-past-entries/',
+                data: {'age': age,
+                        'gender': gender,
+                        'level': level,
+                        'month': month,
+                        'day': day,
+                        'year': year,
+                    },
+                success : function (data) {
+                    $('#user-past-entries').html(data.result)
+                }
+            })
+        });
+
+        document.getElementById("resetPast").addEventListener("click",function(evt) {
+            evt.preventDefault();
+            console.log('hi')
+            var filter = document.getElementById("filterPast");
+            var age = filter.tournament__age.value;
+            var gender = filter.tournament__gender.value;
+            var level = filter.tournament__level.value;
+            var month = filter.tournament__date_month.value;
+            var day = filter.tournament__date_day.value;
+            var year = filter.tournament__date_year.value;
+            
+            $.ajax({
+                method: 'GET',
+                dataType: 'json',
+                url: 'search-past-entries/',
+                data: {'age': age,
+                        'gender': gender,
+                        'level': level,
+                        'month': month,
+                        'day': day,
+                        'year': year,
+                    },
+                success : function (data) {
+                    $('#user-past-entries').html(data.result)
+                }
+            })
+        });
+
     </script>
-    <script src="{% static "js/modal.js" %}"></script>
+
 {% endblock %}
