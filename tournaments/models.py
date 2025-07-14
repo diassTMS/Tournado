@@ -3,6 +3,7 @@ from django.contrib.auth.models import User
 from users.models import Profile
 from decimal import Decimal
 from django.conf import settings
+import datetime
 CURRENCY = settings.CURRENCY
 TOURN_PRICE = settings.TOURN_PRICE
 
@@ -70,6 +71,7 @@ class Tournament(models.Model):
     noTeams = models.IntegerField(default=0)
     meetTime = models.TimeField()
     startTime = models.TimeField()
+    endTime = models.TimeField(null=True, blank=True, default=None)
     matchType = models.CharField(max_length=10, choices=TIMINGS, default='One Way')
     matchDuration = models.IntegerField(default=15)
     halftimeDuration = models.IntegerField(default=0)
@@ -91,6 +93,10 @@ class Tournament(models.Model):
     
     def tag_price(self):
         return f'{CURRENCY}{self.entryPrice}'
+    
+    def save(self, *args, **kwargs):
+        self.endTime = self.startTime + datetime.timedelta(hour=2)
+        return super().save(*args, **kwargs)
 
 class Entry(models.Model):    #Creating entry table/entity
 
