@@ -8,24 +8,27 @@ from .models import Timings, Schedule, Rules, PitchNames
 class ScheduleForm(forms.ModelForm): 
     class Meta:
         model = Tournament
-        fields = ['noTeams', 'noDivisions', 'noPitches', 'knockoutRounds', 'liveScores', 'umpires', 'startTime', 'matchType','matchDuration', 'breakDuration', 'halftimeDuration']
+        fields = ['noTeams', 'noDivisions', 'noPitches', 'knockoutRounds', 'liveScores', 'umpires', 'startTime', 'endTime', 'matchType']
+
+        widgets = {
+            'startTime': forms.TimeInput(attrs={'type': 'time'}),
+            'endTime': forms.TimeInput(attrs={'type': 'time'}),
+        }
 
     def __init__(self, *args, **kwargs):
         super(ScheduleForm, self).__init__(*args, **kwargs)
         self.fields['noTeams'].disabled = True
         self.fields['noDivisions'].disabled = True
 
-        self.fields['noPitches'].label = f'No. Playable Pitches'
+        self.fields['noPitches'].label = f'No. Pitches'
         self.fields['noDivisions'].label = f'No. Divisions'
         self.fields['knockoutRounds'].label = f'Select knockout round option:'
         self.fields['liveScores'].label = f'Enable real time match scoring?'
         self.fields['umpires'].label = f'Independent umpire schedule?'
         self.fields['noTeams'].label = f'No. Entries'
         self.fields['startTime'].label = f'Start Time'
-        self.fields['matchType'].label = f'Match Structure'
-        self.fields['matchDuration'].label = f'Half Durations'
-        self.fields['breakDuration'].label = f'Break Duration'
-        self.fields['halftimeDuration'].label = f'Half-time Duration'            
+        self.fields['endTime'].label = f'Finish Time'
+        self.fields['matchType'].label = f'Match Structure'            
 
     def clean_noTeams(self):
         cleaned_data = self.clean()
@@ -72,20 +75,6 @@ class ScheduleForm(forms.ModelForm):
         elif  math.floor(teams / divs) < 2:
             self.add_error('noDivisions', "Must have at least two teams per division")
         return divs
-    
-    def clean_matchDuration(self):
-        cleaned_data = self.clean()
-        mDuration = cleaned_data.get('matchDuration')
-        if mDuration < 1:
-            self.add_error('matchDuration', "Duration must be at least 1 minute.")
-        return mDuration
-    
-    def clean_breakDuration(self):
-        cleaned_data = self.clean()
-        bDuration = cleaned_data.get('breakDuration')
-        if bDuration < 1:
-            self.add_error('breakDuration', "Duration must be at least 1 minute.")
-        return bDuration
 
 class SchedulePDFForm(forms.ModelForm):
     class Meta:
@@ -221,6 +210,25 @@ class SchedulePDFForm(forms.ModelForm):
         for field_name in self.fields:
             if field_name.startswith("pitch_"):
                 yield self[field_name]
+
+class TimingsForm(forms.ModelForm): 
+    class Meta:
+        model = Tournament
+        fields = ['startTime', 'matchType', 'matchDuration', 'breakDuration', 'halftimeDuration']
+
+        widgets = {
+            'startTime': forms.TimeInput(attrs={'type': 'time'}),
+            'endTime': forms.TimeInput(attrs={'type': 'time'}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super(TimingsForm, self).__init__(*args, **kwargs)
+
+        self.fields['startTime'].label = f'Start Time'
+        self.fields['matchType'].label = f'Match Structure'            
+        self.fields['matchDuration'].label = f'Match Duration' 
+        self.fields['breakDuration'].label = f'Break Duration' 
+        self.fields['halftimeDuration'].label = f'Half-time Duration'            
 
 #LEAGUES
 

@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% load crispy_forms_tags %}
+{% load static %}
 {% block container %}
     <div class="container" id="box">
         <div class="grid">
@@ -7,15 +8,15 @@
                 Schedule {{ tourn }}
             </h2>
             <hgroup>
-                <h4 style="text-align: center; margin-bottom:5px;">Step 3/4</h4>
-                <progress value="75" max="100" />
+                <h4 style="text-align: center; margin-bottom:5px;">Step 4/4</h4>
+                <progress value="100" max="100" />
             </hgroup>
         </div>
     </div>
     <br>
     <div id="box">
         <hgroup>
-            <h3>3. Customise PDF</h3>
+            <h3>4. Customise PDF</h3>
             <p>        
                 <i class="fa-solid fa-circle-info"></i>
                 <span>
@@ -61,10 +62,36 @@
             </fieldset>
             <hr>
             <div class="grid">
-                <a href="{% url 'drag-drop' tourn.id %}" role="button" style="width: 100%;">Next</a>
+                <button class="primary" data-target="modal-finish" onclick="toggleModal(event)">Finish</button>
             </div>  
         </form>
     </div>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+    <script src="{% static "js/drag-drop.js" %}"></script>
+
+    <dialog id="modal-finish">
+        <article>
+            <header>
+                <h3>Successfully scheduled tournament!</h3>
+            </header>
+            <p>Your schedule is now ready to be viewed and published.</p>
+            {% if tourn.umpires == True %}
+                <div class="grid">
+                    <a role="button" class="outline" href="{% url 'pdf' tourn.id %}" target="_blank">Main <i class="fa-solid fa-file-pdf"></i></a>
+                    <a role="button" class="outline" href="{% url 'umpire-pdf' tourn.id %}" target="_blank">Umpire <i class="fa-solid fa-file-pdf"></i></a>
+                </div>
+            {% else %}
+                <div class="grid">
+                    <a role="button" class="outline" href="{% url 'pdf' tourn.id %}" target="_blank">View <i class="fa-solid fa-file-pdf"></i></a>
+                </div>
+            {% endif %}
+            <footer>
+                <a role="button" class="secondary outline" href="{% url 'user-tourn-detail' tourn.id %}";>&larr; Tournament Page</a>
+                <a role="button" class="secondary outline" href="{% url 'entry_assign_div' tourn.id %}";>Reschedule</a>
+            </footer>
+        </article>
+    </dialog>  
 {% endblock %}
 
 

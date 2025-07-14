@@ -285,7 +285,7 @@ class GenerateScheduleThread(threading.Thread):
                 
                 start = str(Match.objects.filter(tournament=self.id).last().end)
                 d = datetime.datetime.strptime(start, '%H:%M:%S')     
-                d += datetime.timedelta(minutes=self.breakDuration)
+                d += datetime.timedelta(minutes=break_duration)
                 start = d
                 d += datetime.timedelta(minutes=duration)
                 end = d
@@ -317,7 +317,7 @@ class GenerateScheduleThread(threading.Thread):
                 for i in range(3):
                     start = str(Match.objects.filter(tournament=self.id).last().end)
                     d = datetime.datetime.strptime(start, '%H:%M:%S')     
-                    d += datetime.timedelta(minutes=self.breakDuration)
+                    d += datetime.timedelta(minutes=break_duration)
                     start = d
                     d += datetime.timedelta(minutes=duration)
                     end = d
@@ -383,7 +383,7 @@ class GenerateScheduleThread(threading.Thread):
                     for i in range(math.floor(len(entriesData) / 2)):
                         start = str(Match.objects.filter(tournament=self.id).last().end)
                         d = datetime.datetime.strptime(start, '%H:%M:%S')     
-                        d += datetime.timedelta(minutes=self.breakDuration)
+                        d += datetime.timedelta(minutes=break_duration)
                         start = d
                         d += datetime.timedelta(minutes=duration)
                         end = d
@@ -416,7 +416,7 @@ class GenerateScheduleThread(threading.Thread):
                     for i in range(4):
                         start = str(Match.objects.filter(tournament=self.id).last().end)
                         d = datetime.datetime.strptime(start, '%H:%M:%S')     
-                        d += datetime.timedelta(minutes=self.breakDuration)
+                        d += datetime.timedelta(minutes=break_duration)
                         start = d
                         d += datetime.timedelta(minutes=duration)
                         end = d
@@ -507,7 +507,7 @@ class GenerateScheduleThread(threading.Thread):
 
                         start = str(Match.objects.filter(tournament=self.id).last().end)
                         d = datetime.datetime.strptime(start, '%H:%M:%S')     
-                        d += datetime.timedelta(minutes=self.breakDuration)
+                        d += datetime.timedelta(minutes=break_duration)
                         start = d
                         d += datetime.timedelta(minutes=duration)
                         end = d
@@ -538,7 +538,7 @@ class GenerateScheduleThread(threading.Thread):
                     for i in range(8):
                         start = str(Match.objects.filter(tournament=self.id).last().end)
                         d = datetime.datetime.strptime(start, '%H:%M:%S')     
-                        d += datetime.timedelta(minutes=self.breakDuration)
+                        d += datetime.timedelta(minutes=break_duration)
                         start = d
                         d += datetime.timedelta(minutes=duration)
                         end = d
@@ -674,6 +674,7 @@ class GenerateScheduleThread(threading.Thread):
             noDivs = self.instance.noDivisions
             noPitches = self.instance.noPitches
             start = str(self.instance.startTime)
+            end = str(self.instance.endTime)
             match_duration = self.instance.matchDuration
             break_duration = self.instance.breakDuration
             halftime_duration = self.instance.halftimeDuration
@@ -762,6 +763,30 @@ class GenerateScheduleThread(threading.Thread):
                     y += 1
             
             print(efficiency)
+
+            #Timings
+            schedLength = len(optimumSchedule)
+            tournDuration = (datetime.datetime.strptime(end, '%H:%M:%S') - datetime.datetime.strptime(start, '%H:%M:%S')).total_seconds() / 60
+
+            if self.instance.knockoutRounds == "Playoffs, Semis & Final":
+                schedLength += 3
+            elif self.instance.knockoutRounds == "Semis & Final":
+                schedLength += 2
+            elif self.instance.knockoutRounds == "Final":
+                schedLength += 1
+            else: 
+                print('No knockout rounds')
+
+           
+            #Ratio set at m:b = 4:1
+            if self.instance.matchType == "One Way":
+                match_duration = round((4 * int(tournDuration)) / ((5 * schedLength) - 1))
+                break_duration = math.floor(match_duration * (1/4))
+            else:
+                match_duration = round((4 * int(tournDuration)) / ((11 * schedLength) - 2))
+                break_duration = math.floor(match_duration * (1/2))
+                halftime_duration = math.floor(match_duration * (1/4))
+
             #Creating Matches
             for i in range(len(optimumSchedule)):
                 for j in range(len(optimumSchedule[i])):
@@ -843,10 +868,9 @@ class GenerateScheduleThread(threading.Thread):
                 
             #Create blank knockout round matches
             if self.instance.matchType == "One Way":
-                duration = match_duration + break_duration
+                duration = match_duration
             else:
-                full_match_duration = (2 * match_duration) + halftime_duration
-                duration = full_match_duration + break_duration
+                duration = (2 * match_duration) + halftime_duration
             
             if self.instance.knockoutRounds == "Playoffs, Semis & Final":
                 playoffs(self.instance, duration)
@@ -859,6 +883,9 @@ class GenerateScheduleThread(threading.Thread):
             
             print('generated')
             generated = True
+            Tournament.objects.filter(pk=self.instance.id).update(matchDuration=match_duration)
+            Tournament.objects.filter(pk=self.instance.id).update(breakDuration=break_duration)
+            Tournament.objects.filter(pk=self.instance.id).update(halftimeDuration=halftime_duration)
             Tournament.objects.filter(pk=self.instance.id).update(generatedSchedule=generated)
 
         except Exception as e:

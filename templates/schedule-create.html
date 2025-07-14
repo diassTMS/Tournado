@@ -39,22 +39,15 @@
             <hr>
             <div class="grid">
                 <fieldset id="noPitches">{{ form.noPitches|as_crispy_field }}</fieldset>
+                <p>Split division scheduling?</p>
             </div>
             <hr>
             <h4>Timings</h4>
             <hr>
             <div class="grid">
                 {{ form.startTime|as_crispy_field }}
-                <fieldset id="matchType">{{ form.matchType|as_crispy_field }}</fieldset>
-            </div>
-            <div class="grid" id="oneWay">
-                {{ form.matchDuration|as_crispy_field }}
-                {{ form.breakDuration|as_crispy_field }}
-            </div>
-            <div class="grid" id="eachWay">
-                {{ form.matchDuration|as_crispy_field }}
-                {{ form.halftimeDuration|as_crispy_field }}
-                {{ form.breakDuration|as_crispy_field }}
+                {{ form.endTime|as_crispy_field }}
+                {{ form.matchType|as_crispy_field }}
             </div>
             <hr>
             <h4>Knockouts</h4>
@@ -77,31 +70,25 @@
     </div>
     <br>
         <div class="form-group">
-            <input type="button" value="Next" onclick="submit()"/>
-        </div>  
+            <input type="button" value="Generate" data-target="modal-wait" onclick="submit(); toggleModal(event);"/>
+        </div>    
     </form>
 
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
-<script>
-    document.getElementById("matchType").addEventListener("change",function(e) {
-        if(e.target.value == "One Way") {
-            document.getElementById("eachWay").style.display = "none";
-            document.getElementById("oneWay").style.display = "grid";
-        } else {
-            document.getElementById("eachWay").style.display = "grid";
-            document.getElementById("oneWay").style.display = "none";            };
-        });
-    
-    window.onload = function() {
-        var e = '{{ tournament.matchType|escapejs }}';
-        if(e == "One Way") {
-            document.getElementById("eachWay").style.display = "none";
-            document.getElementById("oneWay").style.display = "grid";
-        } else {
-            document.getElementById("eachWay").style.display = "grid";
-            document.getElementById("oneWay").style.display = "none";            };
-    };
+<!--Loading Dialog-->
+<dialog id="modal-wait">
+    <article>
+        <header>
+        <h3>Your matches are being generated</h3>
+        <hr>
+        <p>Max Wait Time: 15 Seconds</p>
+        </header>
+        <progress />
+    </article>
+</dialog>  
 
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+<script src="{% static "js/modal.js" %}"></script>
+<script>
     document.getElementById("noPitches").addEventListener("change",function(e) {
         var noPitches = e.target.value;
         var id = {{ object.id }};

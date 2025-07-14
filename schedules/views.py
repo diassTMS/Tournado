@@ -1,7 +1,8 @@
-from .forms import SchedulePDFForm, ScheduleForm, LeagueScheduleForm
+from .forms import SchedulePDFForm, ScheduleForm, LeagueScheduleForm, TimingsForm
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from .threads import GenerateScheduleThread, GenerateLeagueScheduleThread
 from django.contrib.messages.views import SuccessMessageMixin
+from django.views.generic.edit import FormMixin
 from django.views.generic import UpdateView, DetailView, View
 from leagues.models import League, LeagueEntry, LeagueMatch
 from django.contrib.auth.decorators import login_required
@@ -31,8 +32,13 @@ class ScheduleCreateView(LoginRequiredMixin, UserPassesTestMixin, SuccessMessage
     
     def get_success_url(self):
         tourn = self.object.id
-        sched = Schedule.objects.get(tournament__id=tourn)
-        return reverse_lazy('schedule-pdf', kwargs={'pk': sched.id})
+
+        if self.object.umpires == True:
+            time.sleep(15)
+        else:
+            time.sleep(8)
+
+        return reverse_lazy('drag-drop', kwargs={'pk': tourn})
 
     def get_context_data(self,*args, **kwargs):
         context = super(ScheduleCreateView, self).get_context_data(*args,**kwargs)
@@ -79,7 +85,6 @@ class SchedulePDFView(LoginRequiredMixin, UserPassesTestMixin, SuccessMessageMix
     template_name = "schedule-pdf.html" 
     
     def form_valid(self, form):        
-        #GenerateScheduleThread(form.instance).start()
         sched_id = form.instance.id
         form.save()
 
@@ -212,12 +217,14 @@ class LeagueScheduleCreateView(LoginRequiredMixin, UserPassesTestMixin, SuccessM
             return True
         return False
     
-class DragDropView(DetailView):
+class DragDropView(FormMixin, DetailView):
     model = Tournament
     template_name = 'drag-drop.html'
+    form_class = TimingsForm
     
     def get_context_data(self,*args, **kwargs):
         context = super(DragDropView, self).get_context_data(*args,**kwargs)
+        schedId = Schedule.objects.get(tournament__id=self.object.id)
         schedule = []
         start = Match.objects.filter(Q(tournament=self.object.id)).values('start').distinct().order_by('start')
         length = start.count()
@@ -247,8 +254,73 @@ class DragDropView(DetailView):
         context['schedule'] = schedule
         context['range'] = range(self.object.noPitches)
         context['tourn'] = self.object
+        context['schedId'] = schedId
         context['pitches'] = pitches
+        context['form'] = TimingsForm(initial={'matchDuration': self.object.matchDuration,
+                                               'breakDuration': self.object.breakDuration,
+                                               'halftimeDuration': self.object.halftimeDuration,
+                                               'startTime': self.object.startTime,
+                                               'matchType': self.object.matchType,
+                                               })
+
         return context
+    
+    def form_valid(self, form):
+        tourn = form.instance.id
+        return HttpResponseRedirect(reverse('drag-drop', kwargs={'pk': tourn}))
+    
+    def get_success_url(self):
+        return reverse('drag-drop', kwargs={'pk': self.object.id})
+
+    def post(self, request, *args, **kwargs):
+        pk = kwargs.get('pk')
+        form = self.get_form()
+        start_time = form.data.get('startTime')
+        match_type = form.data.get('matchType')
+        match_duration = form.data.get('matchDuration')
+        break_duration = form.data.get('breakDuration')
+        halftime_duration = form.data.get('halftimeDuration')
+    
+        Tournament.objects.filter(pk=pk).update(matchDuration=match_duration)
+        Tournament.objects.filter(pk=pk).update(breakDuration=break_duration)
+        Tournament.objects.filter(pk=pk).update(halftimeDuration=halftime_duration)
+        Tournament.objects.filter(pk=pk).update(startTime=start_time)
+        Tournament.objects.filter(pk=pk).update(matchType=match_type)
+        
+        rows = Match.objects.filter(Q(tournament=pk)).values('start').distinct().order_by('start')
+        length = rows.count()
+        schedule = []
+        for i in range(length):
+            qs = Match.objects.filter(Q(tournament=pk) & Q(start=rows[i].get('start'))).order_by('pitch')
+            row = []
+            for j in range(len(qs)):
+                row.append(qs[j])
+
+            schedule.append(row)
+
+        #Change timings
+        if match_type == "One Way":
+            duration = int(match_duration)
+        else:
+            duration = (2 * int(match_duration)) + int(halftime_duration)
+        
+        try:
+            d = datetime.datetime.strptime(start_time, '%H:%M:%S') 
+        except:
+            d = datetime.datetime.strptime(start_time, '%H:%M')
+
+        for row in schedule:
+            start = d
+            d += datetime.timedelta(minutes=duration)
+            end = d 
+            d += datetime.timedelta(minutes=int(break_duration))
+            
+            for match in row:
+                match.start = start
+                match.end = end
+                match.save()
+
+        return HttpResponseRedirect(reverse('drag-drop', kwargs={'pk': pk}))
     
 class ChangeSheetAssign(LoginRequiredMixin, View):
 
