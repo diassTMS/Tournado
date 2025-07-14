@@ -93,10 +93,6 @@ class Tournament(models.Model):
     
     def tag_price(self):
         return f'{CURRENCY}{self.entryPrice}'
-    
-    def save(self, *args, **kwargs):
-        self.endTime = self.startTime + datetime.timedelta(hour=2)
-        return super().save(*args, **kwargs)
 
 class Entry(models.Model):    #Creating entry table/entity
 
