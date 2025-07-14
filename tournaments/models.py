@@ -22,6 +22,7 @@ class Tournament(models.Model):
         ('County','County'),
         ('Regional','Regional'),
         ('National','National'),
+        ('Festival','Festival'),
         ('N/A','N/A'),
     ]
 
@@ -67,10 +68,10 @@ class Tournament(models.Model):
     date = models.DateField()
     venue = models.CharField(max_length=50)
     noPitches = models.IntegerField()
-    noDivisions = models.IntegerField()
+    noDivisions = models.IntegerField(default=1)
     noTeams = models.IntegerField(default=0)
     meetTime = models.TimeField()
-    startTime = models.TimeField()
+    startTime = models.TimeField(null=True, blank=True, default=None)
     endTime = models.TimeField(null=True, blank=True, default=None)
     matchType = models.CharField(max_length=10, choices=TIMINGS, default='One Way')
     matchDuration = models.IntegerField(default=15)

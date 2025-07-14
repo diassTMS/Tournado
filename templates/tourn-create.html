@@ -5,6 +5,9 @@
         #fourdouble {
             grid-template-columns: 1fr 1fr 1fr 1fr;
         }
+        #triple {
+            grid-template-columns: 1fr 1fr 1fr;
+        }
         #double {
             grid-template-columns: 1fr 1fr;
         }
@@ -40,20 +43,15 @@
                 </div>
                 <hr>
                 <h4>Timings</h4>
-                <div class="grid" id="fourdouble">
+                <div class="grid" id="double">
                     {{ form.date|as_crispy_field }}
                     {{ form.meetTime|as_crispy_field }}
-                    {{ form.startTime|as_crispy_field }}
-                    {{ form.matchType|as_crispy_field }}
                 </div>
                 <hr>
                 <h4>Logistics</h4>
-                <div>
-                    {{ form.venue|as_crispy_field }}
-                </div>
                 <div class="grid" id="double">
+                    {{ form.venue|as_crispy_field }}
                     {{ form.noPitches|as_crispy_field }}
-                    {{ form.noDivisions|as_crispy_field }}
                 </div>
                 <hr>
                 <h4>Entry Fee</h4>
@@ -63,32 +61,11 @@
                 </div>
                 {{ form.vat|as_crispy_field }}
                 <hr>
-                <div class="grid">
-                    <div>
-                        <h4>Customisation</h4>
-                        {{ form.knockoutRounds|as_crispy_field }}                            
-                    </div>
-                    <div>
-                        <article style="margin-top: 10px;">
-                            <p>No knockout options are available for three divisions.</p>
-                            <p>Just 'Final' option cannot be selected for four divisions.</p>
-                        </article>
-                    </div>
-                </div>
-                {{ form.notes|as_crispy_field }}
-                <hr>
-                <div class="grid" style="margin-top: 10px;">
-                    <div>
-                        <article>
-                            <p><b>Prices:</b></p>
-                            <ul>
-                                <li>Basic Event = £40</li>
-                                <li>Per Add-on = +£5</li>
-                            </ul>
-                        </article>
-                    </div>
-                    <div>
-                        <h4>Event Add-ons</h4>
+                <h4>Event Notes & Add-ons</h4>
+                <div class="grid" id="double">
+                    {{ form.notes|as_crispy_field }}
+                    <div style="margin-left: 30px;">
+                        <p>Add-ons</p>
                         {{ form.liveScores|as_crispy_field }}
                         {{ form.umpires|as_crispy_field }} 
                         {{ form.teamsheets|as_crispy_field }}                       

@@ -10,11 +10,10 @@ import datetime
 class TournForm(forms.ModelForm):
     class Meta:
         model = Tournament
-        fields = ['name', 'age', 'gender', 'date', 'venue', 'noPitches', 'noDivisions', 'startTime', 'meetTime', 'matchType', 'knockoutRounds', 'liveScores', 'umpires', 'teamsheets','entryPrice', 'vat', 'level', 'group', 'notes']
+        fields = ['name', 'age', 'gender', 'date', 'venue', 'noPitches', 'endTime', 'startTime', 'meetTime', 'liveScores', 'umpires', 'teamsheets','entryPrice', 'vat', 'level', 'group', 'notes']
 
         widgets = {
             'date': forms.DateInput(attrs={'type':'date'}),
-            'startTime': forms.TimeInput(attrs={'type': 'time'}),
             'meetTime': forms.TimeInput(attrs={'type': 'time'}),
             'notes': forms.Textarea(attrs={'rows':3}),
         }
@@ -22,14 +21,10 @@ class TournForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super(TournForm, self).__init__(*args, **kwargs)
         self.fields['name'].label = f'Event Title'
-        self.fields['noPitches'].label = f'No. Playable Pitches'
-        self.fields['noDivisions'].label = f'No. Divisions'
-        self.fields['knockoutRounds'].label = f'Select knockout round option:'
+        self.fields['noPitches'].label = f'No. Pitches'
         self.fields['liveScores'].label = f'Enable real time match scoring?'
         self.fields['umpires'].label = f'Independent umpire schedule?'
-        self.fields['startTime'].label = f'Start Time'
         self.fields['meetTime'].label = f'Meet Time'
-        self.fields['matchType'].label = f'Match Structure'
         self.fields['entryPrice'].label = f'Entry Fee'
         self.fields['vat'].label = f'Incl. VAT'
         self.fields['teamsheets'].label = f'Collect Team Sheets?'
@@ -44,31 +39,6 @@ class TournForm(forms.ModelForm):
             self.add_error('noPitches', "Must have at least one pitch.")
 
         return pitches
-    
-    def clean_knockoutRounds(self):
-        cleaned_data = self.clean()
-        divs = cleaned_data.get('noDivisions')
-        pitches = cleaned_data.get('noPitches')
-        knockouts = cleaned_data.get('knockoutRounds')
-
-        if (divs == 3) and (knockouts != "None"):
-            self.add_error('knockoutRounds', "You cannot have this option with three divisions.")
-        elif (divs == 4) and (pitches < 2):
-            self.add_error('knockoutRounds', "You must have at least two pitches for this option.")
-        elif (divs == 4) and (knockouts == "Final"):
-            self.add_error('knockoutRounds', "You cannot have this option with four divisions.")
-        return knockouts
-
-    def clean_noDivisions(self):
-        cleaned_data = self.clean()
-        divisions = cleaned_data.get('noDivisions')
-
-        if divisions <= 0:
-            self.add_error('noDivisions', "Must have at least one division")
-        elif divisions > 4:
-            self.add_error('noDivisions', "Max number of divisions is 4")
-        
-        return divisions
     
 class EntryForm(forms.ModelForm):
     price = forms.CharField()

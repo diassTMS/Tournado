@@ -103,6 +103,11 @@ class TournCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
     
     def form_valid(self, form):
         form.instance.user = self.request.user
+        meetTime = str(form.cleaned_data.get('meetTime'))
+        form.instance.startTime = datetime.datetime.strptime(meetTime, '%H:%M:%S') + datetime.timedelta(minutes=30)
+        form.instance.endTime = datetime.datetime.strptime(meetTime, '%H:%M:%S') + datetime.timedelta(hours=2, minutes=30)
+        form.save()
+
         return super().form_valid(form)
     
     def get_success_url(self):
