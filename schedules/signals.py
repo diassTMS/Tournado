@@ -2,12 +2,12 @@ from django.db.models.signals import post_save
 from .models import Schedule, Timings, Rules, PitchNames
 from tournaments.models import Tournament
 from django.dispatch import receiver
+import datetime
 
 @receiver(post_save, sender=Tournament, weak=False)
 def create_sched(sender, instance, created, **kwargs):
     if created:
         sched = Schedule.objects.create(tournament=instance)
-        print(sched)
         sched.save()
 
 @receiver(post_save, sender=Schedule, weak=False)
@@ -45,3 +45,8 @@ def create_sched(sender, instance, created, **kwargs):
             for i in range(len(school_rules)):
                 rule = Rules.objects.create(schedule=instance, rule=school_rules[i], order=(i+1))
                 rule.save()
+
+        for j in range(instance.tournament.noPitches):
+            name = str(j+1)
+            pitch = PitchNames.objects.create(schedule=instance, name=name)
+            pitch.save()
