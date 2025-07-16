@@ -63,10 +63,6 @@
         }
     }
 </style>
-
-<script src="{% static 'js/dragdrop.js' %}" defer></script>
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
-
 <div id="box">
     <div class="grid">
         <h2>
@@ -129,6 +125,9 @@
 <div class="grid">
     <a href="{% url 'schedule-create' tourn.id %}" role="button" style="width: 100%;">Next</a>
 </div>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+<script src="{% static 'js/dragdrop.js' %}"></script>
 
 <script>
     function clearEntry(id){
