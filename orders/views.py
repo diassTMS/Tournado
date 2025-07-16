@@ -31,6 +31,7 @@ class UserEntryListView(TemplateView):
         qs = Entry.objects.filter(user=user).order_by(F('tournament__date').desc(), F('tournament__name'))
         noEntries = qs.count()
         cost = 0
+        print(qs.first())
 
         for entry in qs:
             cost += entry.tournament.entryPrice

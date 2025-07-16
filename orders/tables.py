@@ -7,17 +7,21 @@ from django.urls import reverse, reverse_lazy
 
 
 class OrderTable(tables.Table):
-    tournament = tables.Column(orderable=False, 
+    tournament__date = tables.DateColumn(orderable=False, 
+                               verbose_name='Date',
+                               format ='d/m/Y')
+    
+    tournament__name = tables.Column(orderable=False, 
                                verbose_name='Tournament')
     
-    qty = tables.Column(orderable=False, 
-                        verbose_name='No. Teams',
+    teamName = tables.Column(orderable=False, 
+                        verbose_name='Team Name',
                         attrs={ 'th':{'style':'text-align: center;'},
                                 'td':{'style':'text-align: center;'},
                             })
     
-    tag_total_price = tables.Column(orderable=False, 
-                                    verbose_name='Total Cost',
+    tournament__tag_price = tables.Column(orderable=False, 
+                                    verbose_name='Entry Price',
                                     attrs={'th':{'style':'text-align: center;'},
                                             'td':{'style':'text-align: center;'},
                                             })
@@ -28,9 +32,9 @@ class OrderTable(tables.Table):
                             })
 
     class Meta:
-        model = OrderItem
+        model = Entry
         template_name = 'django_tables2/bootstrap.html'
-        fields = ['tournament', 'qty', 'tag_total_price', 'invoiced']
+        fields = ['tournament__date', 'tournament__name', 'teamName', 'tournament__tag_price', 'invoiced']
 
     def render_invoiced(self, value, bound_column, record):
         if value:
