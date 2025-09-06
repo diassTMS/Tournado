@@ -15,6 +15,7 @@ class TournForm(forms.ModelForm):
         widgets = {
             'date': forms.DateInput(attrs={'type':'date'}),
             'meetTime': forms.TimeInput(attrs={'type': 'time'}),
+            'startTime': forms.TimeInput(attrs={'type': 'time'}),
             'notes': forms.Textarea(attrs={'rows':3}),
         }
 
@@ -25,6 +26,7 @@ class TournForm(forms.ModelForm):
         self.fields['liveScores'].label = f'Enable real time match scoring?'
         self.fields['umpires'].label = f'Independent umpire schedule?'
         self.fields['meetTime'].label = f'Meet Time'
+        self.fields['startTime'].label = f'Start Time'
         self.fields['entryPrice'].label = f'Entry Fee'
         self.fields['vat'].label = f'Incl. VAT'
         self.fields['teamsheets'].label = f'Collect Team Sheets?'

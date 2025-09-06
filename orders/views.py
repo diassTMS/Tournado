@@ -30,11 +30,17 @@ class UserEntryListView(TemplateView):
         user = User.objects.get(id=pk) 
         qs = Entry.objects.filter(user=user).order_by(F('tournament__date').desc(), F('tournament__name'))
         noEntries = qs.count()
-        cost = 0
-        print(qs.first())
+        owing = 0
+        invoiced = 0
+        total = 0
 
         for entry in qs:
-            cost += entry.tournament.entryPrice
+            if entry.invoiced == False:
+                owing += entry.tournament.entryPrice
+            else:
+                invoiced += entry.tournament.entryPrice
+
+            total += entry.tournament.entryPrice
 
         if self.request.user.groups.first().name == "Admin":
             context['orders'] = AdminOrderTable(qs)
@@ -42,7 +48,9 @@ class UserEntryListView(TemplateView):
             context['orders'] = OrderTable(qs)
 
         context['userInput'] = user
-        context['cost'] = cost
+        context['owing'] = owing
+        context['invoiced'] = invoiced
+        context['total'] = total
         context['entries'] = noEntries
         return context
     
@@ -201,7 +209,7 @@ def delete_order(request, pk):
 
 #Doesn't actually use orders, relies on Entry Model!
 @login_required
-def invoice_tourn(request, pk):
+def invoice_tourn(request, pk): 
     instance = get_object_or_404(Entry, id=pk)
     user = instance.user
     

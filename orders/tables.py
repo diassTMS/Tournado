@@ -43,8 +43,18 @@ class OrderTable(tables.Table):
             return mark_safe(f'''<i style="color: red; font-size: 24px;" class="fa-solid fa-x"></i>''')
 
 class AdminOrderTable(tables.Table):
-    tournament = tables.Column(orderable=False, 
+    tournament__date = tables.DateColumn(orderable=False, 
+                               verbose_name='Date',
+                               format ='d/m/Y')
+    
+    tournament__name = tables.Column(orderable=False, 
                                verbose_name='Tournament')
+    
+    teamName = tables.Column(orderable=False, 
+                        verbose_name='Team Name',
+                        attrs={ 'th':{'style':'text-align: center;'},
+                                'td':{'style':'text-align: center;'},
+                            })
     
     tournament__tag_price = tables.Column(orderable=False, 
                                     verbose_name='Entry Price',
@@ -60,7 +70,7 @@ class AdminOrderTable(tables.Table):
     class Meta:
         model = Entry
         template_name = 'django_tables2/bootstrap.html'
-        fields = ['tournament', 'tournament__tag_price', 'invoiced']
+        fields = ['tournament__date', 'tournament__name', 'teamName', 'tournament__tag_price', 'invoiced']
 
     def render_invoiced(self, value, record):
         if value:
