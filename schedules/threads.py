@@ -116,22 +116,6 @@ class GenerateScheduleThread(threading.Thread):
                 score.append(float(mean))
                 return score
 
-
-            def divisionCalc(pNoPools, pNoEntries):
-                index = 0
-                divisions = []
-                while index < pNoPools:
-                    div = []
-                    entries = list(range(1, pNoEntries+1))
-                    teams = entries[(index)::(pNoPools)]
-                    div.append(index+1)
-                    div.append(teams)
-                    
-                    divisions.append(div)
-                    index += 1
-
-                return divisions
-
             def divMatchesCalc(pDivisions):
                 matches = []
                 for index in range(0,len(pDivisions)):
@@ -236,7 +220,7 @@ class GenerateScheduleThread(threading.Thread):
                 leftOver = len(pList)
                 return pArr, leftOver
             
-            def umpires(schedule, umpires, nPitch, data):
+            def umpires(schedule, umpires, nPitch):
                 arr = createArray(nPitch, len(schedule))                
                 count = 0
 

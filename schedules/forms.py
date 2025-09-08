@@ -52,6 +52,8 @@ class ScheduleForm(forms.ModelForm):
             self.add_error('knockoutRounds', "You cannot have this option with four divisions.")
         if (teams > 10) and (divs == 2) and (knockouts == 'Playoffs, Semis & Final'):
             self.add_error('knockoutRounds', "Unavailable for this number of teams")
+        if (teams > 10) and (divs == 1) and (knockouts == 'Playoffs, Semis & Final'):
+            self.add_error('knockoutRounds', "Unavailable for this number of teams")
         if (teams < 4) and (knockouts == 'Semis & Final'):
             self.add_error('knockoutRounds', "Must have four or more teams")
         return knockouts
