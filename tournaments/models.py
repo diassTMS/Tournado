@@ -151,3 +151,20 @@ class Match(models.Model):    #Creating match table/entity
 
     def __str__(self):                    #Displaying self id as a concatenation of info
         return f'{self.entryOne} v. {self.entryTwo}'
+    
+class SplitDivTimings(models.Model):
+
+    TIMINGS = [
+        ('One Way', 'One Way'),
+        ('Each Way', 'Each Way'),
+    ]
+
+    tournament = models.ForeignKey(Tournament, on_delete=models.CASCADE)
+    divNumber = models.IntegerField(default=0)
+    noPitches = models.IntegerField(default=1)
+    startTime = models.TimeField(null=True, blank=True, default=None)
+    matchType = models.CharField(max_length=10, choices=TIMINGS, default='One Way')
+    matchDuration = models.IntegerField(default=15)
+    halftimeDuration = models.IntegerField(default=0)
+    breakDuration = models.IntegerField(default=5)
+
