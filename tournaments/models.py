@@ -78,6 +78,7 @@ class Tournament(models.Model):
     halftimeDuration = models.IntegerField(default=0)
     breakDuration = models.IntegerField(default=5)
     knockoutRounds = models.CharField(max_length=25, choices=KNOCKOUTS, default='None')
+    splitDivs = models.BooleanField(default=False)
     liveScores = models.BooleanField(default=False)
     generatedSchedule = models.BooleanField(default=False)
     finished = models.BooleanField(default=False)
