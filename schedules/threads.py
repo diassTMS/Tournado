@@ -29,7 +29,7 @@ class GenerateScheduleThread(threading.Thread):
             entriesData = []
             optimumSchedule = []
             efficiency = []
-            UmpireSchedule = []
+            umpireSchedule = []
             scheduled = False
             optimum = False
             x = 0
@@ -317,362 +317,113 @@ class GenerateScheduleThread(threading.Thread):
                                                 )
                                 match.save()
 
-                        
-            #blank knockout round matches
-            def final(self, duration):
-                print('final')
-                
-                start = str(Match.objects.filter(tournament=self.id).last().end)
-                d = datetime.datetime.strptime(start, '%H:%M:%S')     
-                d += datetime.timedelta(minutes=break_duration)
-                start = d
-                d += datetime.timedelta(minutes=duration)
-                end = d
+            def knockouts(pTourn):
+                addLength = 0
+                noPitch = pTourn.noPitches
+                pArr = []
 
-                final = Match(tournament = self,
-                                type = 'Final',                  
-                                entryOne = Entry.objects.get(Q(tournament=self) & Q(pk=entriesData[0][0].id)),
-                                entryTwo = Entry.objects.get(Q(tournament=self) & Q(pk=entriesData[0][0].id)),
-                                pitch = 1,
-                                start = start,
-                                end = end,
-                                )
-                final.save()     
-
-                for i in range(self.noPitches-1):
-                    match = Match(tournament = self,
-                                    type = 'Free',
-                                    entryOne = Entry.objects.get(Q(tournament=self) & Q(pk=entriesData[0][0].id)),
-                                    entryTwo = Entry.objects.get(Q(tournament=self) & Q(pk=entriesData[0][0].id)),
-                                    pitch = i+2,
-                                    start = start,
-                                    end = end,
-                                    )
-                    match.save()
-
-            def semis(self, duration):
-                print('semis')
-                #Semis
-                for i in range(3):
-                    start = str(Match.objects.filter(tournament=self.id).last().end)
-                    d = datetime.datetime.strptime(start, '%H:%M:%S')     
-                    d += datetime.timedelta(minutes=break_duration)
-                    start = d
-                    d += datetime.timedelta(minutes=duration)
-                    end = d
-
-                    if i == 2:
-                        final = Match(tournament = self,
-                                type = 'Final',                  
-                                entryOne = Entry.objects.get(Q(tournament=self) & Q(pk=entriesData[0][0].id)),
-                                entryTwo = Entry.objects.get(Q(tournament=self) & Q(pk=entriesData[0][0].id)),
-                                pitch = 1,
-                                start = start,
-                                end = end,
-                                )
-                
-                        final.save()
-
-                        for i in range(self.noPitches-1):
-                            match = Match(tournament = self,
-                                            type = 'Free',
-                                            entryOne = Entry.objects.get(Q(tournament=self) & Q(pk=entriesData[0][0].id)),
-                                            entryTwo = Entry.objects.get(Q(tournament=self) & Q(pk=entriesData[0][0].id)),
-                                            pitch = i+2,
-                                            start = start,
-                                            end = end,
-                                            )
-                            match.save()
-
-                    else:
-                        semi = Match(tournament = self,
-                                    type = 'Semi-Final',                  
-                                    entryOne = Entry.objects.get(Q(tournament=self) & Q(pk=entriesData[0][0].id)),
-                                    entryTwo = Entry.objects.get(Q(tournament=self) & Q(pk=entriesData[0][0].id)),
-                                    pitch = 1,
-                                    start = start,
-                                    end = end,
-                                    )
-                        semi.save() 
-
-                        for i in range(self.noPitches-1):
-                            match = Match(tournament = self,
-                                            type = 'Free',
-                                            entryOne = Entry.objects.get(Q(tournament=self) & Q(pk=entriesData[0][0].id)),
-                                            entryTwo = Entry.objects.get(Q(tournament=self) & Q(pk=entriesData[0][0].id)),
-                                            pitch = i+2,
-                                            start = start,
-                                            end = end,
-                                            )
-                            match.save()
-
-            def playoffs(self, duration):
-                print('Playoffs')
-                noDivs = self.noDivisions
-
-                if noDivs == 1:
-                    print('One div')
-                    types = ['Final',
-                            '3rd/4th Playoff',
-                            '5th/6th Playoff',
-                            '7th/8th Playoff', 
-                            '9th/10th Playoff',
-                            ]
+                #Calculating how many rows to add onto schedule to account for playoffs
+                if pTourn.knockoutRounds == "Playoffs, Semis & Final":
+                    if pTourn.noDivisions == 1:
+                        noMatch = math.floor(pTourn.noTeams / 2)
+                        types = ['Final',
+                                '3rd/4th Playoff',
+                                '5th/6th Playoff',
+                                '7th/8th Playoff', 
+                                '9th/10th Playoff',
+                                ]
+                                
+                        pArr = np.array(types)
+                        pArr.resize(math.ceil(noMatch / noPitch), noPitch)
+                        pArr[np.isin(pArr, '')] = 'Free'                   
                     
-                    for i in range(math.floor(len(entriesData) / 2)):
-                        start = str(Match.objects.filter(tournament=self.id).last().end)
-                        d = datetime.datetime.strptime(start, '%H:%M:%S')     
-                        d += datetime.timedelta(minutes=break_duration)
-                        start = d
-                        d += datetime.timedelta(minutes=duration)
-                        end = d
+                    elif pTourn.noDivisions == 2:
+                        pArr = createArray(noPitch, math.ceil((math.floor(pTourn.noTeams / 2) / noPitch) + (2 / noPitch)))
+
+                        if noPitch > 1:
+                            pArr[0][0] = pArr[0][1]= "Semi-Final"
+                            pArr[1][0] = "Final"
+                            pArr[1][1] = "3rd/4th Playoff"
+
+                            if pTourn.noTeams < 6:
+                                types = []
+                            elif pTourn.noTeams < 8:
+                                types = ['5th/6th Playoff',]
+                            elif pTourn.noTeams < 10:
+                                types = ['5th/6th Playoff',
+                                        '7th/8th Playoff',
+                                        ]
+                            else:
+                                types = ['5th/6th Playoff',
+                                        '7th/8th Playoff', 
+                                        '9th/10th Playoff', 
+                                        ]
+
+                            for i in range(len(pArr)):
+                                for j in range(len(pArr[i])):
+                                    if pArr[i][j] == []:
+                                        if len(types) != 0:
+                                            pArr[i][j] = types[0]
+                                            del types[0]
+                                        else:
+                                            pArr[i][j] = [0,0]
                         
-                        playoff = Match(tournament = self,
-                                    type = types[i],                  
-                                    entryOne = Entry.objects.get(Q(tournament=self) & Q(pk=entriesData[0][0].id)),
-                                    entryTwo = Entry.objects.get(Q(tournament=self) & Q(pk=entriesData[0][0].id)),
-                                    pitch = 1,
-                                    start = start,
-                                    end = end,
-                                    )
-                        
-                        playoff.save()
-
-                        for i in range(self.noPitches-1):
-                            match = Match(tournament = self,
-                                            type = 'Free',
-                                            entryOne = Entry.objects.get(Q(tournament=self) & Q(pk=entriesData[0][0].id)),
-                                            entryTwo = Entry.objects.get(Q(tournament=self) & Q(pk=entriesData[0][0].id)),
-                                            pitch = i+2,
-                                            start = start,
-                                            end = end,
-                                            )
-                            match.save()
-
-                elif noDivs == 2:
-                    print('Two div')
-
-                    for i in range(4):
-                        start = str(Match.objects.filter(tournament=self.id).last().end)
-                        d = datetime.datetime.strptime(start, '%H:%M:%S')     
-                        d += datetime.timedelta(minutes=break_duration)
-                        start = d
-                        d += datetime.timedelta(minutes=duration)
-                        end = d
-
-                        if i == 2:
-                            playoff = Match(tournament = self,
-                                        type = '3rd/4th Playoff',                  
-                                        entryOne = Entry.objects.get(Q(tournament=self) & Q(pk=entriesData[0][0].id)),
-                                        entryTwo = Entry.objects.get(Q(tournament=self) & Q(pk=entriesData[0][0].id)),
-                                        pitch = 1,
-                                        start = start,
-                                        end = end,
-                                        )   
-                            playoff.save() 
-
-                            for i in range(self.noPitches-1):
-                                match = Match(tournament = self,
-                                                type = 'Free',
-                                                entryOne = Entry.objects.get(Q(tournament=self) & Q(pk=entriesData[0][0].id)),
-                                                entryTwo = Entry.objects.get(Q(tournament=self) & Q(pk=entriesData[0][0].id)),
-                                                pitch = i+2,
-                                                start = start,
-                                                end = end,
-                                                )
-                                match.save()
-
-                        elif i == 3:
-                            final = Match(tournament = self,
-                                    type = 'Final',                  
-                                    entryOne = Entry.objects.get(Q(tournament=self) & Q(pk=entriesData[0][0].id)),
-                                    entryTwo = Entry.objects.get(Q(tournament=self) & Q(pk=entriesData[0][0].id)),
-                                    pitch = 1,
-                                    start = start,
-                                    end = end,
-                                    )
-                    
-                            final.save()
-
-                            for i in range(self.noPitches-1):
-                                match = Match(tournament = self,
-                                                type = 'Free',
-                                                entryOne = Entry.objects.get(Q(tournament=self) & Q(pk=entriesData[0][0].id)),
-                                                entryTwo = Entry.objects.get(Q(tournament=self) & Q(pk=entriesData[0][0].id)),
-                                                pitch = i+2,
-                                                start = start,
-                                                end = end,
-                                                )
-                                match.save()
-
                         else:
-                            semi = Match(tournament = self,
-                                        type = 'Semi-Final',                  
-                                        entryOne = Entry.objects.get(Q(tournament=self) & Q(pk=entriesData[0][0].id)),
-                                        entryTwo = Entry.objects.get(Q(tournament=self) & Q(pk=entriesData[0][0].id)),
-                                        pitch = 1,
-                                        start = start,
-                                        end = end,
-                                        )
-                            semi.save() 
-
-                            for i in range(self.noPitches-1):
-                                match = Match(tournament = self,
-                                                type = 'Free',
-                                                entryOne = Entry.objects.get(Q(tournament=self) & Q(pk=entriesData[0][0].id)),
-                                                entryTwo = Entry.objects.get(Q(tournament=self) & Q(pk=entriesData[0][0].id)),
-                                                pitch = i+2,
-                                                start = start,
-                                                end = end,
-                                                )
-                                match.save()
-                    
-                    types = ['5th/6th Playoff',
-                            '7th/8th Playoff', 
-                            '9th/10th Playoff',
-                            ]
-                    
-                    # Getting smaller division
-                    divOne = Entry.objects.filter(Q(tournament=self) & Q(division=1)).count()
-                    divTwo = Entry.objects.filter(Q(tournament=self) & Q(division=2)).count()
-
-                    if divOne <= divTwo:
-                        division = divOne
-                    else:
-                        division = divTwo
-
-                    #Playoffs
-                    for i in range(division-2):
-
-                        start = str(Match.objects.filter(tournament=self.id).last().end)
-                        d = datetime.datetime.strptime(start, '%H:%M:%S')     
-                        d += datetime.timedelta(minutes=break_duration)
-                        start = d
-                        d += datetime.timedelta(minutes=duration)
-                        end = d
-                        
-                        playoff = Match(tournament = self,
-                                    type = types[i],                  
-                                    entryOne = Entry.objects.get(Q(tournament=self) & Q(pk=entriesData[0][0].id)),
-                                    entryTwo = Entry.objects.get(Q(tournament=self) & Q(pk=entriesData[0][0].id)),
-                                    pitch = 1,
-                                    start = start,
-                                    end = end,
-                                    )
-                        
-                        playoff.save()
-
-                        for i in range(self.noPitches-1):
-                            match = Match(tournament = self,
-                                            type = 'Free',
-                                            entryOne = Entry.objects.get(Q(tournament=self) & Q(pk=entriesData[0][0].id)),
-                                            entryTwo = Entry.objects.get(Q(tournament=self) & Q(pk=entriesData[0][0].id)),
-                                            pitch = i+2,
-                                            start = start,
-                                            end = end,
-                                            )
-                            match.save()
-                
-                elif noDivs == 4:
-                    for i in range(8):
-                        start = str(Match.objects.filter(tournament=self.id).last().end)
-                        d = datetime.datetime.strptime(start, '%H:%M:%S')     
-                        d += datetime.timedelta(minutes=break_duration)
-                        start = d
-                        d += datetime.timedelta(minutes=duration)
-                        end = d
-
-                        if i < 4:
-                            quarter = Match(tournament = self,
-                                        type = 'Quarter-Final',                  
-                                        entryOne = Entry.objects.get(Q(tournament=self) & Q(pk=entriesData[0][0].id)),
-                                        entryTwo = Entry.objects.get(Q(tournament=self) & Q(pk=entriesData[0][0].id)),
-                                        pitch = 1,
-                                        start = start,
-                                        end = end,
-                                        )
+                            types = ['Semi-Final',
+                                    'Semi-Final',
+                                    'Final',
+                                    '3rd/4th Playoff',
+                                    '5th/6th Playoff',
+                                    '7th/8th Playoff', 
+                                    '9th/10th Playoff',
+                                    ]
                             
-                            quarter.save()
+                            pArr = np.array(types)
+                            pArr.resize(math.ceil(7 / noPitch), noPitch)
+                            pArr[np.isin(pArr, '')] = 'Free'
 
-                            for i in range(self.noPitches-1):
-                                match = Match(tournament = self,
-                                                type = 'Free',
-                                                entryOne = Entry.objects.get(Q(tournament=self) & Q(pk=entriesData[0][0].id)),
-                                                entryTwo = Entry.objects.get(Q(tournament=self) & Q(pk=entriesData[0][0].id)),
-                                                pitch = i+2,
-                                                start = start,
-                                                end = end,
-                                                )
-                                match.save()
-
-                        elif i < 6:
-                            semi = Match(tournament = self,
-                                        type = 'Semi-Final',                  
-                                        entryOne = Entry.objects.get(Q(tournament=self) & Q(pk=entriesData[0][0].id)),
-                                        entryTwo = Entry.objects.get(Q(tournament=self) & Q(pk=entriesData[0][0].id)),
-                                        pitch = 1,
-                                        start = start,
-                                        end = end,
-                                        )
-                            semi.save() 
-
-                            for i in range(self.noPitches-1):
-                                match = Match(tournament = self,
-                                                type = 'Free',
-                                                entryOne = Entry.objects.get(Q(tournament=self) & Q(pk=entriesData[0][0].id)),
-                                                entryTwo = Entry.objects.get(Q(tournament=self) & Q(pk=entriesData[0][0].id)),
-                                                pitch = i+2,
-                                                start = start,
-                                                end = end,
-                                                )
-                                match.save()
+                    else:
+                        types = [['Quarter-Final', 'Quarter-Final', 'Quarter-Final', 'Quarter-Final'],
+                                ['Semi-Final', 'Semi-Final'],
+                                ['Final', '3rd/4th Playoff']
+                                ]
                         
-                        elif i < 7:
-                            final = Match(tournament = self,
-                                    type = 'Final',                  
-                                    entryOne = Entry.objects.get(Q(tournament=self) & Q(pk=entriesData[0][0].id)),
-                                    entryTwo = Entry.objects.get(Q(tournament=self) & Q(pk=entriesData[0][0].id)),
-                                    pitch = 1,
-                                    start = start,
-                                    end = end,
-                                    )
-                    
-                            final.save()     
+                        pArrOne = np.array(types[0])
+                        pArrOne.resize(math.ceil(4 / noPitch), noPitch)
+
+                        pArrTwo = np.array(types[1])
+                        pArrTwo.resize(math.ceil(2 / noPitch), noPitch)
                         
-                            for i in range(self.noPitches-1):
-                                match = Match(tournament = self,
-                                                type = 'Free',
-                                                entryOne = Entry.objects.get(Q(tournament=self) & Q(pk=entriesData[0][0].id)),
-                                                entryTwo = Entry.objects.get(Q(tournament=self) & Q(pk=entriesData[0][0].id)),
-                                                pitch = i+2,
-                                                start = start,
-                                                end = end,
-                                                )
-                                match.save()
+                        pArrThree = np.array(types[2])
+                        pArrThree.resize(math.ceil(2 / noPitch), noPitch)
 
-                        else:
-                            playoff = Match(tournament = self,
-                                        type = '3rd/4th Playoff',                  
-                                        entryOne = Entry.objects.get(Q(tournament=self) & Q(pk=entriesData[0][0].id)),
-                                        entryTwo = Entry.objects.get(Q(tournament=self) & Q(pk=entriesData[0][0].id)),
-                                        pitch = 1,
-                                        start = start,
-                                        end = end,
-                                        )   
-                            playoff.save() 
+                        pArr = np.concatenate((pArrOne, pArrTwo, pArrThree))
+                        pArr[np.isin(pArr, '')] = 'Free'
 
-                            for i in range(self.noPitches-1):
-                                match = Match(tournament = self,
-                                                type = 'Free',
-                                                entryOne = Entry.objects.get(Q(tournament=self) & Q(pk=entriesData[0][0].id)),
-                                                entryTwo = Entry.objects.get(Q(tournament=self) & Q(pk=entriesData[0][0].id)),
-                                                pitch = i+2,
-                                                start = start,
-                                                end = end,
-                                                )
-                                match.save()                       
-                else:
-                    print('invalid')                                                
+                elif pTourn.knockoutRounds == "Semis & Final":
+                    types = [['Semi-Final', 'Semi-Final'],
+                            ['Final']]
+                        
+                    pArrOne = np.array(types[0])
+                    pArrOne.resize(math.ceil(2 / noPitch), noPitch)
+
+                    pArrTwo = np.array(types[1])
+                    pArrTwo.resize(math.ceil(1 / noPitch), noPitch)
+
+                    pArr = np.concatenate((pArrOne, pArrTwo))
+                    pArr[np.isin(pArr, '')] = 'Free'
+
+                elif pTourn.knockoutRounds == "Final":
+                    pArr = np.array(['Final'])
+                    pArr.resize(1, noPitch)
+                    pArr[np.isin(pArr, '')] = 'Free'
+                
+                else: 
+                    print('No knockout rounds')
+
+                addLength = len(pArr)
+
+                return addLength, pArr
 
 #--------------------------------------------------------------------------------------------------
 #Main Program
@@ -797,128 +548,41 @@ class GenerateScheduleThread(threading.Thread):
 
                     if np.std(num) < stanDev:
                         stanDev = np.std(num)
-                        UmpireSchedule = umpArr
+                        umpireSchedule = umpArr
                     
                     y += 1
             
-            print(efficiency)
+            #Playoffs
+            schedLength, playoffArray = knockouts(self.instance)
 
             #Timings
-            schedLength = len(optimumSchedule)
+            schedLength += len(optimumSchedule)
             tournDuration = (datetime.datetime.strptime(end, '%H:%M:%S') - datetime.datetime.strptime(start, '%H:%M:%S')).total_seconds() / 60
-
-            if self.instance.knockoutRounds == "Playoffs, Semis & Final":
-                schedLength += 3
-            elif self.instance.knockoutRounds == "Semis & Final":
-                schedLength += 2
-            elif self.instance.knockoutRounds == "Final":
-                schedLength += 1
-            else: 
-                print('No knockout rounds')
-
            
             #Ratio set at m:b = 4:1
             if self.instance.matchType == "One Way":
                 match_duration = round((4 * int(tournDuration)) / ((5 * schedLength) - 1))
+                Tournament.objects.filter(pk=self.instance.id).update(matchDuration=match_duration)
+
                 break_duration = math.floor(match_duration * (1/4))
+                duration = match_duration + break_duration
+
             else:
                 match_duration = round((4 * int(tournDuration)) / ((11 * schedLength) - 2))
+                Tournament.objects.filter(pk=self.instance.id).update(matchDuration=match_duration)
+
                 break_duration = math.floor(match_duration * (1/2))
                 halftime_duration = math.floor(match_duration * (1/4))
+                match_duration = (2 * match_duration) + halftime_duration
+                duration = match_duration + break_duration
 
-            #Creating Matches
-            for i in range(len(optimumSchedule)):
-                for j in range(len(optimumSchedule[i])):
-                    if not(optimumSchedule[i][j] == [0,0]):
-                        if self.instance.matchType == "One Way":
-                            duration = match_duration + break_duration
-                            if self.instance.umpires == True:
-                                match = Match(tournament = self.instance,
-                                                division = optimumSchedule[i][j][0].division,                  
-                                                entryOne = Entry.objects.get(Q(tournament=self.instance) & Q(pk=optimumSchedule[i][j][0].id)),
-                                                entryTwo = Entry.objects.get(Q(tournament=self.instance) & Q(pk=optimumSchedule[i][j][1].id)),
-                                                pitch = j+1,
-                                                start = datetime.datetime.strptime(start, '%H:%M:%S') + datetime.timedelta(minutes=(duration * i)),
-                                                end = datetime.datetime.strptime(start, '%H:%M:%S') + datetime.timedelta(minutes=(match_duration + (duration * i))),
-                                                umpireOneName = UmpireSchedule[i][j][0],
-                                                umpireTwoName = UmpireSchedule[i][j][1],
-                                                )
-                                match.save()
-                            else:
-                                match = Match(tournament = self.instance,
-                                                division = optimumSchedule[i][j][0].division,                  
-                                                entryOne = Entry.objects.get(Q(tournament=self.instance) & Q(pk=optimumSchedule[i][j][0].id)),
-                                                entryTwo = Entry.objects.get(Q(tournament=self.instance) & Q(pk=optimumSchedule[i][j][1].id)),
-                                                pitch = j+1,
-                                                start = datetime.datetime.strptime(start, '%H:%M:%S') + datetime.timedelta(minutes=(duration * i)),
-                                                end = datetime.datetime.strptime(start, '%H:%M:%S') + datetime.timedelta(minutes=(match_duration + (duration * i))),
-                                                )
-                                match.save()
-                        else:
-                            full_match_duration = (2 * match_duration) + halftime_duration
-                            duration = full_match_duration + break_duration
-                            if self.instance.umpires == True:
-                                match = Match(tournament = self.instance,
-                                            division = optimumSchedule[i][j][0].division,                  
-                                            entryOne = Entry.objects.get(Q(tournament=self.instance) & Q(pk=optimumSchedule[i][j][0].id)),
-                                            entryTwo = Entry.objects.get(Q(tournament=self.instance) & Q(pk=optimumSchedule[i][j][1].id)),
-                                            pitch = j+1,
-                                            start = datetime.datetime.strptime(start, '%H:%M:%S') + datetime.timedelta(minutes=(duration * i)),
-                                            end = datetime.datetime.strptime(start, '%H:%M:%S') + datetime.timedelta(minutes=(full_match_duration + (duration * i))),
-                                            umpireOneName = UmpireSchedule[i][j][0],
-                                            umpireTwoName = UmpireSchedule[i][j][1],
-                                            )
-                                match.save()
-                            else:
-                                match = Match(tournament = self.instance,
-                                            division = optimumSchedule[i][j][0].division,                  
-                                            entryOne = Entry.objects.get(Q(tournament=self.instance) & Q(pk=optimumSchedule[i][j][0].id)),
-                                            entryTwo = Entry.objects.get(Q(tournament=self.instance) & Q(pk=optimumSchedule[i][j][1].id)),
-                                            pitch = j+1,
-                                            start = datetime.datetime.strptime(start, '%H:%M:%S') + datetime.timedelta(minutes=(duration * i)),
-                                            end = datetime.datetime.strptime(start, '%H:%M:%S') + datetime.timedelta(minutes=(full_match_duration + (duration * i))),
-                                            )
-                                match.save()
-                    #Free Match
-                    else:
-                        if self.instance.matchType == "One Way":
-                            duration = match_duration + break_duration
-                            match = Match(tournament = self.instance,
-                                            type = 'Free',
-                                            entryOne = Entry.objects.get(Q(tournament=self.instance) & Q(pk=entriesData[0][0].id)),
-                                            entryTwo = Entry.objects.get(Q(tournament=self.instance) & Q(pk=entriesData[0][0].id)),
-                                            pitch = j+1,
-                                            start = datetime.datetime.strptime(start, '%H:%M:%S') + datetime.timedelta(minutes=(duration * i)),
-                                            end = datetime.datetime.strptime(start, '%H:%M:%S') + datetime.timedelta(minutes=(match_duration + (duration * i))),
-                                            )
-                            match.save()
-                        else:
-                            full_match_duration = (2 * match_duration) + halftime_duration
-                            duration = full_match_duration + break_duration
-                            match = Match(tournament = self.instance,
-                                            type = 'Free',
-                                            entryOne = Entry.objects.get(Q(tournament=self.instance) & Q(pk=entriesData[0][0].id)),
-                                            entryTwo = Entry.objects.get(Q(tournament=self.instance) & Q(pk=entriesData[0][0].id)),
-                                            pitch = j+1,
-                                            start = datetime.datetime.strptime(start, '%H:%M:%S') + datetime.timedelta(minutes=(duration * i)),
-                                            end = datetime.datetime.strptime(start, '%H:%M:%S') + datetime.timedelta(minutes=(full_match_duration + (duration * i))),
-                                            )
-                            match.save()
-                
-            #Create blank knockout round matches
-            if self.instance.matchType == "One Way":
-                duration = match_duration
-            else:
-                duration = (2 * match_duration) + halftime_duration
-            
-            if self.instance.knockoutRounds == "Playoffs, Semis & Final":
-                playoffs(self.instance, duration)
-            elif self.instance.knockoutRounds == "Semis & Final":
-                semis(self.instance, duration)
-            elif self.instance.knockoutRounds == "Final":
-                final(self.instance, duration)    
-            else: 
-                print('No knockout rounds')
+            #Creating div matches        
+            createMatches(self.instance, optimumSchedule, umpireSchedule, start, duration, match_duration)
+
+            #Creating playoff matches
+            playoffStart = datetime.datetime.strptime(str(Match.objects.filter(tournament=self.instance.id).last().end), '%H:%M:%S') + datetime.timedelta(minutes=break_duration)
+            playoffStart = str(playoffStart.strftime('%H:%M:%S'))
+            createMatches(self.instance, playoffArray, umpireSchedule, playoffStart, duration, match_duration)
             
             print('generated')
             generated = True
