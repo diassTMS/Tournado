@@ -263,6 +263,61 @@ class GenerateScheduleThread(threading.Thread):
                             temp += 1
                 return arr
             
+            def createMatches(pTourn, pArr, pUmpArr, pStart, pDuration, pMatch):
+                for i in range(len(pArr)):
+                    for j in range(len(pArr[i])):
+
+                        #Free Matches
+                        if pArr[i][j] == [0,0]:
+                            match = Match(tournament = pTourn,
+                                        type = 'Free',
+                                        entryOne = Entry.objects.filter(tournament=pTourn).first(),
+                                        entryTwo = Entry.objects.filter(tournament=pTourn).first(),
+                                        pitch = j+1,
+                                        start = datetime.datetime.strptime(pStart, '%H:%M:%S') + datetime.timedelta(minutes=(pDuration * i)),
+                                        end = datetime.datetime.strptime(pStart, '%H:%M:%S') + datetime.timedelta(minutes=(pMatch + (pDuration * i))),
+                                        )
+                            match.save()
+                        
+                        #Playoff Matches
+                        elif len(pArr[i][j]) > 2:
+                            match = Match(tournament = pTourn,
+                                        type = pArr[i][j],
+                                        entryOne = Entry.objects.filter(tournament=pTourn).first(),
+                                        entryTwo = Entry.objects.filter(tournament=pTourn).first(),
+                                        pitch = j+1,
+                                        start = datetime.datetime.strptime(pStart, '%H:%M:%S') + datetime.timedelta(minutes=(pDuration * i)),
+                                        end = datetime.datetime.strptime(pStart, '%H:%M:%S') + datetime.timedelta(minutes=(pMatch + (pDuration * i))),
+                                        )
+                            match.save()
+
+                        #Division Matches
+                        else:
+                            if pTourn.umpires == True:
+                                match = Match(tournament = pTourn,
+                                                division = pArr[i][j][0].division,                  
+                                                entryOne = Entry.objects.get(Q(tournament=pTourn) & Q(pk=pArr[i][j][0].id)),
+                                                entryTwo = Entry.objects.get(Q(tournament=pTourn) & Q(pk=pArr[i][j][1].id)),
+                                                pitch = j+1,
+                                                start = datetime.datetime.strptime(pStart, '%H:%M:%S') + datetime.timedelta(minutes=(pDuration * i)),
+                                                end = datetime.datetime.strptime(pStart, '%H:%M:%S') + datetime.timedelta(minutes=(pMatch + (pDuration * i))),
+                                                umpireOneName = pUmpArr[i][j][0],
+                                                umpireTwoName = pUmpArr[i][j][1],
+                                                )
+                                match.save()
+
+                            else:
+                                match = Match(tournament = pTourn,
+                                                division = pArr[i][j][0].division,                  
+                                                entryOne = Entry.objects.get(Q(tournament=pTourn) & Q(pk=pArr[i][j][0].id)),
+                                                entryTwo = Entry.objects.get(Q(tournament=pTourn) & Q(pk=pArr[i][j][1].id)),
+                                                pitch = j+1,
+                                                start = datetime.datetime.strptime(pStart, '%H:%M:%S') + datetime.timedelta(minutes=(pDuration * i)),
+                                                end = datetime.datetime.strptime(pStart, '%H:%M:%S') + datetime.timedelta(minutes=(pMatch + (pDuration * i))),
+                                                )
+                                match.save()
+
+                        
             #blank knockout round matches
             def final(self, duration):
                 print('final')
