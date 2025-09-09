@@ -242,9 +242,6 @@ class DragDropView(FormMixin, DetailView):
 
             while len(row) < (self.object.noPitches + 1):
                 row.append("blank")
-
-            if freeCount != self.object.noPitches:
-                print('freerow')
            
             schedule.append(row)
 

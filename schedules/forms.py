@@ -56,6 +56,8 @@ class ScheduleForm(forms.ModelForm):
             self.add_error('knockoutRounds', "Unavailable for this number of teams")
         if (teams < 4) and (knockouts == 'Semis & Final'):
             self.add_error('knockoutRounds', "Must have four or more teams")
+        if (teams < 4) and (knockouts == 'Playoffs, Semis & Final'):
+            self.add_error('knockoutRounds', "Must have four or more teams")
         return knockouts
 
     def clean_noPitches(self):
