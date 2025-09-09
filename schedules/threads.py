@@ -42,7 +42,7 @@ class GenerateScheduleThread(threading.Thread):
 #Sub Programs
 #--------------------------------------------------------------------------------------------------
 
-            def indexCalc(pSchedule, pEntries, pDivs):
+            def indexCalc(pSchedule, pEntries, pDivs, pTourn):
                 divMatches = []
                 index = []
                 score = []
@@ -53,7 +53,7 @@ class GenerateScheduleThread(threading.Thread):
                 for div in range(noDivs):
                     row = []
                     row.append(div+1)
-                    divEntries = Entry.objects.filter(Q(tournament=self.instance) & Q(division=div+1))
+                    divEntries = Entry.objects.filter(Q(tournament=pTourn) & Q(division=div+1))
                     divList = list(divEntries)
                     row.append(divList)
                     divisions.append(row)
@@ -220,7 +220,7 @@ class GenerateScheduleThread(threading.Thread):
                 leftOver = len(pList)
                 return pArr, leftOver
             
-            def umpires(schedule, umpires, nPitch):
+            def umpires(schedule, umpires, nPitch, pTourn):
                 arr = createArray(nPitch, len(schedule))                
                 count = 0
 
@@ -230,7 +230,7 @@ class GenerateScheduleThread(threading.Thread):
                         users = []
                         for l in range(2):
                             if schedule[i][j] != [0,0]:
-                                user = Entry.objects.get(Q(tournament=self.instance) & Q(pk=schedule[i][j][l].id)).user
+                                user = Entry.objects.get(Q(tournament=pTourn) & Q(pk=schedule[i][j][l].id)).user
 
                             if not(user.groups.filter(name="Admin").exists()):
                                 users.append(user)
@@ -247,7 +247,7 @@ class GenerateScheduleThread(threading.Thread):
                                 arr[i][j] = [0,0]
                             
                             else:
-                                entry = Entry.objects.get(Q(tournament=self.instance) & Q(pk=umpires[count].id))
+                                entry = Entry.objects.get(Q(tournament=pTourn) & Q(pk=umpires[count].id))
 
                                 if not(entry in match) and not(entry.umpire in rowCurrent) and not(entry.user in users):
                                     if entry.umpire in arr[i][j]:
@@ -511,14 +511,14 @@ class GenerateScheduleThread(threading.Thread):
                 if scheduled == False:
                     if missing == 0:
                         optimumSchedule = OOP
-                        efficiency = indexCalc(optimumSchedule, entries, noDivs)
+                        efficiency = indexCalc(optimumSchedule, entries, noDivs, self.instance)
                         scheduled = True
                 else:
                     if (x+1) == MAX:
                         optimum = True
                     else:
                         if missing == 0:
-                            newEfficiency = indexCalc(OOP, entries, noDivs)
+                            newEfficiency = indexCalc(OOP, entries, noDivs, self.instance)
                             if newEfficiency[1] < efficiency[1]:
                                 optimumSchedule = OOP
                                 efficiency = newEfficiency
@@ -533,7 +533,7 @@ class GenerateScheduleThread(threading.Thread):
                         umps.append(entry)
                     
                     random.shuffle(umps)
-                    umpArr = umpires(optimumSchedule, umps, noPitches, entriesData)
+                    umpArr = umpires(optimumSchedule, umps, noPitches, self.instance)
                     
                     num = []
                     for j in range(noEntries):
