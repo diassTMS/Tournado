@@ -1,14 +1,15 @@
 from django import forms
-from tournaments.models import Tournament
+from tournaments.models import Tournament, Entry
 from leagues.models import League
-from django.forms.widgets import HiddenInput
+from crispy_forms.layout import Layout, Field, Div, HTML
+from crispy_forms.helper import FormHelper
 import math
 from .models import Timings, Schedule, Rules, PitchNames
 
 class ScheduleForm(forms.ModelForm): 
     class Meta:
         model = Tournament
-        fields = ['noTeams', 'noDivisions', 'noPitches', 'knockoutRounds', 'liveScores', 'umpires', 'startTime', 'endTime', 'matchType']
+        fields = ['noTeams', 'noDivisions', 'noPitches', 'splitDivs', 'knockoutRounds', 'liveScores', 'umpires', 'startTime', 'endTime', 'matchType']
 
         widgets = {
             'startTime': forms.TimeInput(attrs={'type': 'time'}),
@@ -19,16 +20,16 @@ class ScheduleForm(forms.ModelForm):
         super(ScheduleForm, self).__init__(*args, **kwargs)
         self.fields['noTeams'].disabled = True
         self.fields['noDivisions'].disabled = True
-
         self.fields['noPitches'].label = f'No. Pitches'
         self.fields['noDivisions'].label = f'No. Divisions'
         self.fields['knockoutRounds'].label = f'Select knockout round option:'
-        self.fields['liveScores'].label = f'Enable real time match scoring?'
-        self.fields['umpires'].label = f'Independent umpire schedule?'
+        self.fields['liveScores'].label = f'Real time match scoring?'
+        self.fields['splitDivs'].label = f'Split divisions?'
+        self.fields['umpires'].label = f'Umpire schedule?'
         self.fields['noTeams'].label = f'No. Entries'
         self.fields['startTime'].label = f'Start Time'
         self.fields['endTime'].label = f'Finish Time'
-        self.fields['matchType'].label = f'Match Structure'            
+        self.fields['matchType'].label = f'Match Structure' 
 
     def clean_noTeams(self):
         cleaned_data = self.clean()
@@ -36,6 +37,20 @@ class ScheduleForm(forms.ModelForm):
         if teams < 3:
             self.add_error('noTeams', "Must have at least three entries.")
         return teams
+    
+    def clean_splitDivs(self):
+        cleaned_data = self.clean()
+        split = cleaned_data.get('splitDivs')
+        divs = cleaned_data.get('noDivisions')
+        pitches = cleaned_data.get('noPitches')
+        
+        if divs == 1:
+            self.add_error('splitDivs', "Must have more than one division.")
+        if pitches < divs:
+            self.add_error('splitDivs', "Not enough pitches for this option.")
+
+        return split         
+
     
     def clean_knockoutRounds(self):
         cleaned_data = self.clean()

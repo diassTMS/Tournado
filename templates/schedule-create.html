@@ -39,7 +39,6 @@
             <hr>
             <div class="grid">
                 <fieldset id="noPitches">{{ form.noPitches|as_crispy_field }}</fieldset>
-                <p>Split division scheduling?</p>
             </div>
             <hr>
             <h4>Timings</h4>
@@ -65,6 +64,7 @@
             <div class="grid">
                 {{ form.liveScores|as_crispy_field }}
                 {{ form.umpires|as_crispy_field }}
+                {{ form.splitDivs|as_crispy_field }}
             </div>
         </fieldset>
     </div>
