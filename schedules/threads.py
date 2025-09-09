@@ -27,16 +27,11 @@ class GenerateScheduleThread(threading.Thread):
 #-----------------------------------------------------------------------------------------
 
             entriesData = []
-            optimumSchedule = []
-            efficiency = []
-            umpireSchedule = []
-            scheduled = False
-            optimum = False
-            x = 0
+            umpireSchedules = []
+            divSchedules = []
+            playoffSched = []
             y = 0
             stanDev = 99
-            increase = 0
-            MAX = 100
 
 #--------------------------------------------------------------------------------------------------
 #Sub Programs
@@ -220,48 +215,132 @@ class GenerateScheduleThread(threading.Thread):
                 leftOver = len(pList)
                 return pArr, leftOver
             
-            def umpires(schedule, umpires, nPitch, pTourn):
-                arr = createArray(nPitch, len(schedule))                
-                count = 0
-
-                for i in range(len(schedule)):
-                    for j in range(nPitch):
+            def optimumSchedule(pDivEntries, pPitches, pDivs, pEntries, pTourn):
+                pOptSched = []
+                efficiency = []
+                optimum = False
+                scheduled = False
+                x = 0
+                increase = 0
+                max = 100
+                 
+                while optimum == False and x < (max+1):
                 
-                        users = []
-                        for l in range(2):
-                            if schedule[i][j] != [0,0]:
-                                user = Entry.objects.get(Q(tournament=pTourn) & Q(pk=schedule[i][j][l].id)).user
+                    divisions = []
+                    matches = []
+                    array = []
+                    length = 0
+                    
+                    divisions = []
+                    for div in range(pDivs):
+                        row = []
+                        row.append(div+1)
+                        divList = list(pDivEntries[div])
+                        row.append(divList)
+                        divisions.append(row)
 
-                            if not(user.groups.filter(name="Admin").exists()):
-                                users.append(user)
+                    matches = matchesCalc(divisions)
+                    
+                    if x == max:
+                        increase += 1
+                        x = 0
+                    
+                    length = math.ceil(len(matches) / pPitches) + increase
+                    
+                    if x > 0:
+                        random.shuffle(matches)
+                        
+                    array = createArray(pPitches, length)
+                    OOP, missing = schedule(length, pPitches, array, matches)
+                    
+                    if scheduled == False:
+                        if missing == 0:
+                            pOptSched = OOP
+                            efficiency = indexCalc(pOptSched, pEntries, pDivs, pTourn)
+                            scheduled = True
+                    else:
+                        if (x+1) == max:
+                            optimum = True
+                        else:
+                            if missing == 0:
+                                newEfficiency = indexCalc(OOP, pEntries, pDivs, pTourn)
+                                if newEfficiency[1] < efficiency[1]:
+                                    pOptSched = OOP
+                                    efficiency = newEfficiency
+                    
+                    x += 1
 
-                        rowCurrent = []
-                        for k in range(nPitch):
-                            rowCurrent += arr[i][k]
+                return pOptSched
+            
+            def umpires(pSchedule, pEntries, pPitch, pTourn, pEntriesData):
+                y = 0
+                stanDev = 99
 
-                        temp = 0
-                        while len(arr[i][j]) != 2 and temp < 20:
-                            match = schedule[i][j]
+                while y < 20:
+                    umps = []
+                    for entry in pEntries:
+                        umps.append(entry)
+                    
+                    random.shuffle(umps)
+                    arr = createArray(pPitch, len(pSchedule))                
+                    count = 0
 
-                            if match == [0,0]:
-                                arr[i][j] = [0,0]
-                            
-                            else:
-                                entry = Entry.objects.get(Q(tournament=pTourn) & Q(pk=umpires[count].id))
+                    for i in range(len(pSchedule)):
+                        for j in range(pPitch):
+                    
+                            users = []
+                            for l in range(2):
+                                if pSchedule[i][j] != [0,0]:
+                                    user = Entry.objects.get(Q(tournament=pTourn) & Q(pk=pSchedule[i][j][l].id)).user
 
-                                if not(entry in match) and not(entry.umpire in rowCurrent) and not(entry.user in users):
-                                    if entry.umpire in arr[i][j]:
-                                        arr[i][j].append('Ind.')
-                                    else:
-                                        arr[i][j].append(entry)
+                                if not(user.groups.filter(name="Admin").exists()):
+                                    users.append(user)
+
+                            rowCurrent = []
+                            for k in range(pPitch):
+                                rowCurrent += arr[i][k]
+
+                            temp = 0
+                            while len(arr[i][j]) != 2 and temp < 20:
+                                match = pSchedule[i][j]
+
+                                if match == [0,0]:
+                                    arr[i][j] = [0,0]
                                 
-                                if count == (len(umpires)-1):
-                                    count = 0
                                 else:
-                                    count += 1
+                                    entry = Entry.objects.get(Q(tournament=pTourn) & Q(pk=umps[count].id))
 
-                            temp += 1
-                return arr
+                                    if not(entry in match) and not(entry.umpire in rowCurrent) and not(entry.user in users):
+                                        if entry.umpire in arr[i][j]:
+                                            arr[i][j].append('Ind.')
+                                        else:
+                                            arr[i][j].append(entry)
+                                    
+                                    if count == (len(umps)-1):
+                                        count = 0
+                                    else:
+                                        count += 1
+
+                                temp += 1
+                        
+                    num = []
+                    for j in range(len(pEntries)):
+                        count = 0
+                        umpire = Entry.objects.get(Q(tournament=pTourn) & Q(pk=pEntriesData[j][0].id)).umpire
+                        for k in range(len(arr)):
+                            for l in range(len(arr[k])):
+                                if umpire in arr[k][l]:
+                                    count += 1
+                        
+                        num.append(count)
+
+                    if np.std(num) < stanDev:
+                        stanDev = np.std(num)
+                        umpireSchedule = arr
+                    
+                    y += 1
+                
+                return umpireSchedule
             
             def createMatches(pTourn, pArr, pUmpArr, pStart, pDuration, pMatch):
                 for i in range(len(pArr)):
@@ -463,13 +542,8 @@ class GenerateScheduleThread(threading.Thread):
             noEntries = self.instance.noTeams
             noDivs = self.instance.noDivisions
             noPitches = self.instance.noPitches
-            start = str(self.instance.startTime)
-            end = str(self.instance.endTime)
-            match_duration = self.instance.matchDuration
-            break_duration = self.instance.breakDuration
-            halftime_duration = self.instance.halftimeDuration
 
-            #Mapping entries
+            #Mapping entries (Kinda pointless?)
             entries = Entry.objects.filter(tournament=self.instance)
 
             for entry in entries:
@@ -477,86 +551,31 @@ class GenerateScheduleThread(threading.Thread):
                 row.append(entry)
                 row.append(entry.division)
                 entriesData.append(row)
-
-            while optimum == False and x < (MAX+1):
-                
-                divisions = []
-                matches = []
-                array = []
-                length = 0
-                
-                divisions = []
-                for div in range(noDivs):
-                    row = []
-                    row.append(div+1)
-                    divEntries = Entry.objects.filter(Q(tournament=self.instance) & Q(division=div+1))
-                    divList = list(divEntries)
-                    row.append(divList)
-                    divisions.append(row)
-
-                matches = matchesCalc(divisions)
-                
-                if x == MAX:
-                    increase += 1
-                    x = 0
-                
-                length = math.ceil(len(matches) / noPitches) + increase
-                
-                if x > 0:
-                    random.shuffle(matches)
-                    
-                array = createArray(noPitches, length)
-                OOP, missing = schedule(length, noPitches, array, matches)
-                
-                if scheduled == False:
-                    if missing == 0:
-                        optimumSchedule = OOP
-                        efficiency = indexCalc(optimumSchedule, entries, noDivs, self.instance)
-                        scheduled = True
-                else:
-                    if (x+1) == MAX:
-                        optimum = True
-                    else:
-                        if missing == 0:
-                            newEfficiency = indexCalc(OOP, entries, noDivs, self.instance)
-                            if newEfficiency[1] < efficiency[1]:
-                                optimumSchedule = OOP
-                                efficiency = newEfficiency
-                
-                x += 1
-
-            if self.instance.umpires == True:
-                print("Generating Umpire Schedule")
-                while y < 20:
-                    umps = []
-                    for entry in entries:
-                        umps.append(entry)
-                    
-                    random.shuffle(umps)
-                    umpArr = umpires(optimumSchedule, umps, noPitches, self.instance)
-                    
-                    num = []
-                    for j in range(noEntries):
-                        count = 0
-                        umpire = Entry.objects.get(Q(tournament=self.instance) & Q(pk=entriesData[j][0].id)).umpire
-                        for k in range(len(umpArr)):
-                            for l in range(len(umpArr[k])):
-                                if umpire in umpArr[k][l]:
-                                    count += 1
-                        
-                        num.append(count)
-
-                    if np.std(num) < stanDev:
-                        stanDev = np.std(num)
-                        umpireSchedule = umpArr
-                    
-                    y += 1
             
-            #Playoffs
-            schedLength, playoffArray = knockouts(self.instance)
+            divEntries = []
+            for i in range(noDivs):
+                divEntry = Entry.objects.filter(Q(tournament=self.instance) & Q(division=i+1))
+                divEntries.append(divEntry)
+
+            #Calculating optimum schedule
+            optSched = optimumSchedule(divEntries, noPitches, noDivs, entries, self.instance)
+            print(optSched)
+
+            #Generating umpire schedule if necessary
+            if self.instance.umpires == True:
+                umpSched = umpires(optSched, entries, noPitches, self.instance, entriesData)
+                print(umpSched)
+            
+            #Generating playoff schedule
+            schedLength, playoffSched = knockouts(self.instance)
 
             #Timings
-            schedLength += len(optimumSchedule)
+            start = str(self.instance.startTime)
+            end = str(self.instance.endTime)
+            match_duration = self.instance.matchDuration
+            break_duration = self.instance.breakDuration
+            halftime_duration = self.instance.halftimeDuration
+            schedLength += len(optSched)
             tournDuration = (datetime.datetime.strptime(end, '%H:%M:%S') - datetime.datetime.strptime(start, '%H:%M:%S')).total_seconds() / 60
            
             #Ratio set at m:b = 4:1
@@ -577,12 +596,12 @@ class GenerateScheduleThread(threading.Thread):
                 duration = match_duration + break_duration
 
             #Creating div matches        
-            createMatches(self.instance, optimumSchedule, umpireSchedule, start, duration, match_duration)
+            createMatches(self.instance, optSched, umpSched, start, duration, match_duration)
 
             #Creating playoff matches
             playoffStart = datetime.datetime.strptime(str(Match.objects.filter(tournament=self.instance.id).last().end), '%H:%M:%S') + datetime.timedelta(minutes=break_duration)
             playoffStart = str(playoffStart.strftime('%H:%M:%S'))
-            createMatches(self.instance, playoffArray, umpireSchedule, playoffStart, duration, match_duration)
+            createMatches(self.instance, playoffSched, umpSched, playoffStart, duration, match_duration)
             
             print('generated')
             generated = True
