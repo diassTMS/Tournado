@@ -342,6 +342,31 @@ class GenerateScheduleThread(threading.Thread):
                 
                 return umpireSchedule
             
+            def timings(pTourn, pArr, pStart, pEnd, pAddLength):
+                pSchedLength = len(pArr) + pAddLength
+                tournDuration = (datetime.datetime.strptime(pEnd, '%H:%M:%S') - datetime.datetime.strptime(pStart, '%H:%M:%S')).total_seconds() / 60
+                match_duration = 0
+                break_duration = 0
+                halftime_duration = 0
+
+                #Ratio set at m:b = 4:1
+                if pTourn.matchType == "One Way":
+                    match_duration = round((4 * int(tournDuration)) / ((5 * pSchedLength) - 1))
+                    break_duration = math.floor(match_duration * (1/4))
+                    duration = match_duration + break_duration
+
+                else:
+                    match_duration = round((4 * int(tournDuration)) / ((11 * pSchedLength) - 2))
+                    break_duration = math.floor(match_duration * (1/2))
+                    halftime_duration = math.floor(match_duration * (1/4))
+                    duration = (2 * match_duration) + halftime_duration + break_duration
+
+                Tournament.objects.filter(pk=self.instance.id).update(matchDuration=match_duration)
+                Tournament.objects.filter(pk=self.instance.id).update(breakDuration=break_duration)
+                Tournament.objects.filter(pk=self.instance.id).update(halftimeDuration=halftime_duration)
+
+                return match_duration, break_duration, duration
+            
             def createMatches(pTourn, pArr, pUmpArr, pStart, pDuration, pMatch):
                 for i in range(len(pArr)):
                     for j in range(len(pArr[i])):
@@ -559,56 +584,30 @@ class GenerateScheduleThread(threading.Thread):
 
             #Calculating optimum schedule
             optSched = optimumSchedule(divEntries, noPitches, noDivs, entries, self.instance)
-            print(optSched)
 
             #Generating umpire schedule if necessary
             if self.instance.umpires == True:
+                #At some point change subprogram cuz it's a bit shit!
                 umpSched = umpires(optSched, entries, noPitches, self.instance, entriesData)
-                print(umpSched)
             
             #Generating playoff schedule
             schedLength, playoffSched = knockouts(self.instance)
 
             #Timings
             start = str(self.instance.startTime)
-            end = str(self.instance.endTime)
-            match_duration = self.instance.matchDuration
-            break_duration = self.instance.breakDuration
-            halftime_duration = self.instance.halftimeDuration
-            schedLength += len(optSched)
-            tournDuration = (datetime.datetime.strptime(end, '%H:%M:%S') - datetime.datetime.strptime(start, '%H:%M:%S')).total_seconds() / 60
-           
-            #Ratio set at m:b = 4:1
-            if self.instance.matchType == "One Way":
-                match_duration = round((4 * int(tournDuration)) / ((5 * schedLength) - 1))
-                Tournament.objects.filter(pk=self.instance.id).update(matchDuration=match_duration)
-
-                break_duration = math.floor(match_duration * (1/4))
-                duration = match_duration + break_duration
-
-            else:
-                match_duration = round((4 * int(tournDuration)) / ((11 * schedLength) - 2))
-                Tournament.objects.filter(pk=self.instance.id).update(matchDuration=match_duration)
-
-                break_duration = math.floor(match_duration * (1/2))
-                halftime_duration = math.floor(match_duration * (1/4))
-                match_duration = (2 * match_duration) + halftime_duration
-                duration = match_duration + break_duration
+            end = str(self.instance.endTime)           
+            matchDur, breakDur, duration = timings(self.instance, optSched, start, end, schedLength)
 
             #Creating div matches        
-            createMatches(self.instance, optSched, umpSched, start, duration, match_duration)
+            createMatches(self.instance, optSched, umpSched, start, duration, matchDur)
 
             #Creating playoff matches
-            playoffStart = datetime.datetime.strptime(str(Match.objects.filter(tournament=self.instance.id).last().end), '%H:%M:%S') + datetime.timedelta(minutes=break_duration)
+            playoffStart = datetime.datetime.strptime(str(Match.objects.filter(tournament=self.instance.id).last().end), '%H:%M:%S') + datetime.timedelta(minutes=breakDur)
             playoffStart = str(playoffStart.strftime('%H:%M:%S'))
-            createMatches(self.instance, playoffSched, umpSched, playoffStart, duration, match_duration)
+            createMatches(self.instance, playoffSched, umpSched, playoffStart, duration, matchDur)
             
             print('generated')
-            generated = True
-            Tournament.objects.filter(pk=self.instance.id).update(matchDuration=match_duration)
-            Tournament.objects.filter(pk=self.instance.id).update(breakDuration=break_duration)
-            Tournament.objects.filter(pk=self.instance.id).update(halftimeDuration=halftime_duration)
-            Tournament.objects.filter(pk=self.instance.id).update(generatedSchedule=generated)
+            Tournament.objects.filter(pk=self.instance.id).update(generatedSchedule=True)
 
         except Exception as e:
             print(e)
