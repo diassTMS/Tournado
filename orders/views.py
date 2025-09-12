@@ -19,6 +19,7 @@ from Tournado import renderers
 import datetime
 from django.contrib.auth.models import User
 from users.models import Profile
+from datetime import date
 
 class UserEntryListView(TemplateView):
     model = User
@@ -27,31 +28,89 @@ class UserEntryListView(TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         pk = self.kwargs.pop('pk')
-        user = User.objects.get(id=pk) 
-        qs = Entry.objects.filter(user=user).order_by(F('tournament__date').desc(), F('tournament__name'))
-        noEntries = qs.count()
-        owing = 0
-        invoiced = 0
-        total = 0
+        user = User.objects.get(id=pk)
 
-        for entry in qs:
-            if entry.invoiced == False:
-                owing += entry.tournament.entryPrice
-            else:
-                invoiced += entry.tournament.entryPrice
+        # Get season from dropdown
+        season = self.request.GET.get("season")
+        today = date.today()
 
-            total += entry.tournament.entryPrice
+        # Determine season range
+        if season == "All":
+            # User explicitly selected "All"
+            season_label = "All"
+            season_start = None
+            season_end = None
+        elif not season:
+            # Default to current season
+            if today.month >= 9:  # September or later
+                season_start = date(today.year, 9, 1)
+                season_end = date(today.year + 1, 8, 31)
+                season_label = f"{today.year}-{str(today.year + 1)[-2:]}"
+            else:  # Before September
+                season_start = date(today.year - 1, 9, 1)
+                season_end = date(today.year, 8, 31)
+                season_label = f"{today.year - 1}-{str(today.year)[-2:]}"
+        else:
+            # Parse the selected season
+            try:
+                start_year, end_year = map(int, season.split("-"))
+                season_start = date(start_year, 9, 1)
+                season_end = date(end_year if end_year > 100 else 2000 + end_year, 8, 31)
+                season_label = season
+            except ValueError:
+                # Fallback to current season if parsing fails
+                if today.month >= 9:
+                    season_start = date(today.year, 9, 1)
+                    season_end = date(today.year + 1, 8, 31)
+                    season_label = f"{today.year}-{str(today.year + 1)[-2:]}"
+                else:
+                    season_start = date(today.year - 1, 9, 1)
+                    season_end = date(today.year, 8, 31)
+                    season_label = f"{today.year - 1}-{str(today.year)[-2:]}"
 
+        # Filter entries based on season
+        if season_label == "All":
+            qs = Entry.objects.filter(user=user).order_by(
+                F('tournament__date').desc(), F('tournament__name')
+            )
+        else:
+            qs = Entry.objects.filter(
+                user=user,
+                tournament__date__range=[season_start, season_end]
+            ).order_by(F('tournament__date').desc(), F('tournament__name'))
+
+        # Calculate totals
+        owing = sum(entry.tournament.entryPrice for entry in qs if not entry.invoiced)
+        invoiced = sum(entry.tournament.entryPrice for entry in qs if entry.invoiced)
+        total = sum(entry.tournament.entryPrice for entry in qs)
+
+        # Choose table type
         if self.request.user.groups.first().name == "Admin":
             context['orders'] = AdminOrderTable(qs)
         else:
             context['orders'] = OrderTable(qs)
 
-        context['userInput'] = user
-        context['owing'] = owing
-        context['invoiced'] = invoiced
-        context['total'] = total
-        context['entries'] = noEntries
+        # Gather all available seasons
+        seasons = []
+        for t in Tournament.objects.dates("date", "year"):
+            start_year = t.year if t.month >= 9 else t.year - 1
+            end_year_short = str(start_year + 1)[-2:]
+            label = f"{start_year}-{end_year_short}"
+            if label not in seasons:
+                seasons.append(label)
+        seasons = sorted(seasons, reverse=True)
+
+        # Update context
+        context.update({
+            'userInput': user,
+            'owing': owing,
+            'invoiced': invoiced,
+            'total': total,
+            'entries': qs.count(),
+            'season': season_label,
+            'seasons': seasons,
+        })
+
         return context
     
 @login_required
@@ -212,30 +271,39 @@ def delete_order(request, pk):
 def invoice_tourn(request, pk): 
     instance = get_object_or_404(Entry, id=pk)
     user = instance.user
-    
-    if instance.invoiced == False:
-        instance.invoiced = True
-    else:
-        instance.invoiced = False
+
+    # Toggle invoice
+    instance.invoiced = not instance.invoiced
     instance.save()
 
-    data = dict()
-    instance.refresh_from_db()
-    qs = Entry.objects.filter(user=user).order_by(F('tournament__date').desc(), F('tournament__name'))
+    # Get the season selected when the checkbox was clicked
+    season = request.GET.get('season')
 
+    if not season or season == "All":
+        qs = Entry.objects.filter(user=user).order_by(F('tournament__date').desc(), F('tournament__name'))
+    else:
+        start_year, end_year = map(int, season.split("-"))
+        season_start = date(start_year, 9, 1)
+        season_end = date(end_year if end_year > 100 else 2000 + end_year, 8, 31)
+        qs = Entry.objects.filter(
+            user=user,
+            tournament__date__range=[season_start, season_end]
+        ).order_by(F('tournament__date').desc(), F('tournament__name'))
+
+    # Render the table
     if request.user.groups.first().name == "Admin":
         orders = AdminOrderTable(qs)
     else:
         orders = OrderTable(qs)
 
     RequestConfig(request).configure(orders)
-    data['result'] = render_to_string(template_name='orders/include/order_table.html',
-                                      request=request,
-                                      context={
-                                          'userInput': user,
-                                          'orders': orders,
-                                      }
-                                      )
+    data = {
+        'result': render_to_string(
+            template_name='orders/include/order_table.html',
+            request=request,
+            context={'userInput': user, 'orders': orders},
+        )
+    }
     return JsonResponse(data)
    
 def InvoicePdf(request, pk):

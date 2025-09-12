@@ -12,12 +12,23 @@
                     <i onClick="location.href='{% url 'user-list' %}';" class="fa-solid fa-circle-arrow-left" id="icon"></i>
                     {{ userInput }}'s Entries
                 {% endif %}
-                <span style="float:right; margin-right:20px; cursor:pointer;">
-                    <i style="color: green;" onclick="location.href='{% url 'order-create' userInput.id %}';" class="fa-solid fa-plus"></i>
-                </span>
+                <span style="float:right; align-items:center;">
+                <div class="grid" style="margin-bottom: 15px; text-align:center; align-items:center;">
+                    <form method="get" id="season-form" style="display:inline-block;">
+                        <select name="season" id="season" class="form-select d-inline-block" style="width:auto; display:inline-block;">
+                            <option value="All" {% if season == "All" %}selected{% endif %}>All</option>
+                            {% for s in seasons %}
+                                <option value="{{ s }}" {% if s == season %}selected{% endif %}>{{ s }}</option>
+                            {% endfor %}
+                        </select>
+                    </form>
+                </div>                
+            </span>
             </h2>
         </hgroup>
-        <hr>
+    </div>
+    <br>
+    <div id="box">
         <div class="grid">
             <article style="text-align: center;">No. Entries = {{ entries }}</article>
             <article style="text-align: center;">Uninvoiced =  £{{ owing }}</article>
@@ -31,4 +42,9 @@
             </div>
         </article>
     </div>
+    <script>
+        document.getElementById("season").addEventListener("change", function() {
+            document.getElementById("season-form").submit();
+        });
+    </script>
 {% endblock %}

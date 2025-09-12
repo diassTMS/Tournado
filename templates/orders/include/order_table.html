@@ -30,17 +30,17 @@
     $('.invoice_button').click(function (evt) {
         evt.preventDefault();
         const btn = $(this);
-        const pk = btn.attr('pk')
-        console.log('pk')
+        const pk = btn.attr('pk');
+        const season = document.getElementById("season").value;  // get season at the time of click
+
         $.ajax({
             method: 'GET',
             dataType: 'json',
             url: `/invoice/${pk}/`,
-            success : function (data) {
-                console.log('invoice');
-                console.log(data);
+            data: { season: season },   // send the selected season
+            success: function (data) {
                 $('#order_container').html(data.result);
             }
-        })
+        });
     });
 </script>
