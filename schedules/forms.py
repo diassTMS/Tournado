@@ -44,9 +44,9 @@ class ScheduleForm(forms.ModelForm):
         divs = cleaned_data.get('noDivisions')
         pitches = cleaned_data.get('noPitches')
         
-        if divs == 1:
+        if divs == 1 and split:
             self.add_error('splitDivs', "Must have more than one division.")
-        if pitches < divs:
+        if pitches < divs and split:
             self.add_error('splitDivs', "Not enough pitches for this option.")
 
         return split         
@@ -172,9 +172,8 @@ class SchedulePDFForm(forms.ModelForm):
 
         for field_name in self.fields:
             if field_name.startswith("pitch_"):
-                if self.cleaned_data.get(field_name) != "":
-                    pitch = self.cleaned_data[field_name]
-                    pitches.append(pitch)
+                pitch = self.cleaned_data[field_name]
+                pitches.append(pitch)
         
         self.cleaned_data["pitches"] = pitches
 

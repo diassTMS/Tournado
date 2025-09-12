@@ -85,7 +85,8 @@
         </div>
         <br>
         {% endif %}
-    
+    </div>
+    <br>
     {% if tournament.liveScores == True and current.data|length != 0%}
         <div class="container" id="box">
             <h4>Live Matches</h4>
@@ -150,5 +151,4 @@
                 {% endif %}
             </div>
         {% endfor %}
-    </div>
 {% endblock %}

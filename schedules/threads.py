@@ -6,7 +6,7 @@ import numpy as np
 import math
 import random
 import threading
-from tournaments.models  import Entry, Match, Tournament
+from tournaments.models  import Entry, Match, Tournament, SplitDivTimings
 from schedules.models import PitchNames, Schedule
 from leagues.models import League, LeagueEntry, LeagueMatch
 from django.contrib import messages
@@ -14,6 +14,8 @@ from ast import literal_eval
 import datetime
 from django.db.models import Q
 from django.contrib.auth.models import User
+from django.db.models import Count
+from collections import defaultdict, Counter
 
 class GenerateScheduleThread(threading.Thread):
     def __init__(self, instance):
@@ -26,7 +28,6 @@ class GenerateScheduleThread(threading.Thread):
 #Global Variables
 #-----------------------------------------------------------------------------------------
 
-            entriesData = []
             umpireSchedules = []
             divSchedules = []
             playoffSched = []
@@ -45,7 +46,7 @@ class GenerateScheduleThread(threading.Thread):
                 pitch = len(pSchedule[0])
                 
                 divisions = []
-                for div in range(noDivs):
+                for div in range(pDivs):
                     row = []
                     row.append(div+1)
                     divEntries = Entry.objects.filter(Q(tournament=pTourn) & Q(division=div+1))
@@ -271,117 +272,129 @@ class GenerateScheduleThread(threading.Thread):
                     x += 1
 
                 return pOptSched
-            
-            def umpires(pSchedule, pEntries, pPitch, pTourn, pEntriesData):
-                y = 0
-                stanDev = 99
 
-                while y < 20:
-                    umps = []
-                    for entry in pEntries:
-                        umps.append(entry)
-                    
-                    random.shuffle(umps)
-                    arr = createArray(pPitch, len(pSchedule))                
-                    count = 0
+            def assign_division_umpires(divisions):
+                # Flatten all entries into a pool of available umpires
+                all_entries = [entry for entries in divisions.values() for entry in entries]
+                random.shuffle(all_entries)  # randomize for fairness
 
-                    for i in range(len(pSchedule)):
-                        for j in range(pPitch):
-                    
-                            users = []
-                            for l in range(2):
-                                if pSchedule[i][j] != [0,0]:
-                                    user = Entry.objects.get(Q(tournament=pTourn) & Q(pk=pSchedule[i][j][l].id)).user
+                # Track available umpires
+                available = set(all_entries)
+                division_umpires = defaultdict(list)
 
-                                if not(user.groups.filter(name="Admin").exists()):
-                                    users.append(user)
+                # First pass: try to assign only cross-division umpires
+                for div, entries in divisions.items():
+                    for _ in entries:
+                        # Try to find an umpire not in this division
+                        choices = [u for u in available if u not in entries]
+                        if choices:
+                            ump = choices.pop()
+                        else:
+                            # If no outsiders left, fallback to someone in this division
+                            ump = available.pop()
+                            division_umpires[div].append(ump)
+                            continue
 
-                            rowCurrent = []
-                            for k in range(pPitch):
-                                rowCurrent += arr[i][k]
+                        available.remove(ump)
+                        division_umpires[div].append(ump)
 
-                            temp = 0
-                            while len(arr[i][j]) != 2 and temp < 20:
-                                match = pSchedule[i][j]
+                # If still unassigned (shouldn’t normally happen, but safeguard)
+                for div, entries in divisions.items():
+                    while len(division_umpires[div]) < len(entries) and available:
+                        ump = available.pop()
+                        division_umpires[div].append(ump)
 
-                                if match == [0,0]:
-                                    arr[i][j] = [0,0]
-                                
+                return dict(division_umpires)
+
+            def umpires(pSchedule, pEntries, iterations=50):
+                best_schedule = None
+                best_std = float("inf")
+
+                all_umpires = list(pEntries)
+
+                for _ in range(iterations):
+                    arr = []
+                    umpire_count = defaultdict(int)
+
+                    for row in pSchedule:
+                        row_assignments = []
+                        used_in_row = set()  # track umpires already used in this row
+
+                        for match in row:
+                            if match == [0,0]:
+                                row_assignments.append([0,0])
+                                continue
+
+                            entry1, entry2 = match
+                            disallowed = {entry1, entry2}
+
+                            # Eligible umpires = not in match and not used in row
+                            eligible = [e for e in all_umpires if e not in disallowed and e not in used_in_row]
+
+                            if len(eligible) >= 2:
+                                # Pick two least-used umpires
+                                sorted_eligible = sorted(eligible, key=lambda e: umpire_count[e])
+                                ump1, ump2 = sorted_eligible[:2]
+                            elif len(eligible) == 1:
+                                # Only one eligible → duplicate it
+                                ump1 = ump2 = eligible[0]
+                            else:
+                                # No eligible umpire → duplicate first assigned umpire if available
+                                if row_assignments:
+                                    ump1 = ump2 = row_assignments[-1][0]
                                 else:
-                                    entry = Entry.objects.get(Q(tournament=pTourn) & Q(pk=umps[count].id))
-
-                                    if not(entry in match) and not(entry.umpire in rowCurrent) and not(entry.user in users):
-                                        if entry.umpire in arr[i][j]:
-                                            arr[i][j].append('Ind.')
-                                        else:
-                                            arr[i][j].append(entry)
-                                    
-                                    if count == (len(umps)-1):
-                                        count = 0
+                                    # fallback: pick a random entry not in match
+                                    fallback = [e for e in all_umpires if e not in disallowed]
+                                    if fallback:
+                                        ump1 = ump2 = random.choice(fallback)
                                     else:
-                                        count += 1
+                                        # last resort: duplicate entry1
+                                        ump1 = ump2 = entry1
 
-                                temp += 1
-                        
-                    num = []
-                    for j in range(len(pEntries)):
-                        count = 0
-                        umpire = Entry.objects.get(Q(tournament=pTourn) & Q(pk=pEntriesData[j][0].id)).umpire
-                        for k in range(len(arr)):
-                            for l in range(len(arr[k])):
-                                if umpire in arr[k][l]:
-                                    count += 1
-                        
-                        num.append(count)
+                            row_assignments.append([ump1, ump2])
+                            used_in_row.update([ump1, ump2])
+                            umpire_count[ump1] += 1
+                            umpire_count[ump2] += 1
 
-                    if np.std(num) < stanDev:
-                        stanDev = np.std(num)
-                        umpireSchedule = arr
-                    
-                    y += 1
-                
-                return umpireSchedule
+                        arr.append(row_assignments)
+
+                    # Evaluate balance
+                    counts = list(umpire_count.values())
+                    std_dev = max(counts) - min(counts) if counts else 0
+
+                    if std_dev < best_std:
+                        best_std = std_dev
+                        best_schedule = arr
+
+                return best_schedule
             
-            def timings(pTourn, pArr, pStart, pEnd, pAddLength):
-                pSchedLength = len(pArr) + pAddLength
-                tournDuration = (datetime.datetime.strptime(pEnd, '%H:%M:%S') - datetime.datetime.strptime(pStart, '%H:%M:%S')).total_seconds() / 60
-                match_duration = 0
-                break_duration = 0
-                halftime_duration = 0
-
-                #Ratio set at m:b = 4:1
-                if pTourn.matchType == "One Way":
-                    match_duration = round((4 * int(tournDuration)) / ((5 * pSchedLength) - 1))
-                    break_duration = math.floor(match_duration * (1/4))
-                    duration = match_duration + break_duration
-
-                else:
-                    match_duration = round((4 * int(tournDuration)) / ((11 * pSchedLength) - 2))
-                    break_duration = math.floor(match_duration * (1/2))
-                    halftime_duration = math.floor(match_duration * (1/4))
-                    duration = (2 * match_duration) + halftime_duration + break_duration
-
-                Tournament.objects.filter(pk=self.instance.id).update(matchDuration=match_duration)
-                Tournament.objects.filter(pk=self.instance.id).update(breakDuration=break_duration)
-                Tournament.objects.filter(pk=self.instance.id).update(halftimeDuration=halftime_duration)
-
-                return match_duration, break_duration, duration
-            
-            def createMatches(pTourn, pArr, pUmpArr, pStart, pDuration, pMatch):
+            def createMatches(pTourn, pArr, pUmpArr, pStart, pDuration, pMatch, pDiv):
                 for i in range(len(pArr)):
                     for j in range(len(pArr[i])):
 
                         #Free Matches
-                        if pArr[i][j] == [0,0]:
-                            match = Match(tournament = pTourn,
+                        if pArr[i][j] == [0,0] or pArr[i][j] == "Free":
+                            if pTourn.splitDivs == True:
+                                match = Match(tournament = pTourn,
                                         type = 'Free',
+                                        division = pDiv,
                                         entryOne = Entry.objects.filter(tournament=pTourn).first(),
                                         entryTwo = Entry.objects.filter(tournament=pTourn).first(),
                                         pitch = j+1,
                                         start = datetime.datetime.strptime(pStart, '%H:%M:%S') + datetime.timedelta(minutes=(pDuration * i)),
                                         end = datetime.datetime.strptime(pStart, '%H:%M:%S') + datetime.timedelta(minutes=(pMatch + (pDuration * i))),
                                         )
-                            match.save()
+                                match.save()
+                            else:
+                                match = Match(tournament = pTourn,
+                                            type = 'Free',
+                                            entryOne = Entry.objects.filter(tournament=pTourn).first(),
+                                            entryTwo = Entry.objects.filter(tournament=pTourn).first(),
+                                            pitch = j+1,
+                                            start = datetime.datetime.strptime(pStart, '%H:%M:%S') + datetime.timedelta(minutes=(pDuration * i)),
+                                            end = datetime.datetime.strptime(pStart, '%H:%M:%S') + datetime.timedelta(minutes=(pMatch + (pDuration * i))),
+                                            )
+                                match.save()
                         
                         #Playoff Matches
                         elif len(pArr[i][j]) > 2:
@@ -420,6 +433,63 @@ class GenerateScheduleThread(threading.Thread):
                                                 end = datetime.datetime.strptime(pStart, '%H:%M:%S') + datetime.timedelta(minutes=(pMatch + (pDuration * i))),
                                                 )
                                 match.save()
+             
+            def timings(pTourn, pArr, pStart, pEnd, pAddLength, pTotal, pDivStats):
+                pSchedLength = len(pArr) + pAddLength
+                tournDuration = (datetime.datetime.strptime(pEnd, '%H:%M:%S') - datetime.datetime.strptime(pStart, '%H:%M:%S')).total_seconds() / 60
+                match_duration = 0
+                break_duration = 0
+                halftime_duration = 0
+
+                if pTourn.splitDivs == True:
+                    pEntries = int(pDivStats["teams"])
+                    pDivNum = int(pDivStats["division"])
+                    pPitches = int(pDivStats["pitches"])
+                    match_duration = round(pTotal / (pEntries - 1))
+                    if pTourn.matchType == "One Way":
+                        break_duration = math.floor(match_duration * (1/4))
+                        duration = match_duration + break_duration
+
+                    else:
+                        match_duration = match_duration // 2
+                        break_duration = math.floor(match_duration * (1/2))
+                        halftime_duration = math.floor(match_duration * (1/4))
+
+                    #Create/Get div timing
+                    divTiming, created = SplitDivTimings.objects.get_or_create(tournament=pTourn, divNumber = pDivNum)
+                    divTiming.noPitches = pPitches
+                    divTiming.startTime = pStart
+                    divTiming.matchType = pTourn.matchType
+                    divTiming.matchDuration = match_duration
+                    divTiming.halftimeDuration = halftime_duration 
+                    divTiming.breakDuration = break_duration
+                    divTiming.save()
+
+                    if pTourn.matchType != "One Way":
+                        match_duration = (match_duration * 2) + halftime_duration
+                        duration = match_duration + break_duration
+
+                else:
+                    #Ratio set at m:b = 4:1
+                    if pTourn.matchType == "One Way":
+                        match_duration = round((4 * int(tournDuration)) / ((5 * pSchedLength) - 1))
+                        break_duration = math.floor(match_duration * (1/4))
+                        duration = match_duration + break_duration
+
+                    else:
+                        match_duration = round((4 * int(tournDuration)) / ((11 * pSchedLength) - 2))
+                        break_duration = math.floor(match_duration * (1/2))
+                        halftime_duration = math.floor(match_duration * (1/4))
+
+                    Tournament.objects.filter(pk=self.instance.id).update(matchDuration=match_duration)
+                    Tournament.objects.filter(pk=self.instance.id).update(breakDuration=break_duration)
+                    Tournament.objects.filter(pk=self.instance.id).update(halftimeDuration=halftime_duration)
+
+                    if pTourn.matchType != "One Way":
+                        match_duration = (match_duration * 2) + halftime_duration
+                        duration = match_duration + break_duration
+
+                return match_duration, break_duration, duration
 
             def knockouts(pTourn):
                 addLength = 0
@@ -528,6 +598,53 @@ class GenerateScheduleThread(threading.Thread):
                 addLength = len(pArr)
 
                 return addLength, pArr
+            
+            def allocatePitches(pitches, divisions):
+                total_teams = sum(div["teams"] for div in divisions)
+
+                for div in divisions:
+                    div["pitches"] = (div["teams"] * pitches) // total_teams
+
+                assigned_pitches = sum(div["pitches"] for div in divisions)
+
+                remaining = pitches - assigned_pitches
+                if remaining > 0:
+                    for div in divisions:
+                        div["remainder"] = (div["teams"] * pitches) / total_teams - div["pitches"]
+
+                    divisions_sorted = sorted(divisions, key=lambda d: d["remainder"], reverse=True)
+
+                    for i in range(remaining):
+                        divisions_sorted[i]["pitches"] += 1
+
+                    for div in divisions:
+                        del div["remainder"]
+
+                return divisions
+            
+            def limitingDuration(pDivisions, pStart, pEnd, pArr, pAddLength, pTourn):
+                durations = []
+                tournDuration = (datetime.datetime.strptime(pEnd, '%H:%M:%S') - datetime.datetime.strptime(pStart, '%H:%M:%S')).total_seconds() / 60
+                
+                for i in range(len(pDivisions)):
+                    duration = 0
+                    div = next((d for d in pDivisions if d["division"] == i+1), None)
+                    division_id = int(div["division"])
+                    noTeams = int(div["teams"])
+                    length = len(pArr[i]) + pAddLength
+
+                    if pTourn.matchType == "One Way":
+                        duration = round((4 * int(tournDuration)) / ((5 * length) - 1))
+                    else:
+                        half_duration = round((4 * int(tournDuration)) / ((11 * length) - 2))
+                        duration = (2 * half_duration)
+                    
+                    totalPlay = ((noTeams - 1) * duration) + (pAddLength * duration)
+                    durations.append((division_id, totalPlay, noTeams, duration))
+
+                shortest = list(min(durations, key=lambda x: x[1]))
+                shortest[1] = int(shortest[1]) - (pAddLength * int(shortest[3]))
+                return tuple(shortest)
 
 #--------------------------------------------------------------------------------------------------
 #Main Program
@@ -564,48 +681,118 @@ class GenerateScheduleThread(threading.Thread):
             print('updating')
 
             #User Inputs
-            noEntries = self.instance.noTeams
+            noTeams = self.instance.noTeams
             noDivs = self.instance.noDivisions
             noPitches = self.instance.noPitches
-
-            #Mapping entries (Kinda pointless?)
-            entries = Entry.objects.filter(tournament=self.instance)
-
-            for entry in entries:
-                row = []
-                row.append(entry)
-                row.append(entry.division)
-                entriesData.append(row)
-            
-            divEntries = []
-            for i in range(noDivs):
-                divEntry = Entry.objects.filter(Q(tournament=self.instance) & Q(division=i+1))
-                divEntries.append(divEntry)
-
-            #Calculating optimum schedule
-            optSched = optimumSchedule(divEntries, noPitches, noDivs, entries, self.instance)
-
-            #Generating umpire schedule if necessary
-            if self.instance.umpires == True:
-                #At some point change subprogram cuz it's a bit shit!
-                umpSched = umpires(optSched, entries, noPitches, self.instance, entriesData)
-            
-            #Generating playoff schedule
-            schedLength, playoffSched = knockouts(self.instance)
-
-            #Timings
+            splitDivs = self.instance.splitDivs 
             start = str(self.instance.startTime)
-            end = str(self.instance.endTime)           
-            matchDur, breakDur, duration = timings(self.instance, optSched, start, end, schedLength)
+            end = str(self.instance.endTime) 
+            optSched = []
+            umpSched = []
+            divisions = {}
+            schedLength = 0   
+            total = 0    
 
-            #Creating div matches        
-            createMatches(self.instance, optSched, umpSched, start, duration, matchDur)
-
-            #Creating playoff matches
-            playoffStart = datetime.datetime.strptime(str(Match.objects.filter(tournament=self.instance.id).last().end), '%H:%M:%S') + datetime.timedelta(minutes=breakDur)
-            playoffStart = str(playoffStart.strftime('%H:%M:%S'))
-            createMatches(self.instance, playoffSched, umpSched, playoffStart, duration, matchDur)
+            #Getting entries and putting into dict by division
+            entries = Entry.objects.filter(tournament=self.instance)
+            for entry in entries:
+                div_id = entry.division
+                if div_id not in divisions:
+                    divisions[div_id] = []
+                divisions[div_id].append(entry)
             
+            if splitDivs == True:
+                #Allocating pitches
+                entryDistrib = Entry.objects.filter(tournament=self.instance).values('division').annotate(teams=Count('division')).order_by()
+                pitchAllocation = allocatePitches(noPitches, entryDistrib)
+                division_umpires = assign_division_umpires(divisions)
+                
+                #Creating schedules per division
+                for div in range(noDivs):
+                    optSched = []
+                    umpSched = []
+                    divEntries = []
+                    divEntry = Entry.objects.filter(Q(tournament=self.instance) & Q(division=div+1))
+                    divEntries.append(divEntry)
+
+                    #Get pitch allocation
+                    division = next((d for d in pitchAllocation if d["division"] == div+1), None)
+                    noDivPitch = int(division["pitches"])
+
+                    #Division Schedules
+                    optSched = optimumSchedule(divEntries, noDivPitch, 1, divEntry, self.instance)
+                    divSchedules.append(optSched)
+                    
+                    #Umpire Schedules
+                    if self.instance.umpires == True:
+                        entriesDiv = division_umpires[div+1]
+                        umpSched = umpires(optSched, entriesDiv)
+                        umpireSchedules.append(umpSched)
+                
+                #Playoff Schedule
+                if self.instance.knockoutRounds != "None":
+                    schedLength, playoffSched = knockouts(self.instance)
+
+        
+                #Limiting duration calc
+                total = limitingDuration(pitchAllocation, start, end, divSchedules, schedLength, self.instance)
+                totalPlay = int(total[1])
+
+
+                #Timings and creating matches
+                for sched in range(len(divSchedules)):
+                    division = next((d for d in pitchAllocation if d["division"] == sched+1), None)
+                    matchDur, breakDur, duration = timings(self.instance, divSchedules[sched], start, end, schedLength, totalPlay, division)
+
+                    #Create div matchs
+                    if self.instance.umpires == True:
+                        createMatches(self.instance, divSchedules[sched], umpireSchedules[sched], start, duration, matchDur, sched+1)
+                    else:
+                        umpSched = []
+                        createMatches(self.instance, divSchedules[sched], umpSched, start, duration, matchDur, sched+1)
+                
+                #Playoff match timings
+                if self.instance.knockoutRounds != "None":
+                    divNum = int(total[0])
+                    noTeams = int(total[2])
+                    division = {"division": 0, "pitches": noPitches, "teams": noTeams}
+
+                    matchDur, breakDur, duration = timings(self.instance, divSchedules[divNum-1], start, end, schedLength, totalPlay, division)
+
+                    playoffStart = datetime.datetime.strptime(str(Match.objects.filter(tournament=self.instance.id).latest('end').end), '%H:%M:%S') + datetime.timedelta(minutes=breakDur)
+                    SplitDivTimings.objects.filter(tournament=self.instance, divNumber=0).update(startTime=playoffStart.time())
+                    playoffStart = str(playoffStart.strftime('%H:%M:%S'))
+                    
+                    createMatches(self.instance, playoffSched, umpSched, playoffStart, duration, matchDur, 0)
+
+            else:
+                #Creating one schedule for tourn
+                divEntries = []
+                for i in range(noDivs):
+                    divEntry = Entry.objects.filter(Q(tournament=self.instance) & Q(division=i+1))
+                    divEntries.append(divEntry)
+
+                optSched = optimumSchedule(divEntries, noPitches, noDivs, entries, self.instance)
+
+                if self.instance.umpires == True:
+                    #At some point change subprogram cuz it's a bit shit!
+                    umpSched = umpires(optSched, entries)
+
+                if self.instance.knockoutRounds != "None":
+                    schedLength, playoffSched = knockouts(self.instance)
+
+                #Timings
+                matchDur, breakDur, duration = timings(self.instance, optSched, start, end, schedLength, total, [])
+
+                #Creating div matches        
+                createMatches(self.instance, optSched, umpSched, start, duration, matchDur, 0)
+
+                #Creating playoff matches
+                if self.instance.knockoutRounds != "None":
+                    playoffStart = datetime.datetime.strptime(str(Match.objects.filter(tournament=self.instance.id).last().end), '%H:%M:%S') + datetime.timedelta(minutes=breakDur)
+                    playoffStart = str(playoffStart.strftime('%H:%M:%S'))
+                    createMatches(self.instance, playoffSched, umpSched, playoffStart, duration, matchDur, 0)
+
             print('generated')
             Tournament.objects.filter(pk=self.instance.id).update(generatedSchedule=True)
 

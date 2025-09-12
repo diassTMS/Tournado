@@ -50,77 +50,175 @@
         li {
             font-size: 16px;
         }
+
+        p {
+            font-size: 16px;
+        }
     </style>
     <body>
         <div class='wrapper'>
             <div class='header'>
-                <h1 style="font-size: 26px;">{{ title }} <u>Umpire</u> Schedule</h1>
+                <h1 style="font-size: 26px;">{{ tourn.name }} <u>Umpire</u> Schedule</h1>
             </div>
             <hr>
-            <h2 style="text-align: center;">{{ tournament.date|date:"l jS F o" }} - {{ tournament.venue }}</h2>
+            <h2 style="text-align: center;">{{ tourn.date|date:"l jS F o" }} - {{ tourn.venue }}</h2>
         </div>
-        <div class="overflow-auto">
-            <table style="border: 1px solid;">
-                <thead>
-                    <tr>
-                        <th scope="col" style="text-align:center; border: 1px solid;">Timings</th>
-                        {% for pitch in pitches %}
-                            <th style="text-align:center; border: 1px solid;">{{ pitch.name }}</th>
-                        {% endfor %}
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for row in schedule  %}
+        {% if tourn.splitDivs %}
+            {% for division in divisions %}
+                {% if tourn.knockoutRounds != "None" and forloop.last %}
+                    <h2>Playoffs</h2>
+                {% else %}
+                    <h2>Division {{ forloop.counter }}</h2>
+                {% endif %}
+                <div class="overflow-auto">
+                    <table class="overflow-auto" style="border: 1px solid;">
+                        <thead>
+                            <tr>
+                                <th scope="col" id="time" style="text-align:center; border: 1px solid;">Time</th>
+                                {% for name in division.pitches %}
+                                    <th style="text-align:center; border: 1px solid;">{{ name }}</th>
+                                {% endfor %}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for row in division.schedule %}
+                                <tr class="float-container">
+                                    {% for match in row %}
+                                        {% if forloop.counter0 == 0 %}
+                                            <td scope="row" style="text-align:center; border: 1px solid;">
+                                                {{ match.start|time:"H:i" }} - {{ match.end|time:"H:i"}}
+                                            </td>
+                                        {% else %}
+                                            {% if match.umpireOneName == match.umpireTwoName %}
+                                                {% if match.entryOne == match.entryTwo %}
+                                                    {% if match.type != "Division" and match.type != "Free" %}
+                                                        <td style="text-align:center; border: 1px solid; background-color: lavender;">{{ match.type }}</td>
+                                                    {% else %}
+                                                        <td style="text-align:center; border: 1px solid;"></td>
+                                                    {% endif %}
+                                                {% elif match.division == 1 %}
+                                                    <td style="text-align:center; border: 1px solid; background-color: #D3BFE8;">{{ match }}<br><b>{{ match.umpireOneName.umpire }} : Ind.</b></td>
+                                                {% elif match.division == 2 %}
+                                                    <td style="text-align:center; border: 1px solid; background-color: #ADD8E6;">{{ match }}<br><b>{{ match.umpireOneName.umpire }} : Ind.</b></td>
+                                                {% elif match.division == 3 %}
+                                                    <td style="text-align:center; border: 1px solid; background-color: #C1E1C1;">{{ match }}<br><b>{{ match.umpireOneName.umpire }} : Ind.</b></td>
+                                                {% elif match.division == 4 %}
+                                                    <td style="text-align:center; border: 1px solid; background-color: #FDF1B4;">{{ match }}<br><b>{{ match.umpireOneName.umpire }} : Ind.</b></td>
+                                                {% else %}
+                                                    <td style="text-align:center; border: 1px solid; background-color: lavender;">{{ match }}<br><b>{{ match.umpireOneName.umpire }} : Ind.</b></td>
+                                                {% endif %}
+                                            {% else%}
+                                                {% if match.entryOne == match.entryTwo %}
+                                                    {% if match.type != "Division" and match.type != "Free" %}
+                                                        <td style="text-align:center; border: 1px solid; background-color: lavender;">{{ match.type }}</td>
+                                                    {% else %}
+                                                        <td style="text-align:center; border: 1px solid;"></td>
+                                                    {% endif %}
+                                                {% elif match.division == 1 %}
+                                                    <td style="text-align:center; border: 1px solid; background-color: #D3BFE8;">{{ match }}<br><b>{{ match.umpireOneName.umpire }} : {{ match.umpireTwoName.umpire }}</b></td>
+                                                {% elif match.division == 2 %}
+                                                    <td style="text-align:center; border: 1px solid; background-color: #ADD8E6;">{{ match }}<br><b>{{ match.umpireOneName.umpire }} : {{ match.umpireTwoName.umpire }}</b></td>
+                                                {% elif match.division == 3 %}
+                                                    <td style="text-align:center; border: 1px solid; background-color: #C1E1C1;">{{ match }}<br><b>{{ match.umpireOneName.umpire }} : {{ match.umpireTwoName.umpire }}</b></td>
+                                                {% elif match.division == 4 %}
+                                                    <td style="text-align:center; border: 1px solid; background-color: #FDF1B4;">{{ match }}<br><b>{{ match.umpireOneName.umpire }} : {{ match.umpireTwoName.umpire }}</b></td>
+                                                {% else %}
+                                                    <td style="text-align:center; border: 1px solid; background-color: lavender;">{{ match }}<br><b>{{ match.umpireOneName.umpire }} : {{ match.umpireTwoName.umpire }}</b></td>
+                                                {% endif %}
+                                            {% endif %}
+                                        {% endif %}
+                                    {% endfor %}
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <br>
+                <div>
+                    <ul>
+                        {% if division.timings.matchType == "One Way" %}
+                            <li><b>Match Timings</b>: {{division.timings.matchDuration}} mins one way - {{division.timings.breakDuration}} mins between matches</li>
+                        {% else %}
+                            <li><b>Match Timings</b>: {{division.timings.matchDuration}} mins each way - {{division.timings.halftimeDuration}} mins half time - {{division.timings.breakDuration}} mins between matches</li>
+                        {% endif %}
+                    </ul>
+                </div>
+                <br>
+                <hr>
+            {% endfor %}
+        {% else %}
+            <div class="overflow-auto">
+                <table class="overflow-auto" style="border: 1px solid;">
+                    <thead>
                         <tr>
-                            {% for match in row %}
-                                {% if forloop.counter0 == 0 %}
-                                    <td scope="row" style="text-align:center; border: 1px solid; width:110px;">{{ match.start|time:"H:i" }} - {{ match.end|time:"H:i"}}</th>
-                                {% else %}
-                                    {% if match.entryOne == match.entryTwo %}
-                                        <td style="text-align:center; border: 1px solid;">Free</td>
-                                    {% elif match.division == 1 %}
-                                        <td style="text-align:center; border: 1px solid; background-color: #D3BFE8;">{{ match }}<br><b>{{ match.umpireOneName.umpire }} : {{ match.umpireTwoName.umpire }}</b></td>
-                                    {% elif match.division == 2 %}
-                                        <td style="text-align:center; border: 1px solid; background-color: #ADD8E6;">{{ match }}<br><b>{{ match.umpireOneName.umpire }} : {{ match.umpireTwoName.umpire }}</b></td>
-                                    {% elif match.division == 3 %}
-                                        <td style="text-align:center; border: 1px solid; background-color: #C1E1C1;">{{ match }}<br><b>{{ match.umpireOneName.umpire }} : {{ match.umpireTwoName.umpire }}</b></td>
-                                    {% elif match.division == 4 %}
-                                        <td style="text-align:center; border: 1px solid; background-color: #FDF1B4;">{{ match }}<br><b>{{ match.umpireOneName.umpire }} : {{ match.umpireTwoName.umpire }}</b></td>
-                                    {% else %}
-                                        <td style="text-align:center; border: 1px solid; background-color: lavender;">{{ match }}<br><b>{{ match.umpireOneName.umpire }} : {{ match.umpireTwoName.umpire }}</b></td>
-                                    {% endif %}
-                                {% endif %}
+                            <th scope="col" id="time" style="text-align:center; border: 1px solid;">Time</th>
+                            {% for pitch in pitches %}
+                                <th style="text-align:center; border: 1px solid;">{{ pitch.name }}</th>
                             {% endfor %}
                         </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-        <br>
-        <hr>
+                    </thead>
+                    <tbody>
+                        {% for row in schedule %}
+                            <tr class="float-container">
+                                {% for match in row %}
+                                    {% if forloop.counter0 == 0 %}
+                                        <td scope="row" style="text-align:center; border: 1px solid;">{{ match.start|time:"H:i" }} - {{ match.end|time:"H:i"}}</td>
+                                    {% else %}
+                                        {% if match.entryOne == match.entryTwo %}
+                                            {% if match.type != "Division" and match.type != "Free" %}
+                                                <td style="text-align:center; border: 1px solid; background-color: lavender;">{{ match.type }}</td>
+                                            {% else %}
+                                                <td style="text-align:center; border: 1px solid;"></td>
+                                            {% endif %}
+                                        {% elif match.division == 1 %}
+                                            <td style="text-align:center; border: 1px solid; background-color: #D3BFE8;">{{ match }}<br><b>{{ match.umpireOneName.umpire }} : {{ match.umpireTwoName.umpire }}</b></td>
+                                        {% elif match.division == 2 %}
+                                            <td style="text-align:center; border: 1px solid; background-color: #ADD8E6;">{{ match }}<br><b>{{ match.umpireOneName.umpire }} : {{ match.umpireTwoName.umpire }}</b></td>
+                                        {% elif match.division == 3 %}
+                                            <td style="text-align:center; border: 1px solid; background-color: #C1E1C1;">{{ match }}<br><b>{{ match.umpireOneName.umpire }} : {{ match.umpireTwoName.umpire }}</b></td>
+                                        {% elif match.division == 4 %}
+                                            <td style="text-align:center; border: 1px solid; background-color: #FDF1B4;">{{ match }}<br><b>{{ match.umpireOneName.umpire }} : {{ match.umpireTwoName.umpire }}</b></td>
+                                        {% else %}
+                                            <td style="text-align:center; border: 1px solid; background-color: lavender;">{{ match }}<br><b>{{ match.umpireOneName.umpire }} : {{ match.umpireTwoName.umpire }}</b></td>
+                                        {% endif %}
+                                    {% endif %}
+                                {% endfor %}
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <br>
+            <div>
+                <ul>
+                    {% if timings.matchType == "One Way" %}
+                        <li><b>Match Timings</b>: {{timings.matchDuration}} mins one way - {{timings.breakDuration}} mins between matches</li>
+                    {% else %}
+                        <li><b>Match Timings</b>: {{timings.matchDuration}} mins each way - {{timings.halftimeDuration}} mins half time - {{timings.breakDuration}} mins between matches</li>
+                    {% endif %}
+                </ul>
+            </div>
+            <br>
+            <hr>
+        {% endif %}
         <div>
-            <h4><u>Timings:</u></h4>
+            <h4><u>Extra timing information:</u></h4>
             <ul>
-                {% if tournament.matchType == "One Way" %}
-                    <li><b>Matches</b>: {{tournament.matchDuration}} mins one way - {{tournament.breakDuration}} mins between matches</li>
-                {% else %}
-                    <li><b>Matches</b>: {{tournament.matchDuration}} mins each way - {{tournament.halftimeDuration}} mins half time - {{tournament.breakDuration}} mins between matches</li>
-                {% endif %}
                 <li>This event will be <b>{{ timed }}</b></li>
-                {% for timing in timings %}
+                {% for timing in timingsExtra %}
                     <li>{{ timing }}</li>
                 {% endfor %}
             </ul>
 
-            <h4><u>Rules:</u></h4>
+            <h4><u>Event rules:</u></h4>
             <ul>
                 {% for rule in rules %}
                     <li>{{ rule }}</li>
                 {% endfor %}
             </ul>
-            {% if tournament.notes %}
+            {% if tourn.notes %}
                 <h4><u>Notes:</u></h4>
-                <p>{{ tournament.notes|linebreaks }}</p>
+                <p>{{ tourn.notes|linebreaks }}</p>
             {% endif %}
         </div>
     </body>

@@ -6,17 +6,17 @@ from django.contrib.auth.decorators import login_required
 from .filters import TournUserFilter, EntryUserFilter
 from django.contrib.auth.models import User, Group
 from django.urls import reverse_lazy, reverse
-from .models import Tournament, Entry, Match
+from .models import Tournament, Entry, Match, SplitDivTimings
 from django_filters.views import FilterView
 from orders.models import Order, OrderItem
 from .threads import EntryUpdateThread
 from django.core.mail import send_mail
 from django.contrib.auth import logout
-from schedules.models import Schedule
+from schedules.models import Schedule, Timings, Rules, PitchNames
 from django.http import HttpResponse, JsonResponse
 from django.contrib import messages
 from users.models import Profile
-from django.db.models import Q
+from django.db.models import Q, F
 from Tournado import settings
 import datetime
 from django.core.mail import EmailMultiAlternatives
@@ -339,42 +339,117 @@ class MatchTableView(DetailView):
     template_name = 'match-table.html'
     
     def get_context_data(self,*args, **kwargs):
-        context = super(MatchTableView, self).get_context_data(*args,**kwargs)
-        schedule = []
-        start = Match.objects.filter(Q(tournament=self.object.id)).values('start').distinct().order_by('start')
-        length = start.count()
+        #change to work with split divs
+        context = super().get_context_data(*args, **kwargs)
+        sched = Schedule.objects.get(tournament__id=self.object.id)
+        splitDivs = self.object.splitDivs
+        playoffs = self.object.knockoutRounds
+        allPitches = list(PitchNames.objects.filter(schedule=sched))
 
-        for i in range(length):
-            qs = Match.objects.filter(Q(tournament=self.object.id) & Q(start=start[i].get('start'))).order_by('pitch')
-            row = []
+        def build_schedule(tournament_id, division_id, no_pitches):
+            """Return schedule (list of rows) for a given division."""
+            starts = (
+                Match.objects.filter(tournament=tournament_id, division=division_id)
+                .values_list("start", flat=True)
+                .distinct()
+                .order_by("start")
+            )
 
-            row.append(qs.first())
-            for j in range(len(qs)):
-                row.append(qs[j])
+            schedule = []
+            for start_time in starts:
+                qs = (
+                    Match.objects.filter(
+                        tournament=tournament_id, division=division_id, start=start_time
+                    )
+                    .order_by("pitch")
+                )
 
-            
-            while len(row) < (self.object.noPitches + 1):
-                row.append('blank')
+                row = [qs.first()] + list(qs)
+                # Pad with blanks until row length matches pitch count + 1
+                row.extend(["blank"] * (no_pitches + 1 - len(row)))
+                schedule.append(row)
 
-            schedule.append(row)
+            return schedule
 
-        noPlayedMatches = Match.objects.filter(Q(tournament=self.object.id) & Q(played=True)).count()
-        matches = Match.objects.filter(Q(tournament=self.object.id) & ~Q(division=0))
-        matchCount = 0
-        for match in matches:
-            if not(match.entryOne == match.entryTwo):
-                matchCount += 1
+        if splitDivs:
+            divSchedules, pitches = [], []
+            index = 0
+            div_range = (
+                range(self.object.noDivisions + 1)
+                if playoffs != "None"
+                else range(self.object.noDivisions)
+            )
 
-        if (noPlayedMatches >= matchCount):
-            knockout = True
+            for div in div_range:
+                div_number = 0 if (playoffs != "None" and div + 1 > self.object.noDivisions) else div + 1
+                division = SplitDivTimings.objects.get(
+                    tournament=self.object.id, divNumber=div_number
+                )
+
+                # Build schedule
+                schedule = build_schedule(self.object.id, div_number, division.noPitches)
+                divSchedules.append(schedule)            
+
+                # Pitch allocations
+                if div_number == 0:  # playoffs
+                    pitches.append(allPitches)
+                else:
+                    num_pitches = division.noPitches
+                    pitches.append(allPitches[index : index + num_pitches])
+                    index += num_pitches
+
+            # Bundle everything into context["divisions"]
+            context["divisions"] = [
+                {
+                    "schedule": divSchedules[i],
+                    "pitches": pitches[i],
+                }
+                for i in range(len(divSchedules))
+            ]
+
         else:
-            knockout = False
+            schedule = []
+            start = Match.objects.filter(Q(tournament=self.object.id)).values('start').distinct().order_by('start')
+            length = start.count()
 
-        context['schedule'] = schedule
-        context['sched'] = Schedule.objects.get(tournament=self.object.id)
-        context['range'] = range(self.object.noPitches)
-        context['return'] = self.object.id
-        context['knockout'] = knockout
+            for i in range(length):
+                qs = Match.objects.filter(Q(tournament=self.object.id) & Q(start=start[i].get('start'))).order_by('pitch')
+                row = []
+
+                row.append(qs.first())
+                freeCount = 0
+                for j in range(len(qs)):
+                    row.append(qs[j])
+                    if qs[j].type == 'Free':
+                        freeCount += 1
+
+                while len(row) < (self.object.noPitches + 1):
+                    row.append("blank")
+            
+                schedule.append(row) 
+            
+            sched = Schedule.objects.get(tournament=self.object) 
+            pitches = PitchNames.objects.filter(schedule=sched)
+
+            context.update(
+                {
+                    "schedule": schedule,
+                    "pitches": pitches,
+                }
+            )
+        
+        noPlayedMatches = Match.objects.filter(tournament=self.object.id, played=True).count()
+        matchCount = Match.objects.filter(tournament=self.object.id).exclude(division=0).exclude(entryOne=F("entryTwo")).count()
+        knockout = noPlayedMatches >= matchCount
+
+        context.update(
+            {
+                "tourn": self.object,
+                "schedId": sched,
+                "knockout": knockout,
+            }
+        )
+
         return context
     
 class MatchUpdateView(SuccessMessageMixin, UpdateView):
@@ -404,7 +479,7 @@ class MatchListView(DetailView):
     
     def get_context_data(self,*args, **kwargs):
         context = super(MatchListView, self).get_context_data(*args,**kwargs)
-        matches = Match.objects.filter(Q(tournament=self.object.id) & Q(division=0))
+        matches = Match.objects.filter(tournament=self.object.id, division=0).exclude(entryOne=F("entryTwo"))
 
         context['matches'] = matches
         context['return'] = self.object.id

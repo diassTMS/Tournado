@@ -3,6 +3,17 @@
 {% load crispy_forms_tags %}
 {% block container %}  
     <style>
+        .timings-box {
+            background-color: light-dark(#d0e6f7, #1a2a3a);
+            padding: 24px 30px 0 30px;
+            border: none solid none solid; 
+            border-width: 4px; 
+            border-color: light-dark(#d0e6f7, #1a2a3a);  
+            border-radius: 20px;
+        }
+        .schedule-box {
+            padding: 24px;
+        }
         #card {
             border-style: none solid none solid; 
             border-width: 8px; 
@@ -11,52 +22,25 @@
             padding: 40px;
             background-color: light-dark(#9BCCFD, #033452);
         }
-
-        #time {
-            width: auto;
-        }
-
-        #title {
-            grid-template-columns: 1fr 20fr;
-        }
-
-        #img {
-            margin-top: 15px;
-        }
-        
+        #time { width: auto; }
+        #title { grid-template-columns: 1fr 20fr; }
+        #img { margin-top: 15px; }
         @media (width < 50em) {
             #card {
-                border-style: none solid none solid; 
-                border-width: 8px; 
-                border-color: light-dark(#033452, #9BCCFD);  
-                border-radius: 20px;       
-                padding-left: 10px;
-                padding-right: 10px;
-                padding-top: 40px;
-                padding-bottom: 40px;
-                background-color: light-dark(#9BCCFD, #033452);
+                padding: 40px 10px;
             }
-
-            #time {
-                width: 60px;
-            }
-
+            #time { width: 60px; }
             #title {
                 grid-template-columns: 1fr 20fr;
-                margin-right: 40px;
-                margin-left: 40px;
+                margin: 0 40px;
             }
-
-            #img {
-                margin-top: 20px;
-            }
+            #img { margin-top: 20px; }
         }
     </style>
+
     <div class="container" id="card">
         <div class="grid">
-            <h2>
-                Schedule {{ tourn }}
-            </h2>
+            <h2>Schedule {{ tourn }}</h2>
             <hgroup>
                 <h4 style="text-align: center; margin-bottom:5px;">Step 3/4</h4>
                 <progress value="75" max="100" />
@@ -65,132 +49,205 @@
         <hr>
         <hgroup>
             <h3>3. Alterations</h3>
-            <p>        
+            <p>
                 <i class="fa-solid fa-circle-info"></i>
-                <span>
-                    <b>Drag & drop matches and adjust timings</b>
-                </span>
+                <span><b>Drag & drop matches and adjust timings</b></span>
             </p> 
         </hgroup>
     </div>
+
     <br>
-    <div class="grid" style="grid-template-columns: 1fr 3fr;">
-        <div id="box">
-            <h4>Timings</h4>
-            <form method="POST" id="form">      
-                {% csrf_token %}    
-                <fieldset>
-                    {{ form.startTime|as_crispy_field }}
-                    <fieldset id="matchType">{{ form.matchType|as_crispy_field }}</fieldset>
-                    {{ form.matchDuration|as_crispy_field }}
-                    {{ form.breakDuration|as_crispy_field }}
-                    <fieldset id="halftime">{{ form.halftimeDuration|as_crispy_field }}</fieldset>
-                    <button type="submit" class="secondary">Update</button>
-                </fieldset>
-            </form>
-        </div>
-        <div id="box">
-            <h4>Schedule</h4>
-            <div class="overflow-auto">
-                <table class="overflow-auto" style="border: 1px solid;">
-                    <thead>
-                        <tr>
-                            <th scope="col" id="time" style="text-align:center; border: 1px solid;">Time</th>
-                            {% for pitch in pitches %}
-                                <th style="text-align:center; border: 1px solid;">{{ pitch.name }}</th>
-                            {% endfor %}
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for row in schedule  %}
-                            <tr class="float-container">
-                                {% for match in row %}
-                                    {% if forloop.counter0 == 0 %}
-                                        <td scope="row" style="text-align:center; border: 1px solid;">{{ match.start|time:"H:i" }} - {{ match.end|time:"H:i"}}</th>
-                                    {% else %}
-                                        {% if match.entryOne == match.entryTwo %}
-                                            {% if match.type != "Division" and match.type != "Free" %}
-                                                <td class="float-child" id="{{ match.id }}" style="text-align:center; border: 1px solid; background-color: light-dark(lavender, #301934);">{{ match.type }}</td>
-                                            {% else %}
-                                                <td class="float-child" id="{{ match.id }}" style="text-align:center; border: 1px solid;"></td>
-                                            {% endif %}
-                                        {% elif match.division == 1 %}
-                                            <td class="float-child" id="{{ match.id }}" style="text-align:center; border: 1px solid; background-color: light-dark(#D3BFE8, #5B2D9C); cursor: pointer;">{{ match }}</td>
-                                        {% elif match.division == 2 %}
-                                            <td class="float-child" id="{{ match.id }}" style="text-align:center; border: 1px solid; background-color: light-dark(#ADD8E6, #014C75); cursor: pointer;">{{ match }}</td>
-                                        {% elif match.division == 3 %}
-                                            <td class="float-child" id="{{ match.id }}" style="text-align:center; border: 1px solid; background-color: light-dark(#C1E1C1, #015234); cursor: pointer;">{{ match }}</td>
-                                        {% elif match.division == 4 %}
-                                            <td class="float-child" id="{{ match.id }}" style="text-align:center; border: 1px solid; background-color: light-dark(#FDF1B4, #997300); cursor: pointer;">{{ match }}</td>
-                                        {% elif match.type != 'Division' %}
-                                            <td class="float-child" id="{{ match.id }}" style="text-align:center; border: 1px solid; background-color: light-dark(lavender, #301934);">{{ match.type }}</td>
-                                        {% else %}
-                                            <td class="float-child" id="{{ match.id }}" style="text-align:center; border: 1px solid; background-color: light-dark(lavender, #301934); cursor: pointer;">{{ match }}</td>
-                                        {% endif %}
-                                    {% endif %}
+
+    {% if tourn.splitDivs %}
+        {% for division in divisions %}
+            <div id="box">
+                {% if tourn.knockoutRounds != "None" and forloop.last %}
+                    <h3>Playoffs Timings & Schedule</h3>
+                {% else %}
+                    <h3>Division {{ forloop.counter }} Timings & Schedule</h3>
+                {% endif %}
+                <hr>
+                <div class="grid" style="grid-template-columns: 1fr 3fr;">
+                    <div class="timings-box">
+                        <form method="POST" id="timingForm{{ forloop.counter }}">      
+                            {% csrf_token %}    
+                            <input type="hidden" name="division_number" value="{{ forloop.counter }}">
+                            <input type="hidden" name="form_id" value="timingForm{{ forloop.counter }}">
+                            <fieldset>
+                                {{ division.form.startTime|as_crispy_field }}
+                                <fieldset>{{ division.form.matchType|as_crispy_field }}</fieldset>
+                                {{ division.form.matchDuration|as_crispy_field }}
+                                {{ division.form.breakDuration|as_crispy_field }}
+                                <fieldset id="halftime{{ forloop.counter }}">{{ division.form.halftimeDuration|as_crispy_field }}</fieldset>
+                                <button id="submit{{ forloop.counter }}" type="submit" class="secondary">Update</button>
+                            </fieldset>
+                        </form>
+                    </div>
+
+                    <div class="schedule-box">
+                        <div class="overflow-auto">
+                            <table class="overflow-auto" style="border: 1px solid;">
+                                <thead>
+                                    <tr>
+                                        <th scope="col" id="time" style="text-align:center; border: 1px solid;">Time</th>
+                                        {% for name in division.pitches %}
+                                            <th style="text-align:center; border: 1px solid;">{{ name }}</th>
+                                        {% endfor %}
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for row in division.schedule %}
+                                        <tr class="float-container">
+                                            {% for match in row %}
+                                                {% if forloop.counter0 == 0 %}
+                                                    <td scope="row" style="text-align:center; border: 1px solid;">
+                                                        {{ match.start|time:"H:i" }} - {{ match.end|time:"H:i"}}
+                                                    </td>
+                                                {% else %}
+                                                    {# Apply match coloring rules #}
+                                                    {% if match.entryOne == match.entryTwo %}
+                                                        {% if match.type != "Division" and match.type != "Free" %}
+                                                            <td class="float-child" id="{{ match.id }}" style="text-align:center; border: 1px solid; background-color: light-dark(lavender, #301934);">{{ match.type }}</td>
+                                                        {% else %}
+                                                            <td class="float-child" id="{{ match.id }}" style="text-align:center; border: 1px solid;"></td>
+                                                        {% endif %}
+                                                    {% elif match.division == 1 %}
+                                                        <td class="float-child" id="{{ match.id }}" style="text-align:center; border: 1px solid; background-color: light-dark(#D3BFE8, #5B2D9C); cursor: pointer;">{{ match }}</td>
+                                                    {% elif match.division == 2 %}
+                                                        <td class="float-child" id="{{ match.id }}" style="text-align:center; border: 1px solid; background-color: light-dark(#ADD8E6, #014C75); cursor: pointer;">{{ match }}</td>
+                                                    {% elif match.division == 3 %}
+                                                        <td class="float-child" id="{{ match.id }}" style="text-align:center; border: 1px solid; background-color: light-dark(#C1E1C1, #015234); cursor: pointer;">{{ match }}</td>
+                                                    {% elif match.division == 4 %}
+                                                        <td class="float-child" id="{{ match.id }}" style="text-align:center; border: 1px solid; background-color: light-dark(#FDF1B4, #997300); cursor: pointer;">{{ match }}</td>
+                                                    {% elif match.type != 'Division' %}
+                                                        <td class="float-child" id="{{ match.id }}" style="text-align:center; border: 1px solid; background-color: light-dark(lavender, #301934);">{{ match.type }}</td>
+                                                    {% else %}
+                                                        <td class="float-child" id="{{ match.id }}" style="text-align:center; border: 1px solid; background-color: light-dark(lavender, #301934); cursor: pointer;">{{ match }}</td>
+                                                    {% endif %}
+                                                {% endif %}
+                                            {% endfor %}
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <br>
+        {% endfor %}
+    {% else %}
+        {# Single division layout #}
+        <div class="grid" style="grid-template-columns: 1fr 3fr;">
+            <div id="box">
+                <h4>Timings</h4>
+                <form method="POST" id="form">      
+                    {% csrf_token %}    
+                    <fieldset>
+                        {{ form.startTime|as_crispy_field }}
+                        <fieldset>{{ form.matchType|as_crispy_field }}</fieldset>
+                        {{ form.matchDuration|as_crispy_field }}
+                        {{ form.breakDuration|as_crispy_field }}
+                        <fieldset id="halftime1">{{ form.halftimeDuration|as_crispy_field }}</fieldset>
+                        <button type="submit" class="secondary">Update</button>
+                    </fieldset>
+                </form>
+            </div>
+            <div id="box">
+                <h4>Schedule</h4>
+                <div class="overflow-auto">
+                    <table class="overflow-auto" style="border: 1px solid;">
+                        <thead>
+                            <tr>
+                                <th scope="col" id="time" style="text-align:center; border: 1px solid;">Time</th>
+                                {% for pitch in pitches %}
+                                    <th style="text-align:center; border: 1px solid;">{{ pitch.name }}</th>
                                 {% endfor %}
                             </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            {% for row in schedule %}
+                                <tr class="float-container">
+                                    {% for match in row %}
+                                        {% if forloop.counter0 == 0 %}
+                                            <td scope="row" style="text-align:center; border: 1px solid;">{{ match.start|time:"H:i" }} - {{ match.end|time:"H:i"}}</td>
+                                        {% else %}
+                                            {# Apply match coloring rules again #}
+                                            {% if match.entryOne == match.entryTwo %}
+                                                {% if match.type != "Division" and match.type != "Free" %}
+                                                    <td class="float-child" id="{{ match.id }}" style="text-align:center; border: 1px solid; background-color: light-dark(lavender, #301934);">{{ match.type }}</td>
+                                                {% else %}
+                                                    <td class="float-child" id="{{ match.id }}" style="text-align:center; border: 1px solid;"></td>
+                                                {% endif %}
+                                            {% elif match.division == 1 %}
+                                                <td class="float-child" id="{{ match.id }}" style="text-align:center; border: 1px solid; background-color: light-dark(#D3BFE8, #5B2D9C); cursor: pointer;">{{ match }}</td>
+                                            {% elif match.division == 2 %}
+                                                <td class="float-child" id="{{ match.id }}" style="text-align:center; border: 1px solid; background-color: light-dark(#ADD8E6, #014C75); cursor: pointer;">{{ match }}</td>
+                                            {% elif match.division == 3 %}
+                                                <td class="float-child" id="{{ match.id }}" style="text-align:center; border: 1px solid; background-color: light-dark(#C1E1C1, #015234); cursor: pointer;">{{ match }}</td>
+                                            {% elif match.division == 4 %}
+                                                <td class="float-child" id="{{ match.id }}" style="text-align:center; border: 1px solid; background-color: light-dark(#FDF1B4, #997300); cursor: pointer;">{{ match }}</td>
+                                            {% elif match.type != 'Division' %}
+                                                <td class="float-child" id="{{ match.id }}" style="text-align:center; border: 1px solid; background-color: light-dark(lavender, #301934);">{{ match.type }}</td>
+                                            {% else %}
+                                                <td class="float-child" id="{{ match.id }}" style="text-align:center; border: 1px solid; background-color: light-dark(lavender, #301934); cursor: pointer;">{{ match }}</td>
+                                            {% endif %}
+                                        {% endif %}
+                                    {% endfor %}
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
-    </div>
-    <br>
+        <br>
+    {% endif %}
+    
     <div class="grid">
         <a href="{% url 'schedule-pdf' schedId.id %}" role="button" style="width: 100%;">Next</a>
-    </div>  
+    </div>
 
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
-<script src="{% static "js/drag-drop.js" %}"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+    <script src="{% static "js/drag-drop.js" %}"></script>
+    <dialog id="modal-wait">
+        <article>
+            <header><h3>Your schedule is still being generated!</h3></header>
+            <p>Please wait until it is finished, this page will automatically refresh every 5 seconds.</p>
+            <progress />
+            <footer><button role="button" class="secondary" data-target="modal-wait" onclick="toggleModal(event)">Close</button></footer>
+        </article>
+    </dialog>  
 
-<dialog id="modal-wait">
-    <article>
-        <header>
-            <h3>Your schedule is still being generated!</h3>
-        </header>
-        <p>Please wait until it is finished, this page will automatically refresh every 5 seconds.</p>
-        <progress />
-        <footer>
-            <button
-                role="button"
-                class="secondary"
-                data-target="modal-wait"
-                onclick="toggleModal(event)"
-            >
-            Close</button>
-        </footer>
-    </article>
-</dialog>  
+    <script>
+        // Attach matchType/halftime behavior
+        let i = 1;
+        while (true) {
+            let matchType = document.getElementById("matchType" + i);
+            let halftime  = document.getElementById("halftime" + i);
+            if (!matchType || !halftime) break;
+            matchType.addEventListener("change", function(e) {
+                halftime.style.display = (e.target.value == "One Way") ? "none" : "grid";
+            });
+            i++;
+        }
 
-<script>
-    //Match type
-    document.getElementById("matchType").addEventListener("change",function(e) {
-        if(e.target.value == "One Way") {
-            document.getElementById("halftime").style.display = "none";
-        } else {
-            document.getElementById("halftime").style.display = "grid";
+        // Initialize on load
+        window.onload = function() {
+            let i = 1;
+            while (true) {
+                let matchType = document.getElementById("matchType" + i);
+                let halftime  = document.getElementById("halftime" + i);
+                if (!matchType || !halftime) break;
+                halftime.style.display = (matchType.value == "One Way") ? "none" : "grid";
+                i++;
+            }
+            var modal = document.getElementById("modal-wait");
+            var schedule = '{{ schedule|escapejs }}';
+            if (schedule == '[]') {
+                modal.showModal();
+                setTimeout(function () { location.reload(); }, 5000);
+            }
         };
-        });
-
-    // Check whether schedule has finished generating
-    window.onload = function() {
-        var e = '{{ tournament.matchType|escapejs }}';
-        if(e == "One Way") {
-            document.getElementById("halftime").style.display = "none";
-        } else {
-            document.getElementById("halftime").style.display = "grid";
-        };
-
-        var modal = document.getElementById("modal-wait");
-        var schedule = '{{ schedule|escapejs }}';
-        if ( schedule == '[]' ) {
-            modal.showModal();
-            setTimeout(function () {
-                location.reload();
-            }, 5000);
-        };
-    };
-</script>
-
+    </script>
 {% endblock %}

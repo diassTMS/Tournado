@@ -34,63 +34,128 @@
     <div class="container" id="card">
         <div class='header'>
             <h2 style=" margin-bottom: 20px;">
-                <i onClick="location.href='{% url 'user-tourn-detail' return %}';" class="fa-solid fa-circle-arrow-left" id="icon"></i> 
-                {{ sched.tournament.age }} {{ sched.tournament.gender }} {{ sched.tournament.date|date:"d/m/Y" }} : Matches Table
+                <i onClick="location.href='{% url 'user-tourn-detail' tourn.id %}';" class="fa-solid fa-circle-arrow-left" id="icon"></i> 
+                {{ tourn.age }} {{ tourn.gender }} {{ tourn.date|date:"d/m/Y" }} : Matches Table
             </h2>
         </div>
-        <hr>
-        <div class="overflow-auto">
-            <table style="border: 1px solid;">
-                <thead>
-                    <tr>
-                        <th scope="col" id="time" style="text-align:center; border: 1px solid;">Time</th>
-                        {% for i in range %}
-                            <th style="text-align:center; border: 1px solid;">Pitch {{forloop.counter}}</th>
-                        {% endfor %}
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for row in schedule  %}
-                        <tr>
-                            {% for match in row %}
-                                {% if forloop.counter0 == 0 %}
-                                    <td scope="row" style="text-align:center; border: 1px solid;">{{ match.start|time:"H:i" }} - {{ match.end|time:"H:i"}}</th>
-                                {% else %}
-                                    {% if match.entryOne == match.entryTwo %}
-                                        {% if match.type != "Division" and match.type != "Free" %}
-                                            <td class="float-child" id="{{ match.id }}" style="text-align:center; border: 1px solid; background-color: light-dark(lavender, #301934);">{{ match.type }}</td>
+    </div>
+    <br>
+    {% if tourn.splitDivs %}
+        {% for division in divisions %}
+            <div id="box">
+                {% if tourn.knockoutRounds != "None" and forloop.last %}
+                    <h3>Playoffs</h3>
+                {% else %}
+                    <h3>Division {{ forloop.counter }}</h3>
+                {% endif %}
+                <hr>
+                <div class="overflow-auto">
+                    <table class="overflow-auto" style="border: 1px solid;">
+                        <thead>
+                            <tr>
+                                <th scope="col" id="time" style="text-align:center; border: 1px solid;">Time</th>
+                                {% for name in division.pitches %}
+                                    <th style="text-align:center; border: 1px solid;">{{ name }}</th>
+                                {% endfor %}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for row in division.schedule %}
+                                <tr class="float-container">
+                                    {% for match in row %}
+                                        {% if forloop.counter0 == 0 %}
+                                            <td scope="row" style="text-align:center; border: 1px solid;">
+                                                {{ match.start|time:"H:i" }} - {{ match.end|time:"H:i"}}
+                                            </td>
                                         {% else %}
-                                            <td class="float-child" id="{{ match.id }}" style="text-align:center; border: 1px solid;"></td>
+                                            {% if match.entryOne == match.entryTwo %}
+                                            {% if match.type != "Division" and match.type != "Free" %}
+                                                <td class="float-child" id="{{ match.id }}" style="text-align:center; border: 1px solid; background-color: light-dark(lavender, #301934);">{{ match.type }}</td>
+                                            {% else %}
+                                                <td class="float-child" id="{{ match.id }}" style="text-align:center; border: 1px solid;"></td>
+                                            {% endif %}
+                                        {% elif match.played == True %}
+                                            <td onclick="location.href='{% url 'match-result' match.id %}';" style="text-align:center; border: 1px solid; background-color: light-dark(#858585, #282828); cursor: pointer;">
+                                                {{ match.entryOne }} - <b style="background-color: light-dark(#444444, #989898); color: light-dark(white, black);">&nbsp;{{ match.goalsOne }}&nbsp;</b><br>
+                                                {{ match.entryTwo }} - <b style="background-color: light-dark(#444444, #989898); color: light-dark(white, black);">&nbsp;{{ match.goalsTwo }}&nbsp;</b>
+                                            </td>
+                                        {% elif match.division == 1 %}
+                                            <td onclick="location.href='{% url 'match-result' match.id %}';" style="text-align:center; border: 1px solid; background-color: light-dark(#D3BFE8, #5B2D9C); cursor: pointer;">{{ match }}</td>
+                                        {% elif match.division == 2 %}
+                                            <td onclick="location.href='{% url 'match-result' match.id %}';" style="text-align:center; border: 1px solid; background-color: light-dark(#ADD8E6, #014C75); cursor: pointer;">{{ match }}</td>
+                                        {% elif match.division == 3 %}
+                                            <td onclick="location.href='{% url 'match-result' match.id %}';" style="text-align:center; border: 1px solid; background-color: light-dark(#C1E1C1, #015234); cursor: pointer;">{{ match }}</td>
+                                        {% elif match.division == 4 %}
+                                            <td onclick="location.href='{% url 'match-result' match.id %}';" style="text-align:center; border: 1px solid; background-color: light-dark(#FDF1B4, #997300); cursor: pointer;">{{ match }}</td>
+                                        {% else %}
+                                            <td onclick="location.href='{% url 'match-result' match.id %}';" style="text-align:center; border: 1px solid; background-color: light-dark(lavender, #301934); cursor: pointer;">{{ match }}</td>
                                         {% endif %}
-                                    {% elif match.played == True %}
-                                        <td onclick="location.href='{% url 'match-result' match.id %}';" style="text-align:center; border: 1px solid; background-color: light-dark(#858585, #282828); cursor: pointer;">
-                                            {{ match.entryOne }} - <b style="background-color: light-dark(#444444, #989898); color: light-dark(white, black);">&nbsp;{{ match.goalsOne }}&nbsp;</b><br>
-                                            {{ match.entryTwo }} - <b style="background-color: light-dark(#444444, #989898); color: light-dark(white, black);">&nbsp;{{ match.goalsTwo }}&nbsp;</b>
-                                        </td>
-                                    {% elif match.division == 1 %}
-                                        <td onclick="location.href='{% url 'match-result' match.id %}';" style="text-align:center; border: 1px solid; background-color: light-dark(#D3BFE8, #5B2D9C); cursor: pointer;">{{ match }}</td>
-                                    {% elif match.division == 2 %}
-                                        <td onclick="location.href='{% url 'match-result' match.id %}';" style="text-align:center; border: 1px solid; background-color: light-dark(#ADD8E6, #014C75); cursor: pointer;">{{ match }}</td>
-                                    {% elif match.division == 3 %}
-                                        <td onclick="location.href='{% url 'match-result' match.id %}';" style="text-align:center; border: 1px solid; background-color: light-dark(#C1E1C1, #015234); cursor: pointer;">{{ match }}</td>
-                                    {% elif match.division == 4 %}
-                                        <td onclick="location.href='{% url 'match-result' match.id %}';" style="text-align:center; border: 1px solid; background-color: light-dark(#FDF1B4, #997300); cursor: pointer;">{{ match }}</td>
-                                    {% else %}
-                                        <td onclick="location.href='{% url 'match-result' match.id %}';" style="text-align:center; border: 1px solid; background-color: light-dark(lavender, #301934); cursor: pointer;">{{ match }}</td>
-                                    {% endif %}
-                                {% endif %}
+                                        {% endif %}
+                                    {% endfor %}
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <br>
+        {% endfor %}
+    {% else %}
+        <div id="box">
+            <h4>Schedule</h4>
+            <div class="overflow-auto">
+                <table class="overflow-auto" style="border: 1px solid;">
+                    <thead>
+                        <tr>
+                            <th scope="col" id="time" style="text-align:center; border: 1px solid;">Time</th>
+                            {% for pitch in pitches %}
+                                <th style="text-align:center; border: 1px solid;">{{ pitch.name }}</th>
                             {% endfor %}
                         </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        {% for row in schedule %}
+                            <tr class="float-container">
+                                {% for match in row %}
+                                    {% if forloop.counter0 == 0 %}
+                                        <td scope="row" style="text-align:center; border: 1px solid;">{{ match.start|time:"H:i" }} - {{ match.end|time:"H:i"}}</td>
+                                    {% else %}
+                                        {% if match.entryOne == match.entryTwo %}
+                                            {% if match.type != "Division" and match.type != "Free" %}
+                                                <td class="float-child" id="{{ match.id }}" style="text-align:center; border: 1px solid; background-color: light-dark(lavender, #301934);">{{ match.type }}</td>
+                                            {% else %}
+                                                <td class="float-child" id="{{ match.id }}" style="text-align:center; border: 1px solid;"></td>
+                                            {% endif %}
+                                        {% elif match.played == True %}
+                                            <td onclick="location.href='{% url 'match-result' match.id %}';" style="text-align:center; border: 1px solid; background-color: light-dark(#858585, #282828); cursor: pointer;">
+                                                {{ match.entryOne }} - <b style="background-color: light-dark(#444444, #989898); color: light-dark(white, black);">&nbsp;{{ match.goalsOne }}&nbsp;</b><br>
+                                                {{ match.entryTwo }} - <b style="background-color: light-dark(#444444, #989898); color: light-dark(white, black);">&nbsp;{{ match.goalsTwo }}&nbsp;</b>
+                                            </td>
+                                        {% elif match.division == 1 %}
+                                            <td onclick="location.href='{% url 'match-result' match.id %}';" style="text-align:center; border: 1px solid; background-color: light-dark(#D3BFE8, #5B2D9C); cursor: pointer;">{{ match }}</td>
+                                        {% elif match.division == 2 %}
+                                            <td onclick="location.href='{% url 'match-result' match.id %}';" style="text-align:center; border: 1px solid; background-color: light-dark(#ADD8E6, #014C75); cursor: pointer;">{{ match }}</td>
+                                        {% elif match.division == 3 %}
+                                            <td onclick="location.href='{% url 'match-result' match.id %}';" style="text-align:center; border: 1px solid; background-color: light-dark(#C1E1C1, #015234); cursor: pointer;">{{ match }}</td>
+                                        {% elif match.division == 4 %}
+                                            <td onclick="location.href='{% url 'match-result' match.id %}';" style="text-align:center; border: 1px solid; background-color: light-dark(#FDF1B4, #997300); cursor: pointer;">{{ match }}</td>
+                                        {% else %}
+                                            <td onclick="location.href='{% url 'match-result' match.id %}';" style="text-align:center; border: 1px solid; background-color: light-dark(lavender, #301934); cursor: pointer;">{{ match }}</td>
+                                        {% endif %}
+                                    {% endif %}
+                                {% endfor %}
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
         </div>
-        <hr>
-        <div class="grid">
-            {% if knockout %}
-                <button style="width: 100%;" onclick="location.href='{% url 'match-list' return %}';">Update Knockout Matches</button>   
-            {% endif %}
-            <button style="width: 100%;" class="secondary" onclick="location.href='{% url 'live-score' return %}';">View Live Score Table</button>   
-        </div>
+        <br>
+    {% endif %}
+    <div class="grid" id="box">
+        {% if knockout %}
+            <button style="width: 100%;" onclick="location.href='{% url 'match-list' tourn.id %}';">Update Knockout Matches</button>   
+        {% endif %}
+        <button style="width: 100%;" class="secondary" onclick="location.href='{% url 'live-score' tourn.id %}';">View Live Score Table</button>   
     </div>
 {% endblock %}

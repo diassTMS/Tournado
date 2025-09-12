@@ -16,7 +16,7 @@ from django.template.loader import render_to_string
 from django.http import JsonResponse
 from tournaments.models import Match
 from django.contrib import messages
-from django.db.models import F, Q
+from django.db.models import F, Q, Case, When, Value, IntegerField
 from leagues.models import League
 from .forms import UserCreateForm
 import datetime
@@ -117,16 +117,29 @@ class LiveScoreView(MultiTableMixin, TemplateView):
                 matchCount += 1
 
         if (noPlayedMatches >= matchCount) and (matches != 0):
-            final = Match.objects.filter(Q(tournament=tournament.id) & Q(division=0) & Q(type="Final"))
-            semis = Match.objects.filter(Q(tournament=tournament.id) & Q(division=0) & Q(type="Semi-Final"))
-            threeFour = Match.objects.filter(Q(tournament=tournament.id) & Q(division=0) & Q(type="3rd/4th Playoff"))
-            playoffs = Match.objects.filter(Q(tournament=tournament.id) & Q(division=0) & ~Q(type="Free") & ~Q(type="Semi-Final") & ~Q(type="Final"))
-            qs = final.union(semis).union(threeFour).union(playoffs)
+            # Define the priority order of match types
+            order_map = {
+                "Final": 1,
+                "Semi-Final": 2,
+                "Quarter-Final": 3,
+                "3rd/4th Playoff": 4,
+                "5th/6th Playoff": 5,
+                "7th/8th Playoff": 6,
+                "9th/10th Playoff": 7,
+            }
 
-            for match in qs:
-                if match.entryOne == match.entryTwo:
-                    qs = qs.exclude(id=match.id)
-
+            qs = (Match.objects.filter(tournament=tournament.id, division=0).exclude(type__in=["Division", "Free"])
+                .exclude(entryOne=F("entryTwo"))
+                .annotate(
+                    type_order=Case(
+                        *[When(type=key, then=Value(val)) for key, val in order_map.items()],
+                        default=Value(99),
+                        output_field=IntegerField(),
+                    )
+                )
+                .order_by("type_order", "start")
+            )
+            
             LKnockoutTable = LargeKnockoutTable(qs)
             SKnockoutTable = SmallKnockoutTable(qs)
         else:
