@@ -134,30 +134,27 @@
         $.ajax({
             type: 'GET',
             url: `/entry-assign-clear/${id}/`,
-            failure: function(data){
-              console.log('failure');
-              console.log(data);
+            success: function(data){
+                location.reload();
             },
-          });
-        
-        setTimeout(function () {
-            location.reload();
-        }, 50);
+            error: function(data){
+                console.log('failure', data);
+            }
+        });
     }
 
     function autoAssign(id){
         $.ajax({
             type: 'GET',
             url: `/entry-assign-auto/${id}/`,
-            failure: function(data){
-              console.log('failure');
-              console.log(data);
+            success: function(data){
+                // reload after server confirms completion
+                location.reload();
             },
-          });
-
-        setTimeout(function () {
-            location.reload();
-        }, 50);
+            error: function(data){
+                console.log('failure', data);
+            }
+        });
     }
 </script>
 

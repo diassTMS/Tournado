@@ -88,7 +88,7 @@ class UserEntryListView(TemplateView):
         else:
             table = OrderTable(qs)
 
-        # ✅ Apply pagination (25 rows per page for example)
+        # Apply pagination (25 rows per page for example)
         RequestConfig(self.request, paginate={'per_page': 25}).configure(table)
         context['orders'] = table
 
