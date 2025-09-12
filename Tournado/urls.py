@@ -108,6 +108,8 @@ urlpatterns = [
     path('unassign-check/<int:pk>/', tourn_views.UnassignCheckView.as_view(), name='unassign-check'),
     path('entry-assign/<str:emp_id>/<str:task_id>/', tourn_views.ChangeEntryDivision.as_view(), name='change_entry_div'),
     path('pitches-change/', sched_views.pitches_change, name='pitches-change'),
+    path('csv/', order_views.admin_csv_download, name='admin_csv_download'),
+    path('bulk-invoice/', order_views.admin_bulk_invoice, name='admin_bulk_invoice'),
 
 ]
 

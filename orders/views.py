@@ -19,7 +19,10 @@ from Tournado import renderers
 import datetime
 from django.contrib.auth.models import User
 from users.models import Profile
-from datetime import date
+from datetime import date, datetime
+import csv
+from django.http import HttpResponse
+from django.db import connection
 
 class UserEntryListView(TemplateView):
     model = User
@@ -30,35 +33,27 @@ class UserEntryListView(TemplateView):
         pk = self.kwargs.pop('pk')
         user = User.objects.get(id=pk)
 
-        # Get season from dropdown
         season = self.request.GET.get("season")
         today = date.today()
 
-        # Determine season range
-        if season == "All":
-            # User explicitly selected "All"
-            season_label = "All"
-            season_start = None
-            season_end = None
-        elif not season:
+        if not season:
             # Default to current season
             if today.month >= 9:  # September or later
                 season_start = date(today.year, 9, 1)
                 season_end = date(today.year + 1, 8, 31)
                 season_label = f"{today.year}-{str(today.year + 1)[-2:]}"
-            else:  # Before September
+            else:
                 season_start = date(today.year - 1, 9, 1)
                 season_end = date(today.year, 8, 31)
                 season_label = f"{today.year - 1}-{str(today.year)[-2:]}"
         else:
-            # Parse the selected season
             try:
                 start_year, end_year = map(int, season.split("-"))
                 season_start = date(start_year, 9, 1)
                 season_end = date(end_year if end_year > 100 else 2000 + end_year, 8, 31)
                 season_label = season
             except ValueError:
-                # Fallback to current season if parsing fails
+                # fallback to current season
                 if today.month >= 9:
                     season_start = date(today.year, 9, 1)
                     season_end = date(today.year + 1, 8, 31)
@@ -68,32 +63,41 @@ class UserEntryListView(TemplateView):
                     season_end = date(today.year, 8, 31)
                     season_label = f"{today.year - 1}-{str(today.year)[-2:]}"
 
-        # Filter entries based on season
-        if season_label == "All":
-            qs = Entry.objects.filter(user=user).order_by(
-                F('tournament__date').desc(), F('tournament__name')
-            )
+        # Filter entries
+        if user.groups.first().name == "Admin":
+            # Admins see all entries for the season or all entries
+            qs = Entry.objects.filter(Q(invoiced=False) & Q(tournament__date__range=[season_start, season_end])
+            ).order_by(F('tournament__date').desc(), F('tournament__name'))
+            
+            owing = (Entry.objects.filter(tournament__date__range=[season_start, season_end], invoiced=False).aggregate(total=Sum(F('tournament__entryPrice'))))['total'] or 0            
+            invoiced = (Entry.objects.filter(tournament__date__range=[season_start, season_end], invoiced=True).aggregate(total=Sum(F('tournament__entryPrice'))))['total'] or 0            
+            total = owing + invoiced
+
         else:
-            qs = Entry.objects.filter(
-                user=user,
-                tournament__date__range=[season_start, season_end]
+            # Non-admins see only their own entries
+            qs = Entry.objects.filter(Q(user=user) & Q(tournament__date__range=[season_start, season_end])
             ).order_by(F('tournament__date').desc(), F('tournament__name'))
 
-        # Calculate totals
-        owing = sum(entry.tournament.entryPrice for entry in qs if not entry.invoiced)
-        invoiced = sum(entry.tournament.entryPrice for entry in qs if entry.invoiced)
-        total = sum(entry.tournament.entryPrice for entry in qs)
-
+            owing = (Entry.objects.filter(user=user, tournament__date__range=[season_start, season_end], invoiced=False).aggregate(total=Sum(F('tournament__entryPrice'))))['total'] or 0            
+            invoiced = (Entry.objects.filter(user=user, tournament__date__range=[season_start, season_end], invoiced=True).aggregate(total=Sum(F('tournament__entryPrice'))))['total'] or 0            
+            total = owing + invoiced
+        
         # Choose table type
         if self.request.user.groups.first().name == "Admin":
-            context['orders'] = AdminOrderTable(qs)
+            table = AdminOrderTable(qs)
         else:
-            context['orders'] = OrderTable(qs)
+            table = OrderTable(qs)
 
-        # Gather all available seasons
+        # ✅ Apply pagination (25 rows per page for example)
+        RequestConfig(self.request, paginate={'per_page': 25}).configure(table)
+        context['orders'] = table
+
+        # Gather all available seasons starting from 2024-25
         seasons = []
         for t in Tournament.objects.dates("date", "year"):
             start_year = t.year if t.month >= 9 else t.year - 1
+            if start_year < 2024:
+                continue
             end_year_short = str(start_year + 1)[-2:]
             label = f"{start_year}-{end_year_short}"
             if label not in seasons:
@@ -328,3 +332,143 @@ def InvoicePdf(request, pk):
     }
     
     return renderers.render_to_pdf('invoices/hockey-fever-template.html', data)
+
+@login_required
+def admin_csv_download(request):
+    pk = request.GET.get('user_id')  # The user whose page we’re viewing
+    user = User.objects.get(id=pk)
+
+    # Only allow if this user is an admin
+    if user.groups.first().name != "Admin":
+        return HttpResponse("Unauthorized", status=403)
+
+    start = request.GET.get('start')
+    end = request.GET.get('end')
+    invNum = request.GET.get('invNum', 1)
+
+    print('invNum', invNum)
+
+    if not start or not end:
+        return HttpResponse("Start and end dates required", status=400)
+
+    # Convert to proper date format
+    try:
+        start_date = datetime.strptime(start, "%Y-%m-%d").date()
+        end_date = datetime.strptime(end, "%Y-%m-%d").date()
+        start_date = start_date.strftime("%Y-%m-%d")
+        end_date = end_date.strftime("%Y-%m-%d")
+        invNum = int(invNum)
+
+    except ValueError:
+        return HttpResponse("Invalid date format", status=400)
+
+    vendor = connection.vendor  # "sqlite", "mysql", "postgresql", etc.
+
+    if vendor == "sqlite":
+        query = """
+            SELECT 
+                auth_user.username AS "*ContactName", 
+                users_profile.invoice_email AS "*EmailAddress",
+                DATE('now') AS "*InvoiceDate",
+                DATE('now','+7 day') AS "*DueDate",
+                'GHA Tournaments' AS "*Reference", 
+                tournaments_tournament.name || ' - ' || tournaments_tournament.date AS "*Description",
+                COUNT(*) AS "*Quantity",
+                tournaments_tournament.entryPrice AS "*UnitAmount",
+                'GBP' AS "*Currency",
+                '20%% (VAT on Income)' AS "*TaxType"
+            FROM auth_user
+            JOIN users_profile ON auth_user.id = users_profile.user_id
+            JOIN tournaments_entry ON tournaments_entry.user_id = auth_user.id
+            JOIN tournaments_tournament ON tournaments_entry.tournament_id = tournaments_tournament.id
+            WHERE auth_user.username != 'Hockey_Fever'
+            AND tournaments_tournament.date BETWEEN :start AND :end
+            GROUP BY auth_user.username, tournaments_tournament.name, tournaments_tournament.date;
+        """
+        params = {"start": start_date, "end": end_date}
+
+    elif vendor == "mysql":
+        query = """
+            SELECT 
+                auth_user.username AS "*ContactName", 
+                users_profile.invoice_email AS "*EmailAddress",
+                CURDATE() AS "*InvoiceDate",
+                DATE_ADD(CURDATE(), INTERVAL 7 DAY) AS "*DueDate",
+                'GHA Tournaments' AS "*Reference", 
+                CONCAT(tournaments_tournament.name, ' - ', tournaments_tournament.date) AS "*Description",
+                COUNT(*) AS "*Quantity",
+                tournaments_tournament.entryPrice AS "*UnitAmount",
+                'GBP' AS "*Currency",
+                '20%% (VAT on Income)' AS "*TaxType"
+            FROM auth_user
+            JOIN users_profile ON auth_user.id = users_profile.user_id
+            JOIN tournaments_entry ON tournaments_entry.user_id = auth_user.id
+            JOIN tournaments_tournament ON tournaments_entry.tournament_id = tournaments_tournament.id
+            WHERE auth_user.username != 'Hockey_Fever'
+            AND tournaments_tournament.date BETWEEN %s AND %s
+            GROUP BY auth_user.username, tournaments_tournament.name, tournaments_tournament.date;
+        """
+        params = [start_date, end_date]
+
+    else:
+        return HttpResponse(f"Database vendor {vendor} not supported", status=500)
+    
+    with connection.cursor() as cursor:
+        cursor.execute(query, params)        
+        rows = cursor.fetchall()
+        columns = [col[0] for col in cursor.description]
+
+    # Add invoice number column
+    columns.append("*InvoiceNumber")
+
+    # Generate invoice numbers
+    invoice_map = {}
+    counter = invNum
+    updated_rows = []
+
+    for row in rows:
+        username = row[0]  # username is first column
+        if username not in invoice_map:
+            invoice_map[username] = f"GHA-{counter:04d}"
+            counter += 1
+        invoice_number = invoice_map[username]
+        updated_rows.append(row + (invoice_number,))  # append at end
+
+    # Create CSV response
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = f'attachment; filename="entries_{start}_{end}.csv"'
+
+    writer = csv.writer(response)
+    writer.writerow(columns)
+    for row in updated_rows:
+        writer.writerow(row)
+
+    return response
+
+@login_required
+def admin_bulk_invoice(request):
+    if request.method != "POST":
+        return JsonResponse({"message": "Invalid request"}, status=400)
+
+    pk = request.POST.get('user_id')
+    user = User.objects.get(id=pk)
+
+    # Only allow if this user is admin
+    if user.groups.first().name != "Admin":
+        return JsonResponse({"message": "Unauthorized"}, status=403)
+
+    start = request.POST.get('start_date')
+    end = request.POST.get('end_date')
+
+    try:
+        start_date = datetime.strptime(start, "%Y-%m-%d").date()
+        end_date = datetime.strptime(end, "%Y-%m-%d").date()
+    except ValueError:
+        return JsonResponse({"message": "Invalid date format"}, status=400)
+
+    # Update all entries in the date range
+    entries = Entry.objects.filter(tournament__date__range=[start_date, end_date])
+    count = entries.update(invoiced=True)
+
+    return JsonResponse({"message": f"{count} entries marked as invoiced"})
+

@@ -6,8 +6,13 @@
         <hgroup>
             <h2>
                 {% if user == userInput %}
-                    <i onClick="location.href='{% url 'account' %}';" class="fa-solid fa-circle-arrow-left" id="icon"></i>
-                    {{ user }}'s Entries
+                    {% if user.groups.first.name == "Admin" %}
+                        <i onClick="location.href='{% url 'user-list' %}';" class="fa-solid fa-circle-arrow-left" id="icon"></i>
+                        Uninvoiced Entries
+                    {% else %}
+                        <i onClick="location.href='{% url 'account' %}';" class="fa-solid fa-circle-arrow-left" id="icon"></i>
+                        {{ user }}'s Entries
+                    {% endif %}
                 {% else %}
                     <i onClick="location.href='{% url 'user-list' %}';" class="fa-solid fa-circle-arrow-left" id="icon"></i>
                     {{ userInput }}'s Entries
@@ -16,7 +21,6 @@
                 <div class="grid" style="margin-bottom: 15px; text-align:center; align-items:center;">
                     <form method="get" id="season-form" style="display:inline-block;">
                         <select name="season" id="season" class="form-select d-inline-block" style="width:auto; display:inline-block;">
-                            <option value="All" {% if season == "All" %}selected{% endif %}>All</option>
                             {% for s in seasons %}
                                 <option value="{{ s }}" {% if s == season %}selected{% endif %}>{{ s }}</option>
                             {% endfor %}
@@ -26,6 +30,16 @@
             </span>
             </h2>
         </hgroup>
+    {% if userInput.groups.first.name == "Admin" %}
+        <hr style="margin-top: 50px;">
+        <div id="admin-bulk-actions" class="grid">
+            <label>Start Date: <input type="date" id="bulk-start-date"></label>
+            <label>End Date: <input type="date" id="bulk-end-date"></label>
+            <label>Next Invoice Number: <input type="number" id="bulk-invoice-number"></label>
+            <button style="height: calc(1rem* var(--pico-line-height) + var(--pico-form-element-spacing-vertical)* 2 + var(--pico-border-width)* 2); margin-top: 35px;" id="download-csv">Download CSV</button>
+            <button style="height: calc(1rem* var(--pico-line-height) + var(--pico-form-element-spacing-vertical)* 2 + var(--pico-border-width)* 2); margin-top: 35px;" id="bulk-invoice">Mark as invoiced</button>
+        </div>
+    {% endif %}
     </div>
     <br>
     <div id="box">
@@ -42,9 +56,43 @@
             </div>
         </article>
     </div>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
     <script>
         document.getElementById("season").addEventListener("change", function() {
             document.getElementById("season-form").submit();
+        });
+
+        $('#download-csv').click(function() {
+            const start = $('#bulk-start-date').val();
+            const end = $('#bulk-end-date').val();
+            const invNum = $('#bulk-invoice-number').val()
+            if (!start || !end) return alert("Please select both dates");
+            if (!invNum) return alert("Input starting invoice number as an integer");
+            const today = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
+            if (end > today) return alert("End date cannot be after today");
+
+            window.location.href = `/csv/?invNum=${invNum}&start=${start}&end=${end}&user_id={{ user.id }}`;
+        });
+
+        $('#bulk-invoice').click(function() {
+            const start = $('#bulk-start-date').val();
+            const end = $('#bulk-end-date').val();
+            if (!start || !end) return alert("Please select both dates");
+
+            $.ajax({
+                method: 'POST',
+                url: `/bulk-invoice/`,
+                data: {
+                    start_date: start,
+                    end_date: end,
+                    user_id: '{{ user.id }}',
+                    csrfmiddlewaretoken: '{{ csrf_token }}'
+                },
+                success: function(data) {
+                    alert(data.message);
+                    location.reload();
+                }
+            });
         });
     </script>
 {% endblock %}

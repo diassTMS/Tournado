@@ -64,6 +64,14 @@
                             <button class="outline" onclick="location.href = '{% url 'user-list' %}';">View <i class="fa-solid fa-angles-right"></i></button>
                         </div>
                     </article>  
+                    <article id="card">
+                        <h4>Invoicing</h4>
+                        <hr>
+                        <div class="media-body">
+                            <p>View all uninvoiced entries, create invoice csv files and mark invoiced in bulk.</p>
+                            <button class="outline" onclick="location.href = '{% url 'order-list' user.id %}';">View <i class="fa-solid fa-angles-right"></i></button>
+                        </div>
+                    </article>  
                 {% endif %}       
             {% else %}
                 <article id="card">
