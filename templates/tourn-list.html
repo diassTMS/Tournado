@@ -9,16 +9,19 @@
                 All Events
                 <span style="float:right; margin-right:20px; cursor:pointer;">
                 <i onclick="filterView()" class="fa-solid fa-sliders" id="icon"></i>
+                <i id="icon" onclick="downloadCSV()" style="padding-left:15px;" class="fa-solid fa-file-csv"></i>
                 </span>
             </h2>
             <form method="get" id="filter" style="display: none;">
-                <fieldset class="grid" id="filterGrid">
+                <fieldset class="grid">
                     <label>Age {{ filter.form.age }}</label>
                     <label>Gender {{ filter.form.gender }}</label>
                     <label>Group {{ filter.form.group }}</label>
                     <label>Date {{ filter.form.date }}</label>
-                    <button style="height: calc(1rem* var(--pico-line-height) + var(--pico-form-element-spacing-vertical)* 2 + var(--pico-border-width)* 2); margin-top: 35px;" onclick="submit"><i class="fa-solid fa-filter"></i></button>
-                    <input style="margin-top: 35px;" class="secondary" type="button" onclick="location.href='{% url 'tourn-list' %}';" value="X" />
+                    <div class="grid">
+                        <button style="height: calc(1rem* var(--pico-line-height) + var(--pico-form-element-spacing-vertical)* 2 + var(--pico-border-width)* 2); margin-top: 35px;" onclick="submit"><i class="fa-solid fa-filter"></i></button>
+                        <button class="secondary" style="height: calc(1rem* var(--pico-line-height) + var(--pico-form-element-spacing-vertical)* 2 + var(--pico-border-width)* 2); margin-top: 35px;" onclick="location.href='{% url 'tourn-list' %}';"/><i class="fa-solid fa-xmark"></i></button>
+                    </div>
                 </fieldset>
             </form>
             <hr>
@@ -61,6 +64,7 @@
             </div>
         </div>
     </section>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
     <script>
         function filterView() {
             var x = document.getElementById("filter");
@@ -69,6 +73,11 @@
             } else {
               x.style.display = "none";
             }
-          }
+        };
+        
+        function downloadCSV() {
+            const user_id = "{{ user.id }}";
+            window.location.href = `/csv/fixtures/?user_id=${user_id}`;
+        };
     </script>
 {% endblock %}

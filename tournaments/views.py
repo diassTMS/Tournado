@@ -18,6 +18,10 @@ from django.contrib import messages
 from users.models import Profile
 from django.db.models import Q, F
 from Tournado import settings
+from django.db import connection
+from datetime import date, datetime
+import csv
+from django.http import HttpResponse
 import datetime
 from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
@@ -55,7 +59,7 @@ class TournDetailView(DetailView):
         return context
 
 @login_required
-def TournUserView(request):
+def TournUserView(request): 
     past_tourns = Tournament.objects.filter(Q(user=request.user) & Q(date__lt=datetime.datetime.today().date())).order_by('-date')
     future_tourns = Tournament.objects.filter(Q(user=request.user) & Q(date__gte=datetime.datetime.today().date())).order_by('date')
     future_tourn_filter = TournUserFilter(request.GET, queryset=future_tourns)
@@ -65,6 +69,107 @@ def TournUserView(request):
                                                     'filterPast': past_tourn_filter, 
                                                     'tournaments': past_tourns, 
                                                     'tournamentsFuture': future_tourns})
+
+def csv_tourn_download(request):
+    pk = request.GET.get('user_id')
+    try:
+        user = User.objects.get(id=pk)
+        group = str(user.groups.first().name)
+    except:
+        group = "None"
+    
+    #Season
+    today = date.today()
+    if today.month >= 9:  # September or later
+        start = date(today.year, 9, 1)
+        end = date(today.year + 1, 8, 31)
+        label = f"{today.year}-{str(today.year + 1)[-2:]}"
+    else:
+        start = date(today.year - 1, 9, 1)
+        end = date(today.year, 8, 31)
+        label = f"{today.year - 1}-{str(today.year)[-2:]}"
+
+    start_date = start.strftime("%Y-%m-%d")
+    end_date = end.strftime("%Y-%m-%d")
+
+    vendor = connection.vendor  # "sqlite", "mysql", "postgresql", etc.
+
+    if vendor == "sqlite":
+        if group == "Admin" or group == "None":
+            query = """
+                SELECT 
+                tournaments_tournament.name AS "Tournament Name", 
+                tournaments_tournament.date AS "Date",
+                tournaments_tournament.`group` AS "Group", 
+                tournaments_tournament.meetTime AS "Meet Time", 
+                tournaments_tournament.startTime AS "Start Time"
+                FROM tournaments_tournament 
+                WHERE tournaments_tournament.date BETWEEN :start AND :end;
+            """
+            params = {"start": start_date, "end": end_date}
+            filename = f'GHA_tournaments_{label}'
+
+        else:
+            query = """
+                SELECT 
+                tournaments_tournament.name AS "Tournament Name", 
+                tournaments_tournament.date AS "Date", 
+                tournaments_tournament.meetTime AS "Meet Time", 
+                tournaments_tournament.startTime AS "Start Time"
+                FROM tournaments_tournament 
+                WHERE tournaments_tournament.date BETWEEN :start AND :end
+                AND tournaments_tournament.`group` = :group;
+            """
+            params = {"start": start_date, "end": end_date, "group": group}
+            filename = f'GHA_{group}_tournaments_{label}'
+
+    elif vendor == "mysql":
+        if group == "Admin" or group == "None":
+            query = """
+                SELECT 
+                tournaments_tournament.name AS "Tournament Name", 
+                tournaments_tournament.date AS "Date",
+                tournaments_tournament.`group` AS "Group", 
+                tournaments_tournament.meetTime AS "Meet Time", 
+                tournaments_tournament.startTime AS "Start Time"
+                FROM tournaments_tournament 
+                WHERE tournaments_tournament.date BETWEEN %s AND %s;
+            """
+            params = [start_date, end_date]
+            filename = f'GHA_tournaments_{label}'
+        else:
+            query = """
+                SELECT 
+                tournaments_tournament.name AS "Tournament Name", 
+                tournaments_tournament.date AS "Date", 
+                tournaments_tournament.meetTime AS "Meet Time", 
+                tournaments_tournament.startTime AS "Start Time"
+                FROM tournaments_tournament 
+                WHERE tournaments_tournament.date BETWEEN %s AND %s
+                AND tournaments_tournament.`group` = %s;
+            """
+            params = [start_date, end_date, group]
+            filename = f'GHA_{group}_tournaments_{label}'
+
+    else:
+        return HttpResponse(f"Database vendor {vendor} not supported", status=500)
+    
+    with connection.cursor() as cursor:
+        cursor.execute(query, params)        
+        rows = cursor.fetchall()
+        columns = [col[0] for col in cursor.description]
+
+    # Create CSV response
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = f'attachment; filename="{filename}.csv"'
+
+    writer = csv.writer(response)
+    writer.writerow(columns)
+    for row in rows:
+        writer.writerow(row)
+
+    return response
+
 
 class TournUserDetailView(LoginRequiredMixin, UserPassesTestMixin, DetailView):
     model = Tournament
