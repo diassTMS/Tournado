@@ -111,6 +111,7 @@ urlpatterns = [
     path('csv/', order_views.admin_csv_download, name='admin_csv_download'),
     path('csv/fixtures/', tourn_views.csv_tourn_download, name='csv_tourn_download'),
     path('bulk-invoice/', order_views.admin_bulk_invoice, name='admin_bulk_invoice'),
+    path("tournaments/upload/", tourn_views.upload_tournaments, name="upload_tourns"),
 
 ]
 

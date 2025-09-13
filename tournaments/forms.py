@@ -42,6 +42,13 @@ class TournForm(forms.ModelForm):
 
         return pitches
     
+class TournamentUploadForm(forms.Form):
+    file = forms.FileField(
+        label="Select CSV File",
+        help_text="Upload a CSV file with tournament details.",
+        widget=forms.ClearableFileInput(attrs={"accept": ".csv"})
+    )
+    
 class EntryForm(forms.ModelForm):
     price = forms.CharField()
     class Meta:

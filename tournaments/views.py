@@ -1,4 +1,4 @@
-from .forms import TournForm, EntryForm, EntryUpdateForm, MatchKnockoutUpdateForm, ResultForm, SignupForm
+from .forms import TournForm, EntryForm, EntryUpdateForm, MatchKnockoutUpdateForm, ResultForm, SignupForm, TournamentUploadForm
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.shortcuts import render, get_object_or_404, redirect, HttpResponseRedirect
 from django.contrib.messages.views import SuccessMessageMixin
@@ -21,6 +21,8 @@ from Tournado import settings
 from django.db import connection
 from datetime import date, datetime
 import csv
+import csv
+from decimal import Decimal, InvalidOperation
 from django.http import HttpResponse
 import datetime
 from django.core.mail import EmailMultiAlternatives
@@ -224,6 +226,118 @@ class TournCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
         context["title"] = "Create Event"
         context["return"] = "account"
         return context
+
+def parse_date(date_str):
+    date_formats = [
+        "%d/%m/%Y", "%d-%m-%Y", "%Y-%m-%d", "%Y/%m/%d",
+        "%d %b %Y", "%d %B %Y",
+    ]
+    for fmt in date_formats:
+        try:
+            return datetime.datetime.strptime(date_str.strip(), fmt).date()
+        except ValueError:
+            continue
+    raise ValueError(f"Invalid date '{date_str}'")
+
+
+@login_required
+def upload_tournaments(request):
+    if request.method == "POST":
+        form = TournamentUploadForm(request.POST, request.FILES)
+        if form.is_valid():
+            file = form.cleaned_data["file"]
+            decoded_file = file.read().decode("utf-8-sig").splitlines()
+
+            # Detect delimiter
+            sniffer = csv.Sniffer()
+            dialect = sniffer.sniff(decoded_file[0])
+            delimiter = dialect.delimiter
+            reader = csv.DictReader(decoded_file, delimiter=delimiter)
+
+            valid_age = [c[0] for c in Tournament.AGE]
+            valid_gender = [c[0] for c in Tournament.GENDER]
+            valid_level = [c[0] for c in Tournament.LEVEL]
+            valid_group = [c[0] for c in Tournament.GROUP]
+
+            created_count, error_count = 0, 0
+            for row_num, row in enumerate(reader, start=2):
+                try:
+                    # Required fields
+                    name = row.get("name", "").strip()
+                    venue = row.get("venue", "").strip()
+                    if not name or not venue:
+                        if name[0] == "#":
+                            continue  # Skip comment lines
+                        else:
+                            raise ValueError("Missing required fields")
+
+                    # Choices validation
+                    age = row.get("age", "").strip()
+                    gender = row.get("gender", "").strip()
+                    level = row.get("level", "").strip()
+                    group = row.get("group", "").strip()
+                    if age not in valid_age:
+                        raise ValueError(f"Invalid age '{age}'")
+                    if gender not in valid_gender:
+                        raise ValueError(f"Invalid gender '{gender}'")
+                    if level not in valid_level:
+                        raise ValueError(f"Invalid level '{level}'")
+                    if group not in valid_group:
+                        raise ValueError(f"Invalid group '{group}'")
+
+                    # Date parsing
+                    date = parse_date(row.get("date", "").strip())
+
+                    # Meet time
+                    meet_time = datetime.datetime.strptime(row.get("meetTime", "").strip(), "%H:%M").time()
+
+                    # noPitches
+                    no_pitches = int(row.get("noPitches", ""))
+                    if no_pitches < 1 or no_pitches > 4:
+                        raise ValueError(f"noPitches must be between 1 and 4, got {no_pitches}")
+
+                    # entryPrice
+                    entry_price = Decimal(row.get("entryPrice", "0"))
+
+                    # Calculate startTime and endTime
+                    meet_datetime = datetime.datetime.combine(datetime.date.today(), meet_time)
+                    start_time = (meet_datetime + datetime.timedelta(minutes=30)).time()
+                    end_time = (meet_datetime + datetime.timedelta(hours=2, minutes=30)).time()
+
+                    # Create Tournament instance
+                    t = Tournament(
+                        user=request.user,
+                        name=name,
+                        age=age,
+                        gender=gender,
+                        date=date,
+                        venue=venue,
+                        noPitches=no_pitches,
+                        meetTime=meet_time,
+                        startTime=start_time,
+                        endTime=end_time,
+                        entryPrice=entry_price,
+                        level=level,
+                        group=group,
+                    )
+                    t.save()  # triggers signals
+                    created_count += 1
+
+                except Exception as e:
+                    messages.error(request, f"Row {row_num}: {e}")
+                    error_count += 1
+                    continue
+
+            if created_count:
+                messages.success(request, f"Successfully uploaded {created_count} tournaments.")
+            if error_count:
+                messages.warning(request, f"{error_count} rows had errors and were skipped.")
+
+            return redirect("account")
+    else:
+        form = TournamentUploadForm()
+
+    return render(request, "upload-tourns.html", {"form": form})
 
 class TournDeleteView(LoginRequiredMixin, UserPassesTestMixin, SuccessMessageMixin, DeleteView):
     model = Tournament

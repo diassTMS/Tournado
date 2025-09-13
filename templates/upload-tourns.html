@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+{% load static %}
+{% block container %}
+    <div class="container" id="box">
+        <h2>
+            <i onClick="location.href='{% url 'account' %}';" class="fa-solid fa-circle-arrow-left" id="icon"></i>
+            Bulk Upload Tournaments
+        </h2>
+        <hr>
+
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <form method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            <fieldset>
+                <h4>Upload CSV</h4>
+                <p>
+                    Please upload a CSV file using the template provided.  
+                    Columns must exactly match the headers in the template.
+                </p>
+                <div>
+                    {{ form.file|as_crispy_field }}
+                </div>
+                <p>
+                    <a href="{% static 'csv_templates/tournament_upload_template.csv' %}" download>
+                        <i class="fa-solid fa-file-csv"></i> Download CSV Template
+                    </a>
+                </p>
+                <hr>
+            </fieldset>
+
+            <div class="form-group">
+                <button type="submit">Upload</button>
+            </div>
+        </form>
+    </div>
+{% endblock %}

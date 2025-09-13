@@ -1,0 +1,5 @@
+﻿name,date,meetTime,age,gender,level,group,venue,noPitches,entryPrice
+# Valid age choices: U8/U9/U10/U11/U12/U13/U14/U15/U16/U17/U18/Mixed
+# Valid gender choices: Girls/Boys/Mixed
+# Valid level choices: Tier 1/Tier 2/Tier 3/County/Regional/National/Festival/N/A
+# Valid group choices: School/Club/Social/County/N/A
