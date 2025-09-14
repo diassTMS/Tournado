@@ -32,14 +32,21 @@
         const btn = $(this);
         const pk = btn.attr('pk');
         const season = document.getElementById("season").value;  // get season at the time of click
+        const userInput = "{{ userInput }}"
 
         $.ajax({
             method: 'GET',
             dataType: 'json',
             url: `/invoice/${pk}/`,
-            data: { season: season },   // send the selected season
+            data: { season: season,
+                    userInput: userInput,
+                },   // send the selected season
             success: function (data) {
-                $('#order_container').html(data.result);
+                $('#order_container').html(data.table);
+                $('#entries').text("No. Entries = " + data.entries);
+                $('#owing').text("Uninvoiced = £" + data.owing);
+                $('#invoiced').text("Invoiced = £" + data.invoiced);
+                $('#total').text("Total = £" + data.total);
             }
         });
     });

@@ -270,43 +270,99 @@ def delete_order(request, pk):
                                       )
     return JsonResponse(data)
 
-#Doesn't actually use orders, relies on Entry Model!
 @login_required
 def invoice_tourn(request, pk): 
     instance = get_object_or_404(Entry, id=pk)
     user = instance.user
+    userInput = request.GET.get('userInput')
 
     # Toggle invoice
     instance.invoiced = not instance.invoiced
     instance.save()
 
-    # Get the season selected when the checkbox was clicked
+    # Get season param
     season = request.GET.get('season')
+    today = date.today()
 
-    if not season or season == "All":
-        qs = Entry.objects.filter(user=user).order_by(F('tournament__date').desc(), F('tournament__name'))
+    if not season:
+        # Default to current season
+        if today.month >= 9:  # September or later
+            season_start = date(today.year, 9, 1)
+            season_end = date(today.year + 1, 8, 31)
+            season_label = f"{today.year}-{str(today.year + 1)[-2:]}"
+        else:
+            season_start = date(today.year - 1, 9, 1)
+            season_end = date(today.year, 8, 31)
+            season_label = f"{today.year - 1}-{str(today.year)[-2:]}"
     else:
-        start_year, end_year = map(int, season.split("-"))
-        season_start = date(start_year, 9, 1)
-        season_end = date(end_year if end_year > 100 else 2000 + end_year, 8, 31)
-        qs = Entry.objects.filter(
-            user=user,
-            tournament__date__range=[season_start, season_end]
+        try:
+            start_year, end_year = map(int, season.split("-"))
+            season_start = date(start_year, 9, 1)
+            season_end = date(end_year if end_year > 100 else 2000 + end_year, 8, 31)
+            season_label = season
+        except ValueError:
+            # fallback to current season
+            if today.month >= 9:
+                season_start = date(today.year, 9, 1)
+                season_end = date(today.year + 1, 8, 31)
+                season_label = f"{today.year}-{str(today.year + 1)[-2:]}"
+            else:
+                season_start = date(today.year - 1, 9, 1)
+                season_end = date(today.year, 8, 31)
+                season_label = f"{today.year - 1}-{str(today.year)[-2:]}"
+
+    # Filter entries
+    if userInput == "Admin":
+        # Admins see all entries for the season or all entries
+        qs = Entry.objects.filter(Q(invoiced=False) & Q(tournament__date__range=[season_start, season_end])
+        ).order_by(F('tournament__date').desc(), F('tournament__name'))
+        
+        owing = (Entry.objects.filter(tournament__date__range=[season_start, season_end], invoiced=False).aggregate(total=Sum(F('tournament__entryPrice'))))['total'] or 0            
+        invoiced = (Entry.objects.filter(tournament__date__range=[season_start, season_end], invoiced=True).aggregate(total=Sum(F('tournament__entryPrice'))))['total'] or 0            
+
+    else:
+        # Non-admins see only their own entries
+        qs = Entry.objects.filter(Q(user=user) & Q(tournament__date__range=[season_start, season_end])
         ).order_by(F('tournament__date').desc(), F('tournament__name'))
 
-    # Render the table
-    if request.user.groups.first().name == "Admin":
-        orders = AdminOrderTable(qs)
-    else:
-        orders = OrderTable(qs)
+        owing = (Entry.objects.filter(user=user, tournament__date__range=[season_start, season_end], invoiced=False).aggregate(total=Sum(F('tournament__entryPrice'))))['total'] or 0            
+        invoiced = (Entry.objects.filter(user=user, tournament__date__range=[season_start, season_end], invoiced=True).aggregate(total=Sum(F('tournament__entryPrice'))))['total'] or 0            
+    
+    total = owing + invoiced
+        
+    # Seasons dropdown
+    seasons = []
+    for t in Tournament.objects.dates("date", "year"):
+        start_year = t.year if t.month >= 9 else t.year - 1
+        if start_year < 2024:
+            continue
+        end_year_short = str(start_year + 1)[-2:]
+        label = f"{start_year}-{end_year_short}"
+        if label not in seasons:
+            seasons.append(label)
+    seasons = sorted(seasons, reverse=True)
 
-    RequestConfig(request).configure(orders)
+    # Choose table type
+    if request.user.groups.first().name == "Admin":
+        table = AdminOrderTable(qs)
+    else:
+        table = OrderTable(qs)
+
+    # Apply pagination (25 rows per page for example)
+    RequestConfig(request, paginate={'per_page': 25}).configure(table)
+
     data = {
-        'result': render_to_string(
+        'table': render_to_string(
             template_name='orders/include/order_table.html',
             request=request,
-            context={'userInput': user, 'orders': orders},
-        )
+            context={'userInput': userInput, 'orders': table},
+        ),
+        'entries': qs.count(),
+        'owing': owing,
+        'invoiced': invoiced,
+        'total': total,
+        'season': season_label,
+        'seasons': seasons,
     }
     return JsonResponse(data)
    
@@ -345,8 +401,6 @@ def admin_csv_download(request):
     start = request.GET.get('start')
     end = request.GET.get('end')
     invNum = request.GET.get('invNum', 1)
-
-    print('invNum', invNum)
 
     if not start or not end:
         return HttpResponse("Start and end dates required", status=400)
@@ -467,7 +521,7 @@ def admin_bulk_invoice(request):
         return JsonResponse({"message": "Invalid date format"}, status=400)
 
     # Update all entries in the date range
-    entries = Entry.objects.filter(tournament__date__range=[start_date, end_date])
+    entries = Entry.objects.filter(tournament__date__range=[start_date, end_date], invoiced=False)
     count = entries.update(invoiced=True)
 
     return JsonResponse({"message": f"{count} entries marked as invoiced"})
