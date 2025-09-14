@@ -32,14 +32,14 @@
         const btn = $(this);
         const pk = btn.attr('pk');
         const season = document.getElementById("season").value;  // get season at the time of click
-        const userInput = "{{ userInput }}"
+        const userId = '{{ userInput.id }}';
 
         $.ajax({
             method: 'GET',
             dataType: 'json',
             url: `/invoice/${pk}/`,
             data: { season: season,
-                    userInput: userInput,
+                    userId: userId,
                 },   // send the selected season
             success: function (data) {
                 $('#order_container').html(data.table);

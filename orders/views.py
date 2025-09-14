@@ -274,7 +274,8 @@ def delete_order(request, pk):
 def invoice_tourn(request, pk): 
     instance = get_object_or_404(Entry, id=pk)
     user = instance.user
-    userInput = request.GET.get('userInput')
+    userId = request.GET.get('userId')
+    userInput = User.objects.get(id=userId)
 
     # Toggle invoice
     instance.invoiced = not instance.invoiced
@@ -312,7 +313,7 @@ def invoice_tourn(request, pk):
                 season_label = f"{today.year - 1}-{str(today.year)[-2:]}"
 
     # Filter entries
-    if userInput == "Admin":
+    if userInput.groups.first().name == "Admin": #wrong
         # Admins see all entries for the season or all entries
         qs = Entry.objects.filter(Q(invoiced=False) & Q(tournament__date__range=[season_start, season_end])
         ).order_by(F('tournament__date').desc(), F('tournament__name'))
