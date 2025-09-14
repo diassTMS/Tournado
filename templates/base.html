@@ -68,14 +68,18 @@
     <main role="main" class="container">
         <div class="row">
             <div class="col-md-8">
-                {% if messages %}                                                                                                                                                             
-                    <article id="msg" class="messages">
+                {% if messages %}
+                    <div class="messages">
                         {% for message in messages %}
-                            <li{% if message.tags %} class="{{ message.tags }}"{% endif %}><b>{{ message }}</b><span onclick="window.location.reload();" style="float:right; cursor:pointer;"><i class="fa-solid fa-xmark"></i></span></li>
+                            <article class="message-item {% if message.tags %}{{ message.tags }}{% endif %}" id="msg">
+                                <b>{{ message }}</b>
+                                <span onclick="this.parentElement.remove();" style="float:right; cursor:pointer;">
+                                    <i class="fa-solid fa-xmark"></i>
+                                </span>
+                            </article>
                         {% endfor %}
-                    </article>
+                    </div>
                 {% endif %}
-                
             </div>
         </div>
         {% block container %}{% endblock %}

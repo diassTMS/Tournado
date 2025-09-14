@@ -34,7 +34,10 @@
             </span>
         </p>
         <hr>
-        <small id="{{ tourn.group }}">{{ tourn.group }}</small>
+        <div style="display:flex; justify-content: space-between; align-items: center;">
+            <small id="{{ tourn.group }}">{{ tourn.group }}</small>
+            <input type="checkbox" name="selected_tournaments" value="{{ tourn.id }}" style="margin:0;">
+        </div>
     </article>
 {% endfor %}
 </div>

@@ -62,15 +62,46 @@ class TournDetailView(DetailView):
 
 @login_required
 def TournUserView(request): 
-    past_tourns = Tournament.objects.filter(Q(user=request.user) & Q(date__lt=datetime.datetime.today().date())).order_by('-date')
-    future_tourns = Tournament.objects.filter(Q(user=request.user) & Q(date__gte=datetime.datetime.today().date())).order_by('date')
+    current_block = request.POST.get("current_block", "future")
+    if request.method == "POST":
+        selected_ids = request.POST.getlist("selected_tournaments")
+        action = request.POST.get("action")
+
+        if action == "delete" and selected_ids:
+            Tournament.objects.filter(id__in=selected_ids, user=request.user).delete()
+            messages.success(request, f"{len(selected_ids)} tournament(s) deleted successfully.")
+
+        elif action == "duplicate" and selected_ids:
+            for tourn in Tournament.objects.filter(id__in=selected_ids, user=request.user):
+                # Duplicate tournament
+                new_tourn = tourn
+                new_tourn.pk = None
+                new_tourn.name = f"{tourn.name} (Copy)"
+                new_tourn.generatedSchedule = False
+                new_tourn.finished = False
+                new_tourn.noTeams = 0
+                new_tourn.save()
+
+            messages.success(request, f"{len(selected_ids)} tournament(s) duplicated successfully.")
+
+    past_tourns = Tournament.objects.filter(
+        Q(user=request.user) & Q(date__lt=datetime.datetime.today().date())
+    ).order_by('-date')
+
+    future_tourns = Tournament.objects.filter(
+        Q(user=request.user) & Q(date__gte=datetime.datetime.today().date())
+    ).order_by('date')
+
     future_tourn_filter = TournUserFilter(request.GET, queryset=future_tourns)
     past_tourn_filter = TournUserFilter(request.GET, queryset=past_tourns)
 
-    return render(request, 'user-tourn-list.html', {'filterFuture': future_tourn_filter,
-                                                    'filterPast': past_tourn_filter, 
-                                                    'tournaments': past_tourns, 
-                                                    'tournamentsFuture': future_tourns})
+    return render(request, 'user-tourn-list.html', {
+        'filterFuture': future_tourn_filter,
+        'filterPast': past_tourn_filter, 
+        'tournaments': past_tourns, 
+        'tournamentsFuture': future_tourns,
+        "current_block": current_block,
+    })
 
 def csv_tourn_download(request):
     pk = request.GET.get('user_id')
