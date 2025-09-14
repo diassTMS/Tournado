@@ -2,6 +2,19 @@
 {% load crispy_forms_tags %}
 {% load static %}
 {% block container %}
+<style>
+    #double {
+            grid-template-columns: 1fr 1fr;
+    }
+    #triple {
+            grid-template-columns: 2fr 1fr;
+        }
+    @media (width < 50em) {
+        #triple {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
 <div class="grid" id="box">
     <div class="grid">
         <h2>
@@ -43,9 +56,11 @@
             <hr>
             <h4>Timings</h4>
             <hr>
-            <div class="grid">
-                {{ form.startTime|as_crispy_field }}
-                {{ form.endTime|as_crispy_field }}
+            <div class="grid" id="triple">
+                <div class="grid" id="double">
+                    {{ form.startTime|as_crispy_field }}
+                    {{ form.endTime|as_crispy_field }}
+                </div>
                 {{ form.matchType|as_crispy_field }}
             </div>
             <hr>

@@ -3,17 +3,25 @@
 {% load crispy_forms_tags %}
 {% block container %}
     <style>
-        #filter {
-            grid-template-columns: repeat(4, 2fr) 1fr;
+        #searchGrid {
+            grid-template-columns: 2fr 1fr;
             grid-auto-flow: row;
         }
 
+        #filterGroup {
+            display:inline-flex; 
+            gap:20px;
+        }
+
         @media (width < 50em) {
-            #filter {
+            #searchGrid {
                 display: grid;
-                grid-template-columns: 1fr;
-                grid-column-gap: 0px;
-                grid-row-gap: 0px;
+                grid-template-columns: 3fr 2fr;
+            }
+
+            #filterGroup {
+                display:inline-flex; 
+                gap:10px;
             }
         }
 
@@ -65,9 +73,9 @@
                 <div class='container' id='box'>
                     <div class="grid">
                         <h2 style="margin-top: 10px;">Upcoming Events</h2>
-                        <div class="grid" style="grid-template-columns: 2fr 1fr;">
+                        <div class="grid" id="searchGrid">
                             <input type="search" id="searchTournFuture" name="search" placeholder="Search" />
-                            <div class="group" style="display:inline-flex; gap:20px;">
+                            <div class="group" id="filterGroup">
                                 <button type="button" onclick="filterView()" style="all: unset;">
                                     <h1><i class="fa-solid fa-sliders" id="icon"></i></h1>
                                 </button>
@@ -105,9 +113,9 @@
                 <div class='container' id='box'>
                     <div class="grid">
                         <h2 style="margin-top: 10px;">Past Events</h2>
-                        <div class="grid" style="grid-template-columns: 2fr 1fr;">
+                        <div class="grid" id="searchGrid">
                             <input type="search" id="searchTournPast" name="search" placeholder="Search" />
-                            <div class="group" style="display:inline-flex; gap:20px;">
+                            <div class="group" id="filterGroup">
                                 <button type="button" onclick="filterViewPast()" style="all: unset;">
                                     <h1><i class="fa-solid fa-sliders" id="icon"></i></h1>
                                 </button>

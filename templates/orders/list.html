@@ -2,8 +2,30 @@
 {% load static %}
 {% load django_tables2 %}
 {% block container %}
+    <style>
+        #seasonDropdown {
+            text-align:right; 
+            margin-bottom: -20px; 
+        }
+        
+        #download-csv, #bulk-invoice {
+            margin-top: 35px;
+        }
+
+        @media (width < 50em) {
+            #seasonDropdown {
+                text-align:center; 
+            }
+            #admin-bulk-actions {
+                row-gap: 0px;            
+            }
+            #download-csv, #bulk-invoice {
+                margin-top: 0px;
+            }
+        }
+    </style>
     <div id="box">
-        <hgroup>
+        <div class="grid">
             <h2>
                 {% if user == userInput %}
                     {% if user.groups.first.name == "Admin" %}
@@ -17,27 +39,25 @@
                     <i onClick="location.href='{% url 'user-list' %}';" class="fa-solid fa-circle-arrow-left" id="icon"></i>
                     {{ userInput }}'s Entries
                 {% endif %}
-                <span style="float:right; align-items:center;">
-                <div class="grid" style="margin-bottom: 15px; text-align:center; align-items:center;">
-                    <form method="get" id="season-form" style="display:inline-block;">
-                        <select name="season" id="season" class="form-select d-inline-block" style="width:auto; display:inline-block;">
-                            {% for s in seasons %}
-                                <option value="{{ s }}" {% if s == season %}selected{% endif %}>{{ s }}</option>
-                            {% endfor %}
-                        </select>
-                    </form>
-                </div>                
-            </span>
             </h2>
-        </hgroup>
+            <div id="seasonDropdown">
+                <form method="get" id="season-form" style="display:inline-block;">
+                    <select name="season" id="season" class="form-select d-inline-block" style="width:auto; display:inline-block;">
+                        {% for s in seasons %}
+                            <option value="{{ s }}" {% if s == season %}selected{% endif %}>{{ s }}</option>
+                        {% endfor %}
+                    </select>
+                </form>
+            </div>
+        </div>
     {% if userInput.groups.first.name == "Admin" %}
-        <hr style="margin-top: 50px;">
+        <hr>
         <div id="admin-bulk-actions" class="grid">
             <label>Start Date: <input type="date" id="bulk-start-date"></label>
             <label>End Date: <input type="date" id="bulk-end-date"></label>
             <label>Next Invoice Number: <input type="number" id="bulk-invoice-number"></label>
-            <button style="height: calc(1rem* var(--pico-line-height) + var(--pico-form-element-spacing-vertical)* 2 + var(--pico-border-width)* 2); margin-top: 35px;" id="download-csv">Download CSV</button>
-            <button style="height: calc(1rem* var(--pico-line-height) + var(--pico-form-element-spacing-vertical)* 2 + var(--pico-border-width)* 2); margin-top: 35px;" id="bulk-invoice">Mark as invoiced</button>
+            <label><input id="download-csv" class="primary" type="button" value="Download CSV" /></label>
+            <label><input id="bulk-invoice" class="primary" type="button" value="Mark as invoiced" /></label>
         </div>
     {% endif %}
     </div>

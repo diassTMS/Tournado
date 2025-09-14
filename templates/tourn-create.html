@@ -6,14 +6,25 @@
             grid-template-columns: 1fr 1fr 1fr 1fr;
         }
         #triple {
-            grid-template-columns: 1fr 1fr 1fr;
+            grid-template-columns: 1fr 2fr;
         }
         #double {
             grid-template-columns: 1fr 1fr;
         }
+        #doubleCollapse {
+            grid-template-columns: 1fr 1fr;
+            column-gap: 30px;
+        }
         @media (width < 50em) {
             #fourdouble {
                 grid-template-columns: 1fr 1fr;
+            }
+            #doubleCollapse {
+                grid-template-columns: 1fr;
+                column-gap: 0px;
+            }
+            #triple {
+                grid-template-columns: 1fr;
             }
         }
     </style>            
@@ -45,8 +56,10 @@
                 <h4>Timings</h4>
                 <div class="grid" id="triple">
                     {{ form.date|as_crispy_field }}
-                    {{ form.meetTime|as_crispy_field }}
-                    {{ form.startTime|as_crispy_field }}
+                    <div class="grid" id="double">
+                        {{ form.meetTime|as_crispy_field }}
+                        {{ form.startTime|as_crispy_field }}
+                    </div>
                 </div>
                 <hr>
                 <h4>Logistics</h4>
@@ -63,9 +76,9 @@
                 {{ form.vat|as_crispy_field }}
                 <hr>
                 <h4>Event Notes & Add-ons</h4>
-                <div class="grid" id="double">
+                <div class="grid" id="doubleCollapse">
                     {{ form.notes|as_crispy_field }}
-                    <div style="margin-left: 30px;">
+                    <div>
                         <p>Add-ons</p>
                         {{ form.liveScores|as_crispy_field }}
                         {{ form.umpires|as_crispy_field }} 
