@@ -19,7 +19,6 @@ from users.models import Profile
 from django.db.models import Q, F
 from Tournado import settings
 from django.db import connection
-from datetime import date, datetime
 import csv
 import csv
 from decimal import Decimal, InvalidOperation
@@ -112,14 +111,14 @@ def csv_tourn_download(request):
         group = "None"
     
     #Season
-    today = date.today()
+    today = datetime.date.today()
     if today.month >= 9:  # September or later
-        start = date(today.year, 9, 1)
-        end = date(today.year + 1, 8, 31)
+        start = datetime.date(today.year, 9, 1)
+        end = datetime.date(today.year + 1, 8, 31)
         label = f"{today.year}-{str(today.year + 1)[-2:]}"
     else:
-        start = date(today.year - 1, 9, 1)
-        end = date(today.year, 8, 31)
+        start = datetime.date(today.year - 1, 9, 1)
+        end = datetime.date(today.year, 8, 31)
         label = f"{today.year - 1}-{str(today.year)[-2:]}"
 
     start_date = start.strftime("%Y-%m-%d")

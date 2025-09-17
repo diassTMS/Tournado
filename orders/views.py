@@ -16,7 +16,6 @@ from .forms import OrderCreateForm, OrderEditForm
 from .tables import ProductTable, OrderItemTable, OrderTable, AdminOrderTable
 from tournaments.models import Tournament, Entry
 from Tournado import renderers
-import datetime
 from django.contrib.auth.models import User
 from users.models import Profile
 from datetime import date, datetime
@@ -125,7 +124,7 @@ def auto_create_order_view(request, pk):
     new_order = Order.objects.create(
         title='Order 69',
         user=user,
-        date=datetime.datetime.today().date()
+        date=datetime.today().date()
 
     )
     new_order.title = f'Order #{new_order.id}'
@@ -150,7 +149,7 @@ class OrderUpdateView(LoginRequiredMixin, UpdateView):
         if group.name == "Admin":
             qs_p = Tournament.objects.all()
         else:
-            qs_p = Tournament.objects.filter(date__gte=datetime.datetime.today().date(), group=group)
+            qs_p = Tournament.objects.filter(date__gte=datetime.today().date(), group=group)
         products = ProductTable(qs_p)
         order_items = OrderItemTable(instance.order_items.all())
         RequestConfig(self.request).configure(products)
@@ -381,7 +380,7 @@ def InvoicePdf(request, pk):
         row.append(order_items[i].total_price)
         invoice.append(row)
     
-    date = datetime.datetime.today().date()
+    date = datetime.today().date()
 
     data = {
         'invoice': invoice,
