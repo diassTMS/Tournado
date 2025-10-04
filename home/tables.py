@@ -21,11 +21,16 @@ class ScoreTable(tables.Table):
                                 'th':{'style':'text-align: center;'},
                                 'td':{'style':'text-align: center;'},
                             })
+    forGoals = tables.Column(verbose_name="Goals",
+                           attrs={
+                                'th':{'style':'text-align: center;'},
+                                'td':{'style':'text-align: center;'},
+                            })
 
     class Meta:
         model = Entry
         template_name = "django_tables2/bootstrap4-responsive.html"
-        fields = ("teamName", "played", "goalDiff", "points",)
+        fields = ("teamName", "played", "goalDiff", "points", "forGoals",)
         orderable = False
 
 class LargeKnockoutTable(tables.Table):
