@@ -421,16 +421,17 @@ def admin_csv_download(request):
     if vendor == "sqlite":
         query = """
             SELECT 
-                auth_user.username AS "*ContactName", 
-                users_profile.invoice_email AS "*EmailAddress",
-                DATE('now') AS "*InvoiceDate",
-                DATE('now','+7 day') AS "*DueDate",
-                'GHA Tournaments' AS "*Reference", 
-                tournaments_tournament.name || ' - ' || tournaments_tournament.date AS "*Description",
-                COUNT(*) AS "*Quantity",
-                tournaments_tournament.entryPrice AS "*UnitAmount",
-                'GBP' AS "*Currency",
-                '20%% (VAT on Income)' AS "*TaxType"
+                auth_user.username AS "ContactName", 
+                users_profile.invoice_email AS "EmailAddress",
+                DATE('now') AS "InvoiceDate",
+                DATE('now','+7 day') AS "DueDate",
+                'GHA Tournaments' AS "Reference", 
+                tournaments_tournament.name || ' - ' || tournaments_tournament.date AS "Description",
+                COUNT(*) AS "Quantity",
+                tournaments_tournament.entryPrice AS "UnitAmount",
+                '212' AS "AccountCode",
+                'GBP' AS "Currency",
+                '20%% (VAT on Income)' AS "TaxType"
             FROM auth_user
             JOIN users_profile ON auth_user.id = users_profile.user_id
             JOIN tournaments_entry ON tournaments_entry.user_id = auth_user.id
@@ -444,16 +445,17 @@ def admin_csv_download(request):
     elif vendor == "mysql":
         query = """
             SELECT 
-                auth_user.username AS "*ContactName", 
-                users_profile.invoice_email AS "*EmailAddress",
-                CURDATE() AS "*InvoiceDate",
-                DATE_ADD(CURDATE(), INTERVAL 7 DAY) AS "*DueDate",
-                'GHA Tournaments' AS "*Reference", 
-                CONCAT(tournaments_tournament.name, ' - ', tournaments_tournament.date) AS "*Description",
-                COUNT(*) AS "*Quantity",
-                tournaments_tournament.entryPrice AS "*UnitAmount",
-                'GBP' AS "*Currency",
-                '20%% (VAT on Income)' AS "*TaxType"
+                auth_user.username AS "ContactName", 
+                users_profile.invoice_email AS "EmailAddress",
+                CURDATE() AS "InvoiceDate",
+                DATE_ADD(CURDATE(), INTERVAL 7 DAY) AS "DueDate",
+                'GHA Tournaments' AS "Reference", 
+                CONCAT(tournaments_tournament.name, ' - ', tournaments_tournament.date) AS "Description",
+                COUNT(*) AS "Quantity",
+                tournaments_tournament.entryPrice AS "UnitAmount",
+                '212' AS "AccountCode",
+                'GBP' AS "Currency",
+                '20%% (VAT on Income)' AS "TaxType"
             FROM auth_user
             JOIN users_profile ON auth_user.id = users_profile.user_id
             JOIN tournaments_entry ON tournaments_entry.user_id = auth_user.id
