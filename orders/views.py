@@ -475,7 +475,7 @@ def admin_csv_download(request):
         columns = [col[0] for col in cursor.description]
 
     # Add invoice number column
-    columns.append("*InvoiceNumber")
+    columns.append("InvoiceNumber")
 
     # Generate invoice numbers
     invoice_map = {}
